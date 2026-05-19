@@ -1,12 +1,12 @@
 ---
 import Base from "../../layouts/Base.astro";
-import snapshot from "../../_data/snapshots/dummy-7d.json";
+import snapshot from "../../_data/snapshots/live-7d.json";
 import type { Snapshot } from "../../types";
 
 const data = snapshot as Snapshot;
 
 export async function getStaticPaths() {
-  const snap = (await import("../../_data/snapshots/dummy-7d.json")).default as Snapshot;
+  const snap = (await import("../../_data/snapshots/live-7d.json")).default as Snapshot;
   return Object.keys(snap.contributors).map((handle) => ({ params: { handle } }));
 }
 
