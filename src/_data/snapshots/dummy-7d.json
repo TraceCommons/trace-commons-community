@@ -1,0 +1,122 @@
+{
+  "snapshot_id": "dummy-7d-00000000-0000-0000-0000-000000000001",
+  "computed_at": "2026-05-19T12:00:00Z",
+  "window": "7d",
+  "metric": "novelty_credit",
+  "min_cell_count": 5,
+  "leaderboard": [
+    {
+      "rank": 1,
+      "display_handle": "vivian",
+      "score": 482.4,
+      "accepted_count": 184,
+      "accept_rate": 0.91,
+      "public_since": "2026-05-12T15:30:00Z"
+    },
+    {
+      "rank": 2,
+      "display_handle": "kai",
+      "score": 311.7,
+      "accepted_count": 127,
+      "accept_rate": 0.84,
+      "public_since": "2026-05-13T09:11:00Z"
+    },
+    {
+      "rank": 3,
+      "display_handle": "ren",
+      "score": 268.2,
+      "accepted_count": 110,
+      "accept_rate": 0.79,
+      "public_since": "2026-05-14T18:45:00Z"
+    },
+    {
+      "rank": 4,
+      "display_handle": "amara",
+      "score": 199.8,
+      "accepted_count": 88,
+      "accept_rate": 0.86,
+      "public_since": "2026-05-15T02:20:00Z"
+    },
+    {
+      "rank": 5,
+      "display_handle": "thiago",
+      "score": 162.5,
+      "accepted_count": 71,
+      "accept_rate": 0.82,
+      "public_since": "2026-05-15T20:55:00Z"
+    }
+  ],
+  "contributors": {
+    "vivian": {
+      "display_handle": "vivian",
+      "bio": "Privacy-preserving agents researcher. Helping calibrate the gate.",
+      "public_since": "2026-05-12T15:30:00Z",
+      "total_accepted": 184,
+      "total_credit": 482.4,
+      "rolling_7d_accepted": 184,
+      "rolling_7d_credit": 482.4
+    },
+    "kai": {
+      "display_handle": "kai",
+      "bio": "Tooling + observability.",
+      "public_since": "2026-05-13T09:11:00Z",
+      "total_accepted": 127,
+      "total_credit": 311.7,
+      "rolling_7d_accepted": 127,
+      "rolling_7d_credit": 311.7
+    },
+    "ren": {
+      "display_handle": "ren",
+      "bio": null,
+      "public_since": "2026-05-14T18:45:00Z",
+      "total_accepted": 110,
+      "total_credit": 268.2,
+      "rolling_7d_accepted": 110,
+      "rolling_7d_credit": 268.2
+    },
+    "amara": {
+      "display_handle": "amara",
+      "bio": "Working on retrieval-augmented agent benchmarks.",
+      "public_since": "2026-05-15T02:20:00Z",
+      "total_accepted": 88,
+      "total_credit": 199.8,
+      "rolling_7d_accepted": 88,
+      "rolling_7d_credit": 199.8
+    },
+    "thiago": {
+      "display_handle": "thiago",
+      "bio": "First-time contributor. Mostly debugging traces.",
+      "public_since": "2026-05-15T20:55:00Z",
+      "total_accepted": 71,
+      "total_credit": 162.5,
+      "rolling_7d_accepted": 71,
+      "rolling_7d_credit": 162.5
+    }
+  },
+  "analytics": {
+    "window": "7d",
+    "total_submissions": 712,
+    "total_accepted": 580,
+    "total_rejected": 132,
+    "accept_rate": 0.81,
+    "novelty_histogram": [
+      { "bucket_micros": 0, "count": 18 },
+      { "bucket_micros": 100000, "count": 22 },
+      { "bucket_micros": 200000, "count": 31 },
+      { "bucket_micros": 300000, "count": 44 },
+      { "bucket_micros": 400000, "count": 71 },
+      { "bucket_micros": 500000, "count": 102 },
+      { "bucket_micros": 600000, "count": 147 },
+      { "bucket_micros": 700000, "count": 121 },
+      { "bucket_micros": 800000, "count": 87 },
+      { "bucket_micros": 900000, "count": 49 },
+      { "bucket_micros": 1000000, "count": 20 }
+    ],
+    "gate_outcomes": {
+      "both_passed": 580,
+      "novelty_failed": 98,
+      "perplexity_failed": 24,
+      "both_failed": 10
+    }
+  }
+}

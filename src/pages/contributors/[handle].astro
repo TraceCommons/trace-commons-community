@@ -1,0 +1,53 @@
+---
+import Base from "../../layouts/Base.astro";
+import snapshot from "../../_data/snapshots/dummy-7d.json";
+import type { Snapshot } from "../../types";
+
+const data = snapshot as Snapshot;
+
+export async function getStaticPaths() {
+  const snap = (await import("../../_data/snapshots/dummy-7d.json")).default as Snapshot;
+  return Object.keys(snap.contributors).map((handle) => ({ params: { handle } }));
+}
+
+const { handle } = Astro.params as { handle: string };
+const profile = data.contributors[handle];
+if (!profile) {
+  // getStaticPaths covers every known handle, so this branch only
+  // fires on a build/data drift. Fail loud rather than silently 404
+  // so CI surfaces the bug.
+  throw new Error(`No profile found for handle: ${handle}`);
+}
+const publicSince = new Date(profile.public_since);
+---
+<Base title={`@${profile.display_handle}`} description={`Trace Commons contributor profile for @${profile.display_handle}.`}>
+  <p><a href="/leaderboard">← Back to leaderboard</a></p>
+
+  <h2>@{profile.display_handle}</h2>
+  {profile.bio && <p>{profile.bio}</p>}
+  <p class="muted">Public since {publicSince.toISOString().slice(0, 10)}.</p>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="label">Total accepted</div>
+      <div class="value">{profile.total_accepted}</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total credit</div>
+      <div class="value">{profile.total_credit.toFixed(1)}</div>
+    </div>
+    <div class="stat">
+      <div class="label">7d accepted</div>
+      <div class="value">{profile.rolling_7d_accepted}</div>
+    </div>
+    <div class="stat">
+      <div class="label">7d credit</div>
+      <div class="value">{profile.rolling_7d_credit.toFixed(1)}</div>
+    </div>
+  </div>
+
+  <p class="muted">
+    Stats are pulled from the latest snapshot and refreshed at the snapshot
+    interval (default 15 min). Withdrawal removes the page at the next build.
+  </p>
+</Base>

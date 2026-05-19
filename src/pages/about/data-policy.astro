@@ -1,0 +1,49 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base title="Data policy">
+  <h2>Data flow</h2>
+  <p>
+    The community surface is a thin read-side over snapshots produced by the
+    Trace Commons server. The pipeline:
+  </p>
+  <ol>
+    <li>Contributor's local Ironclaw redacts a trace and queues it.</li>
+    <li>Ironclaw uploads the redacted envelope to the hosted ingest API.</li>
+    <li>Server applies the novelty / perplexity / tail-fraction gate.</li>
+    <li>Accepted submissions enter the corpus and the credit ledger.</li>
+    <li>A snapshot worker computes leaderboard rows + corpus aggregates on a schedule, applying min-cell and noise guards.</li>
+    <li>This site renders against the latest snapshot.</li>
+  </ol>
+
+  <h2>Consent scopes</h2>
+  <p>
+    The contributor's standing policy carries a <code>consent_scope</code> that
+    determines which uses the envelope contents permit:
+  </p>
+  <ul>
+    <li><code>debugging_evaluation</code> (default): debugging, evaluation, aggregate analytics.</li>
+    <li><code>benchmark_only</code>: evaluation, benchmark generation, aggregate analytics.</li>
+    <li><code>ranking_training</code>: + ranker training.</li>
+    <li><code>model_training</code>: + training-data inclusion.</li>
+    <li><code>public_attribution</code>: separate, profile-management consent that links the contributor's pseudonym to a public handle. Does NOT grant any trace-content uses on its own.</li>
+  </ul>
+
+  <h2>Aggregation guards</h2>
+  <p>
+    The snapshot worker honours three operator-tunable guards:
+  </p>
+  <ul>
+    <li><code>TRACE_COMMONS_ANALYTICS_MIN_CELL_COUNT</code> — a leaderboard row is suppressed if the contributor's window count is below this threshold.</li>
+    <li><code>TRACE_COMMONS_ANALYTICS_BROAD_RELEASE_NOISE</code> — Laplace noise on every aggregate count.</li>
+    <li><code>TRACE_COMMONS_ANALYTICS_BROAD_RELEASE_PRIVACY_ACCOUNTING</code> — budget tracking across snapshots.</li>
+  </ul>
+
+  <h2>Source-of-truth links</h2>
+  <ul>
+    <li>Envelope contract: <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/trace-commons.md">trace-commons.md</a></li>
+    <li>Storage contract: <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/trace-commons-storage.md">trace-commons-storage.md</a></li>
+    <li>Leaderboard design: <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/superpowers/specs/2026-05-19-community-analytics-leaderboard-design.md">community-analytics-leaderboard-design.md</a></li>
+    <li>Frontend design: <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/superpowers/specs/2026-05-19-community-frontend-design.md">community-frontend-design.md</a></li>
+  </ul>
+</Base>

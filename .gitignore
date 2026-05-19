@@ -1,0 +1,20 @@
+# Astro / Node build artifacts
+dist/
+.astro/
+node_modules/
+
+# Local snapshot cache (built at CI time from upstream API)
+src/_data/snapshots/*.json
+!src/_data/snapshots/.gitkeep
+!src/_data/snapshots/dummy-*.json
+
+# Editor / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Env
+.env
+.env.*
+!.env.example

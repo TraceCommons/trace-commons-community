@@ -1,0 +1,82 @@
+---
+import Base from "../layouts/Base.astro";
+import snapshot from "../_data/snapshots/dummy-7d.json";
+import type { Snapshot } from "../types";
+
+const data = snapshot as Snapshot;
+const a = data.analytics;
+const maxHistogram = Math.max(...a.novelty_histogram.map((b) => b.count), 1);
+const gateEntries = Object.entries(a.gate_outcomes).sort((x, y) => y[1] - x[1]);
+const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
+---
+<Base title="Analytics">
+  <div class="banner">
+    <strong>Preview build.</strong> Dummy analytics. Real aggregates land when the
+    upstream snapshot worker ships (server slice 2), with the existing min-cell
+    and noise guards applied at compute time.
+  </div>
+
+  <h2>Corpus analytics — {a.window}</h2>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="label">Total submissions</div>
+      <div class="value">{a.total_submissions.toLocaleString()}</div>
+    </div>
+    <div class="stat">
+      <div class="label">Accepted</div>
+      <div class="value">{a.total_accepted.toLocaleString()}</div>
+    </div>
+    <div class="stat">
+      <div class="label">Rejected</div>
+      <div class="value">{a.total_rejected.toLocaleString()}</div>
+    </div>
+    <div class="stat">
+      <div class="label">Accept rate</div>
+      <div class="value">{(a.accept_rate * 100).toFixed(0)}%</div>
+    </div>
+  </div>
+
+  <h2>Novelty score distribution</h2>
+  <p class="muted">Bucketed in micros (0 – 1,000,000). Higher is more novel.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Bucket</th>
+        <th>Count</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {a.novelty_histogram.map((b) => (
+        <tr>
+          <td class="muted">{b.bucket_micros.toLocaleString()}</td>
+          <td>{b.count}</td>
+          <td>
+            <span style={`display: inline-block; height: 0.6rem; width: ${(b.count / maxHistogram) * 100}%; background: var(--accent); border-radius: 2px;`}></span>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Gate decision outcomes</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Outcome</th>
+        <th>Decisions</th>
+        <th>Share</th>
+      </tr>
+    </thead>
+    <tbody>
+      {gateEntries.map(([label, count]) => (
+        <tr>
+          <td><code>{label}</code></td>
+          <td>{count}</td>
+          <td>{((count / gateTotal) * 100).toFixed(1)}%</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</Base>

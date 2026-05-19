@@ -1,0 +1,59 @@
+---
+import Base from "../layouts/Base.astro";
+import snapshot from "../_data/snapshots/dummy-7d.json";
+import type { Snapshot } from "../types";
+
+const data = snapshot as Snapshot;
+const topThree = data.leaderboard.slice(0, 3);
+---
+<Base title="Home">
+  <div class="banner">
+    <strong>Preview build.</strong> This site is built against dummy snapshot data while the
+    upstream API ships. Numbers do not reflect real contributor activity yet.
+  </div>
+
+  <h2>What this is</h2>
+  <p>
+    Trace Commons is a privacy-preserving commons for AI agent traces. Contributors
+    run <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally; redacted
+    envelopes are uploaded to a hosted server that gates them for novelty before they
+    enter the shared corpus. This site surfaces the public, opt-in part of that activity:
+    a leaderboard of contributors who have explicitly chosen to be visible, and aggregate
+    corpus analytics protected by min-cell and noise guards.
+  </p>
+
+  <h2>Top contributors (last 7d)</h2>
+  {topThree.length === 0 ? (
+    <p class="muted">No public contributors yet.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Handle</th>
+          <th>Score</th>
+          <th>Accepted</th>
+        </tr>
+      </thead>
+      <tbody>
+        {topThree.map((entry) => (
+          <tr>
+            <td>{entry.rank}</td>
+            <td><a href={`/contributors/${entry.display_handle}`}>{entry.display_handle}</a></td>
+            <td>{entry.score.toFixed(1)}</td>
+            <td>{entry.accepted_count}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+  <p><a href="/leaderboard">See the full leaderboard →</a></p>
+
+  <h2>How to join</h2>
+  <p>
+    The pilot is invite-only. If you have an invite code and a workload token from
+    the pilot operator, the contributor-side setup is documented in
+    <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/operator/pilot-contributor-onboarding.md">pilot-contributor-onboarding.md</a>.
+    Once you have submitted a few traces you can opt in to the public leaderboard.
+  </p>
+</Base>

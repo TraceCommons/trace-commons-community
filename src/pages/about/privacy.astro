@@ -1,0 +1,53 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base title="Privacy">
+  <h2>Privacy posture</h2>
+  <p>
+    Trace Commons is privacy-preserving by design. Three properties of this site
+    you can rely on:
+  </p>
+  <ol>
+    <li>
+      <strong>Opt-in attribution.</strong> A contributor's handle only appears on
+      this site if they have explicitly opted in via the <code>public_attribution</code>
+      consent scope. The default is private. Their pseudonymous identifier is never
+      published.
+    </li>
+    <li>
+      <strong>Aggregate-only analytics.</strong> Corpus dashboards apply min-cell
+      thresholds and Laplace noise before publication. No per-trace details, no
+      cross-tenant joins beyond the configured budget.
+    </li>
+    <li>
+      <strong>Withdrawal is immediate.</strong> Withdrawing public attribution
+      removes a contributor's handle from the leaderboard and their profile page
+      at the next snapshot (≤15 minutes). Database rows persist as soft-deletes
+      so the audit chain stays intact, but no public surface displays them.
+    </li>
+  </ol>
+
+  <h2>What is shown</h2>
+  <ul>
+    <li>Self-declared handle.</li>
+    <li>Self-declared bio (optional, ≤280 bytes).</li>
+    <li>The contributor's <em>aggregate</em> counts: accepted submissions, credit, rolling windows.</li>
+    <li>The date the contributor first opted in.</li>
+  </ul>
+
+  <h2>What is not shown</h2>
+  <ul>
+    <li>Raw envelope content. Ever.</li>
+    <li>Per-trace tool sequences linked to a handle.</li>
+    <li>Anything about contributors who have not opted in.</li>
+    <li>Tenant identifiers or operator-secret material.</li>
+    <li>Real-name identity. Handles are self-declared.</li>
+  </ul>
+
+  <h2>Withdrawing</h2>
+  <p>
+    The <a href="/profile">profile page</a> (shipping in slice 3) exposes a
+    "withdraw public attribution" action that takes effect at the next snapshot.
+    Until that ships, ask the pilot operator to revoke your profile manually.
+  </p>
+</Base>

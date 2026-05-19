@@ -1,0 +1,51 @@
+---
+import Base from "../layouts/Base.astro";
+import snapshot from "../_data/snapshots/dummy-7d.json";
+import type { Snapshot } from "../types";
+
+const data = snapshot as Snapshot;
+const computedAt = new Date(data.computed_at);
+---
+<Base title="Leaderboard">
+  <div class="banner">
+    <strong>Preview build.</strong> Dummy snapshot. Real data lands when the upstream
+    snapshot worker ships (server slice 2).
+  </div>
+
+  <h2>Leaderboard — 7 day window</h2>
+  <p class="muted">
+    Ranked by <code>{data.metric}</code>. Snapshot <code>{data.snapshot_id.slice(0, 12)}…</code>
+    computed at {computedAt.toUTCString()}. Min-cell guard: {data.min_cell_count}.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Handle</th>
+        <th>Score</th>
+        <th>Accepted</th>
+        <th>Accept rate</th>
+        <th>Public since</th>
+      </tr>
+    </thead>
+    <tbody>
+      {data.leaderboard.map((entry) => (
+        <tr>
+          <td>{entry.rank}</td>
+          <td><a href={`/contributors/${entry.display_handle}`}>{entry.display_handle}</a></td>
+          <td>{entry.score.toFixed(1)}</td>
+          <td>{entry.accepted_count}</td>
+          <td>{(entry.accept_rate * 100).toFixed(0)}%</td>
+          <td class="muted">{new Date(entry.public_since).toISOString().slice(0, 10)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <p class="muted">
+    Contributors are only listed here if they have explicitly opted in to public
+    attribution. See <a href="/about/privacy">the privacy page</a> for the consent
+    flow and withdrawal procedure.
+  </p>
+</Base>
