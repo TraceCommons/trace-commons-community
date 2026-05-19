@@ -8,8 +8,8 @@
     "build": "node scripts/fetch-snapshot.mjs && astro build",
     "build:live": "node scripts/fetch-snapshot.mjs && astro build",
     "preview": "astro preview",
-    "check": "astro check",
-    "lint": "astro check",
+    "check": "node scripts/fetch-snapshot.mjs && astro check",
+    "lint": "node scripts/fetch-snapshot.mjs && astro check",
     "fetch-snapshot": "node scripts/fetch-snapshot.mjs"
   },
   "dependencies": {
