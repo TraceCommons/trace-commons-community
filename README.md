@@ -8,10 +8,12 @@ Static site (Astro), no server runtime. Consumes the
 [trace-commons-server](https://github.com/TraceCommons/trace-commons-server)
 and renders pre-cached HTML.
 
-**Status: Slice 1 — repo skeleton with dummy data.** Site builds against
-committed dummy JSON under `src/_data/snapshots/dummy-7d.json`. The live API
-wiring lands in Slice 2 once the upstream snapshot endpoints ship (server PR
-TBD); the profile-management SPA lands in Slice 3.
+**Status: Slice 2 — live API wiring.** Build pipeline fetches snapshots
+from the upstream `/v1/community/leaderboard` endpoint (via
+`scripts/fetch-snapshot.mjs`) and writes them to
+`src/_data/snapshots/live-7d.json`. Falls back to the checked-in dummy
+snapshot when `TC_API_BASE` is not set. The profile-management SPA
+lands in Slice 3.
 
 See the design specs in the server repo for the full picture:
 
@@ -25,14 +27,26 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:4321>. The site builds against the dummy snapshot at
-`src/_data/snapshots/dummy-7d.json`.
+Open <http://localhost:4321>. The dev/build pipeline fetches a snapshot
+into `src/_data/snapshots/live-7d.json` before starting Astro:
+
+- If `TC_API_BASE` is set, hits `${TC_API_BASE}/v1/community/leaderboard`.
+- Otherwise falls back to the checked-in dummy snapshot at
+  `src/_data/snapshots/dummy-7d.json`.
 
 ```sh
-npm run build    # production build to ./dist
+npm run build                                                 # dummy fallback
+TC_API_BASE=https://ingest.<host> npm run build               # live snapshot
+TC_USE_DUMMY=1 npm run build                                  # force dummy
 npm run preview  # serve ./dist locally
 npm run check    # TypeScript + Astro type check
 ```
+
+CI fails the build if a fetched live snapshot is older than
+`TC_SNAPSHOT_MAX_AGE_SECONDS` (default 3600s), or if the upstream
+returns 404 (which means
+`TRACE_COMMONS_COMMUNITY_LEADERBOARD_ENABLED` is off — the site
+refuses to deploy against a closed surface).
 
 ## Layout
 

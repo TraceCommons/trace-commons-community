@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/fetch-snapshot.mjs && astro dev",
+    "build": "node scripts/fetch-snapshot.mjs && astro build",
+    "build:live": "node scripts/fetch-snapshot.mjs && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "lint": "astro check"
+    "lint": "astro check",
+    "fetch-snapshot": "node scripts/fetch-snapshot.mjs"
   },
   "dependencies": {
     "astro": "^5.0.0"
