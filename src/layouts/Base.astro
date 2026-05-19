@@ -12,6 +12,7 @@ const { title, description = "Trace Commons community surface: leaderboard and a
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <slot name="head" />
     <title>{title} — Trace Commons</title>
     <style>
       :root {
