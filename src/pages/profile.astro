@@ -1,16 +1,78 @@
 ---
 import Base from "../layouts/Base.astro";
+
+// SPA endpoints come from build-time env so the same bundle can target
+// any deployment. Default points at the pilot host; deploy pipelines
+// can override TC_INGEST_BASE / TC_ISSUER_BASE.
+const ingestBase = import.meta.env.TC_INGEST_BASE ?? "https://ingest.34-41-15-28.nip.io";
+const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.34-41-15-28.nip.io";
 ---
-<Base title="Profile">
-  <h2>Profile management</h2>
-  <p>
-    The opt-in / handle / bio management surface ships in slice 3 as a small
-    SPA island authenticated against the upload-claim issuer using the
-    <code>public_attribution</code> consent scope. Until then this page is a
-    placeholder.
-  </p>
-  <p class="muted">
-    Once shipped, you'll be able to opt in, choose a public handle, edit your
-    bio, and withdraw — all from this page.
-  </p>
+<Base title="Profile" description="Manage your Trace Commons public attribution.">
+  <Fragment slot="head">
+    <meta name="tc-ingest-base" content={ingestBase} />
+    <meta name="tc-issuer-base" content={issuerBase} />
+  </Fragment>
+
+  <noscript>
+    <p class="banner">
+      The profile management page requires JavaScript. The rest of the site
+      (leaderboard, contributor pages, analytics) does not.
+    </p>
+  </noscript>
+
+  <div data-profile-app>
+    <p class="muted">Loading…</p>
+  </div>
+
+  <style>
+    [data-profile-app] form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 32rem;
+      margin: 1.5rem 0;
+    }
+    [data-profile-app] label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.9rem;
+    }
+    [data-profile-app] input,
+    [data-profile-app] textarea {
+      padding: 0.45rem 0.55rem;
+      font: inherit;
+      border: 1px solid var(--border);
+      background: var(--row);
+      color: var(--fg);
+      border-radius: 4px;
+    }
+    [data-profile-app] button {
+      align-self: flex-start;
+      padding: 0.5rem 1rem;
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--accent);
+      color: var(--bg);
+      border-radius: 4px;
+    }
+    [data-profile-app] button:hover {
+      opacity: 0.9;
+    }
+    [data-profile-app] [data-form="delete"] button {
+      background: transparent;
+      color: var(--fg);
+    }
+    [data-profile-app] .success { color: #1a7f37; }
+    [data-profile-app] .error { color: #cf222e; }
+    @media (prefers-color-scheme: dark) {
+      [data-profile-app] .success { color: #6fcf85; }
+      [data-profile-app] .error { color: #ff6a6a; }
+    }
+  </style>
+
+  <script>
+    import "../scripts/profile-app";
+  </script>
 </Base>
