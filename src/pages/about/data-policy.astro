@@ -8,10 +8,10 @@ import Base from "../../layouts/Base.astro";
     Trace Commons server. The pipeline:
   </p>
   <ol>
-    <li>Contributor's local Ironclaw redacts a trace and queues it.</li>
-    <li>Ironclaw uploads the redacted envelope to the hosted ingest API.</li>
-    <li>Server applies the novelty / perplexity / tail-fraction gate.</li>
-    <li>Accepted submissions enter the corpus and the credit ledger.</li>
+    <li>Contributor's local Ironclaw captures and scrubs a trace, then queues it.</li>
+    <li>Ironclaw uploads the scrubbed envelope to the hosted ingest API.</li>
+    <li>Server applies two gates: a <strong>novelty</strong> gate (is this record genuinely different from everything already filed?) and a <strong>substance</strong> gate (is this substantive work, not template-shaped filler?). Both must pass.</li>
+    <li>Accepted submissions are signed, filed into the register, and recorded in the credit ledger.</li>
     <li>A snapshot worker computes leaderboard rows + corpus aggregates on a schedule, applying min-cell and noise guards.</li>
     <li>This site renders against the latest snapshot.</li>
   </ol>
