@@ -14,12 +14,24 @@ const topThree = data.leaderboard.slice(0, 3);
 
   <h2>What this is</h2>
   <p>
-    Trace Commons is a privacy-preserving commons for AI agent traces. Contributors
-    run <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally; redacted
-    envelopes are uploaded to a hosted server that gates them for novelty before they
-    enter the shared corpus. This site surfaces the public, opt-in part of that activity:
-    a leaderboard of contributors who have explicitly chosen to be visible, and aggregate
-    corpus analytics protected by min-cell and noise guards.
+    Trace Commons is a user-owned register of AI agent work. When an agent does work
+    for you, it leaves a record of what actually happened: the tools it called, the
+    places it failed, the result it gave back. Contributors run
+    <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally to capture
+    and scrub those records. Only the scrubbed envelope reaches a shared server,
+    where two gates decide whether it is filed: one asks whether the record is
+    genuinely different from everything already in the register; the other asks
+    whether it is substantive work, not template-shaped filler. Both must pass.
+    Frontier labs, auditors, and regulators can later query the register under
+    selective disclosure.
+  </p>
+  <p>
+    A <strong>Trace Credit</strong> is the signed, on-chain record that one of a
+    contributor's submissions was accepted. Credits are non-transferable; they are
+    how recognition flows back when buyers later pay to query the evidence. This
+    site surfaces the public, opt-in slice of contributor activity: a leaderboard
+    of people who have explicitly chosen to be visible, and aggregate corpus
+    analytics protected by min-cell and noise guards.
   </p>
 
   <h2>Top contributors (last 7d)</h2>
@@ -54,6 +66,6 @@ const topThree = data.leaderboard.slice(0, 3);
     The pilot is invite-only. If you have an invite code and a workload token from
     the pilot operator, the contributor-side setup is documented in
     <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/operator/pilot-contributor-onboarding.md">pilot-contributor-onboarding.md</a>.
-    Once you have submitted a few traces you can opt in to the public leaderboard.
+    Once a few of your submissions have cleared both gates you can opt in to the public leaderboard.
   </p>
 </Base>
