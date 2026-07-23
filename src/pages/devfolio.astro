@@ -362,7 +362,17 @@ $ trace-commons-contributor submit --project . --manifest ids.json
     line-height: 1.65;
   }
 
-  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  /* Reset every inline-code affordance inside a terminal block. The border in
+     particular must go: a bordered inline box spanning multiple lines draws a
+     border fragment on each line box, which boxes every line of the block. */
+  pre code {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
 
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
