@@ -1,0 +1,453 @@
+---
+import Base from "../layouts/Base.astro";
+
+// Integration walkthrough for a hackathon platform consuming the score
+// read-back. Reachable by link but deliberately absent from the header nav
+// and marked noindex: it is partner-facing documentation, not part of the
+// public community surface.
+const description =
+  "How devfolio scopes a participant's trace upload to one hackathon project, collects the envelope ids, and pulls scores for those ids to rank the competition.";
+
+const bundle = [
+  {
+    field: "credit_quality_micros",
+    type: "int | null",
+    meaning:
+      "Graded credit quality q x 1,000,000, so 284000 is 0.284. The field to rank on. Null until the credit-quality pass has scored that trace.",
+  },
+  {
+    field: "perplexity_micros",
+    type: "int",
+    meaning:
+      "How surprising the trace is to the scoring model, x 1,000,000. A content-complexity signal: low values mean thin or boilerplate work.",
+  },
+  {
+    field: "novelty_score_micros",
+    type: "int",
+    meaning:
+      "How distinct the trace is from what has already been contributed, x 1,000,000. This is what catches near-duplicate submissions.",
+  },
+  {
+    field: "gate_passed",
+    type: "bool",
+    meaning:
+      "Whether the trace cleared both the novelty and substance floors. A cheap first filter before you look at q at all.",
+  },
+];
+
+const cases = [
+  {
+    situation: "Id you sent isn't in the response",
+    result: "omitted",
+    meaning:
+      "Uploaded but not yet gated, or never uploaded at all. Retry later before treating it as a zero.",
+  },
+  {
+    situation: "Row present, q is null",
+    result: "null",
+    meaning:
+      "Gated, but not credit-scored yet. Rank on the gate result for now; q will fill in.",
+  },
+  {
+    situation: "Wrong or missing credential",
+    result: "403",
+    meaning: "The token isn't a competition read credential. Nothing partial is returned.",
+  },
+  {
+    situation: "More than 500 ids",
+    result: "413",
+    meaning: "Chunk the batch. Nothing is read before the cap is checked.",
+  },
+  {
+    situation: "Scoring backend unavailable",
+    result: "503",
+    meaning:
+      "Deliberate fail-closed, never a silent empty list that would read as everyone scoring nothing.",
+  },
+];
+
+// Illustrative rows. The values are synthetic but deliberately sized to the
+// range real traces actually occupy: q is bottom-clustered, so a strong entry
+// sits near 0.3 rather than near 1.0, and a gate failure is usually the
+// novelty floor with perplexity passing. Do not "round these up" to look
+// impressive — the whole point is that a consumer sizes their UI correctly.
+const board = [
+  { entry: "nightjar / 7c9f1a2e", q: "0.284", pct: 28.4, gate: "pass" },
+  { entry: "kestrel / b81c40df", q: "0.161", pct: 16.1, gate: "pass" },
+  { entry: "tern / 2ad4e8b1", q: "0.052", pct: 5.2, gate: "fail" },
+];
+---
+
+<Base title="devfolio integration" description={description}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  <p class="eyebrow">Partner integration</p>
+  <h2 class="lede-head">Scoring a hackathon from the traces participants actually produced</h2>
+  <p class="lede">
+    A participant uploads only their project's coding-agent traces, hands you the
+    envelope ids that came back, and you pull scores for those ids to rank the
+    competition. Three moving parts, one join key, no schema coupling between us.
+  </p>
+
+  <div class="joinkey">
+    <p class="eyebrow">The join key</p>
+    <p>
+      Everything hangs on <code>submission_id</code> — the envelope id Trace Commons
+      assigns each uploaded trace. The participant's upload emits them, devfolio
+      stores them against a hackathon entry, and the score read-back is keyed by
+      them. Nothing devfolio-specific goes into the trace itself, so you own the
+      entry-to-ids mapping and can change it without touching us.
+    </p>
+  </div>
+
+  <section class="stage">
+    <p class="actor">Step 1 · Participant, on their machine</p>
+    <h2>Upload just the hackathon project</h2>
+    <p>
+      By default the contributor CLI treats a developer's whole local corpus as
+      candidates — every coding-agent session on the machine. For a hackathon that
+      is far too much. <code>--project</code> narrows the batch to sessions whose
+      working directory sits at or under one path, matched against the session's
+      real working directory rather than a mangled folder name, so a project
+      literally named <code>my-hack</code> matches correctly.
+    </p>
+    <pre><code>$ cd ~/code/my-hack
+$ trace-commons-contributor submit --project . --manifest ids.json
+
+  3 sessions match ~/code/my-hack
+  submitted 7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77 accepted
+  submitted 2ad4e8b1-6c07-4a99-8e13-5b70f2c4a901 accepted
+  refused (residual-secret-detected)
+
+  wrote 2 envelope id(s) to manifest</code></pre>
+    <p class="caption">Illustrative session — ids and outcomes are examples, not live data.</p>
+    <p>
+      The refusal is the local scrubbing pass doing its job: a session that still
+      carried a credential after redaction is never uploaded, and never reaches the
+      manifest. Sessions are independent, so one refusal doesn't cost the batch.
+    </p>
+  </section>
+
+  <section class="stage">
+    <p class="actor">Step 2 · Participant to devfolio</p>
+    <h2>Hand over the manifest</h2>
+    <p>
+      <code>ids.json</code> lists exactly the envelopes that reached the server —
+      freshly submitted and already-submitted alike, refusals and failures excluded.
+      This is the file a participant attaches to, or pastes into, their devfolio
+      entry.
+    </p>
+    <pre><code>[
+  &lbrace;
+    "submission_id": "7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77",
+    "status": "accepted"
+  &rbrace;,
+  &lbrace;
+    "submission_id": "2ad4e8b1-6c07-4a99-8e13-5b70f2c4a901",
+    "status": "already-submitted"
+  &rbrace;
+]</code></pre>
+    <p>
+      <code>already-submitted</code> means the participant had uploaded that exact
+      session before — the id is stable and still valid to score, so keep it. Treat
+      the list as append-only per entry: a participant can re-run <code>submit</code>
+      as the project evolves and give you more ids.
+    </p>
+    <p class="note">
+      <code>--manifest</code> is refused alongside <code>--dry-run</code>. A dry run
+      mints ids locally without uploading anything, so its ids would never exist
+      server-side — you'd collect ids that can never be scored.
+    </p>
+  </section>
+
+  <section class="stage">
+    <p class="actor">Step 3 · devfolio to Trace Commons</p>
+    <h2>Pull scores for the ids you collected</h2>
+    <p>
+      One request, up to 500 ids at a time. Participants each live in their own
+      tenant, and this route reads across all of them, so devfolio makes a single
+      call per batch rather than one per participant.
+    </p>
+    <pre><code>$ curl -X POST https://ingest.tracecommons.ai/v1/admin/scores-by-submission \
+    -H "authorization: Bearer $DEVFOLIO_TOKEN" \
+    -H "content-type: application/json" \
+    -d '&lbrace;"submission_ids": ["7c9f1a2e-…", "2ad4e8b1-…"]&rbrace;'</code></pre>
+    <pre><code>[
+  &lbrace;
+    "submission_id": "7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77",
+    "credit_quality_micros": 284000,
+    "perplexity_micros": 12400000,
+    "novelty_score_micros": 210000,
+    "gate_passed": true
+  &rbrace;,
+  &lbrace;
+    "submission_id": "2ad4e8b1-6c07-4a99-8e13-5b70f2c4a901",
+    "credit_quality_micros": null,
+    "perplexity_micros": 9100000,
+    "novelty_score_micros": 50000,
+    "gate_passed": true
+  &rbrace;
+]</code></pre>
+    <p class="caption">
+      Illustrative values — field shapes are exact, numbers are examples sized to
+      the range real traces occupy.
+    </p>
+  </section>
+
+  <h2>What a leaderboard row looks like</h2>
+  <p>
+    <code>credit_quality</code> is the headline: a single graded number in [0,&nbsp;1]
+    combining how much genuinely new work a trace represents against how substantial
+    it is. It is the field to rank on.
+  </p>
+  <p class="note">
+    <strong>Size your display for a compressed range.</strong> The scale runs to 1.0,
+    but scores are heavily bottom-clustered in practice: the large majority of scored
+    traces land below 0.3, and a genuinely strong entry is nearer 0.3 than 1.0. A
+    leaderboard that renders <code>q</code> as a linear 0-to-1 bar will squash every
+    real entry into the left edge and look broken. Rank on the raw value, but scale
+    the visual to the spread you actually receive — or rank on position rather than
+    magnitude.
+  </p>
+  <div class="board">
+    <div class="board-row board-head">
+      <div>Entry</div>
+      <div>Credit q</div>
+      <div class="board-meter-col">Relative</div>
+      <div>Gate</div>
+    </div>
+    {board.map((row) => (
+      <div class="board-row">
+        <div class="board-id">{row.entry}</div>
+        <div class={row.pct > 0 ? "board-q" : "board-q board-q-null"}>{row.q}</div>
+        <div class="board-meter-col">
+          <div class="meter"><span style={`width: ${row.pct}%`}></span></div>
+        </div>
+        <div><span class={`pill pill-${row.gate}`}>{row.gate}</span></div>
+      </div>
+    ))}
+  </div>
+  <p class="caption">Illustrative ranking, not live data.</p>
+
+  <h2>Score bundle reference</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>What it means</th></tr>
+      </thead>
+      <tbody>
+        {bundle.map((row) => (
+          <tr>
+            <td><code>{row.field}</code></td>
+            <td class="nowrap"><code>{row.type}</code></td>
+            <td>{row.meaning}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    All scores are integers in millionths — no floats on the wire, so equal scores
+    compare equal and a leaderboard sorts deterministically. When a trace has been
+    scored more than once, you always get the most recent decision.
+  </p>
+
+  <h2>Cases to handle</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Situation</th><th>What you get</th><th>What it means for judging</th></tr>
+      </thead>
+      <tbody>
+        {cases.map((row) => (
+          <tr>
+            <td>{row.situation}</td>
+            <td class="nowrap"><code>{row.result}</code></td>
+            <td>{row.meaning}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Your credential</h2>
+  <p>
+    devfolio gets a narrow, purpose-built token — a competition read credential that
+    can call this one route and nothing else. It is not an admin token: it cannot
+    read traces, export anything, or write. If it leaks, the blast radius is
+    "someone can read scores for ids they already know".
+  </p>
+  <ul>
+    <li>The credential is a signed token carrying <code>role=competition_read_worker</code>.</li>
+    <li>Send it as <code>authorization: Bearer &lt;token&gt;</code>.</li>
+    <li>We issue devfolio's for the hackathon window and rotate it after.</li>
+  </ul>
+
+  <h2>What never comes back</h2>
+  <p>
+    The read-back returns scores and nothing else. No trace content, no prompts or
+    code, no contributor identity, no tenant. Our own audit log of your reads records
+    only the surface name and how many rows were returned — not which ids you asked
+    about.
+  </p>
+  <p class="note">
+    One property worth knowing: <code>submission_id</code> is derived from session
+    content, so if two participants somehow upload the byte-identical session, they
+    share an id and one row. The score is a function of the content, so the value is
+    correct either way — but don't read a row as proof of who produced it. Your
+    entry-to-ids mapping is the authority on attribution, not ours.
+  </p>
+
+  <p class="caption footer-note">
+    Contributor CLI: <code>trace-commons-contributor</code> ·
+    Route: <code>POST /v1/admin/scores-by-submission</code> ·
+    All ids, scores, and rankings on this page are illustrative examples.
+  </p>
+</Base>
+
+<style>
+  .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .lede-head { margin-top: 0.2rem; }
+
+  .lede {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 62ch;
+  }
+
+  .joinkey {
+    background: var(--row);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin: 1.75rem 0 0;
+  }
+
+  .joinkey p { margin: 0; }
+  .joinkey .eyebrow { margin-bottom: 0.35rem; }
+
+  .stage {
+    border-top: 1px solid var(--border);
+    margin-top: 2.5rem;
+    padding-top: 1.75rem;
+  }
+
+  .stage h2 { margin-top: 0.35rem; }
+
+  .actor {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  p { max-width: 68ch; }
+
+  pre {
+    background: #10171a;
+    color: #ccd8d6;
+    padding: 1rem 1.15rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--row);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.05em 0.3em;
+  }
+
+  .caption {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: -0.5rem;
+  }
+
+  .footer-note { margin-top: 2.5rem; }
+
+  .note {
+    font-size: 0.92rem;
+    color: var(--muted);
+    border-left: 2px solid var(--border);
+    padding-left: 1rem;
+  }
+
+  .tablewrap { overflow-x: auto; }
+  .tablewrap table { min-width: 34rem; }
+  .nowrap { white-space: nowrap; }
+
+  .board {
+    border-top: 1px solid var(--border);
+    margin: 1.25rem 0 0;
+  }
+
+  .board-row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) 6rem minmax(5rem, 9rem) 4.5rem;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .board-head {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .board-id { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .board-q { font-size: 0.95rem; }
+  .board-q-null { font-size: 0.82rem; color: var(--muted); }
+
+  .meter {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .meter span { display: block; height: 100%; background: var(--accent); }
+
+  .pill {
+    display: inline-block;
+    font-size: 0.66rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.14rem 0.42rem;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+  }
+
+  .pill-pass { color: var(--accent); }
+  .pill-fail { color: #a4432b; }
+
+  @media (prefers-color-scheme: dark) {
+    .pill-fail { color: #d4795c; }
+  }
+
+  @media (max-width: 34rem) {
+    .board-row { grid-template-columns: minmax(0, 1fr) 5rem 4rem; }
+    .board-meter-col { display: none; }
+  }
+</style>
