@@ -1,6 +1,6 @@
 # trace-commons-community
 
-Public, opt-in community surface for [Trace Commons](https://github.com/TraceCommons/trace-commons-server) — a user-owned register of AI agent work. Contributors run Ironclaw locally; scrubbed envelopes are uploaded to a hosted server that gates them on novelty and substance before they are signed and filed into the shared register. This site surfaces the public, opt-in slice of that activity: a leaderboard of contributors who have explicitly chosen to be visible, per-contributor profiles, and aggregate corpus analytics.
+Public, opt-in community surface for [Trace Commons](https://github.com/TraceCommons/trace-commons-server) — a register of AI agent work held under terms its contributors set, built so that seeing how agents actually behave isn't a privilege of the labs that build them. Contributors run Ironclaw locally; scrubbed envelopes carry a contributor-set consent scope to a hosted server that gates them on novelty and substance before they are signed and filed into the shared register. This site is the open surface over that register: corpus analytics readable by anyone without an invite, a leaderboard of contributors who chose to be visible, and per-contributor profiles.
 
 Static site (Astro), no server runtime. Consumes the
 `/v1/community/...` snapshot endpoints from
