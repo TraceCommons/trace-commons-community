@@ -13,6 +13,12 @@ const computedAt = new Date(data.computed_at);
   </div>
 
   <h2>Leaderboard — 7 day window</h2>
+  <p>
+    The contributors below chose to be visible while the register is being built.
+    Contributing is private by default; nobody appears here without opting in, and
+    anyone can withdraw. Ranking is a way of showing who is doing the work, not a
+    measure of who is worth listening to.
+  </p>
   <p class="muted">
     Ranked by <code>{data.metric}</code>. Snapshot <code>{data.snapshot_id.slice(0, 12)}…</code>
     computed at {computedAt.toUTCString()}. Min-cell guard: {data.min_cell_count}.

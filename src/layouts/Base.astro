@@ -3,7 +3,7 @@ interface Props {
   title: string;
   description?: string;
 }
-const { title, description = "Trace Commons community surface: leaderboard, contributor profiles, and aggregate analytics for a user-owned register of AI agent work." } = Astro.props;
+const { title, description = "Open the record of what AI agents actually do. Trace Commons is a register of agent work held under contributor-set terms — public leaderboard, contributor profiles, and corpus analytics anyone can read." } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -115,9 +115,10 @@ const { title, description = "Trace Commons community surface: leaderboard, cont
     </main>
     <footer>
       <p>
-        Trace Commons is a user-owned register of AI agent work: captured and scrubbed locally,
-        gated for novelty and substance on a shared server, signed and filed on-chain.
-        This site shows only the contributors who have explicitly opted in to public attribution.
+        Trace Commons is a register of AI agent work held under terms its contributors set,
+        built so that seeing how agents actually behave isn't a privilege of the labs that
+        build them. This site shows only the contributors who have explicitly opted in to
+        public attribution.
         Source: <a href="https://github.com/TraceCommons/trace-commons-community">trace-commons-community</a> · <a href="https://github.com/TraceCommons/trace-commons-server">trace-commons-server</a>
       </p>
     </footer>

@@ -12,26 +12,91 @@ const topThree = data.leaderboard.slice(0, 3);
     upstream API ships. Numbers do not reflect real contributor activity yet.
   </div>
 
-  <h2>What this is</h2>
+  <h2>A handful of labs can see how AI agents actually behave</h2>
   <p>
-    Trace Commons is a user-owned register of AI agent work. When an agent does work
-    for you, it leaves a record of what actually happened: the tools it called, the
-    places it failed, the result it gave back. Contributors run
-    <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally to capture
-    and scrub those records. Only the scrubbed envelope reaches a shared server,
-    where two gates decide whether it is filed: one asks whether the record is
-    genuinely different from everything already in the register; the other asks
-    whether it is substantive work, not template-shaped filler. Both must pass.
-    Frontier labs, auditors, and regulators can later query the register under
-    selective disclosure.
+    Every day, AI agents do real work. They call tools, take wrong turns, fail in
+    specific ways, and sometimes get things right. All of that leaves a record of
+    what actually happened — and almost all of it lands in the logs of the companies
+    that built the agents.
+  </p>
+  <p>
+    That gap is not a detail. Whoever can watch how agents fail is the only party
+    equipped to make them work better, audit them honestly, or build anything that
+    competes. Access to this evidence is the bottleneck on everything downstream of
+    it: safety research, independent evaluation, open models, informed regulation.
+    Trace Commons exists to open it.
+  </p>
+
+  <h2>What Trace Commons is</h2>
+  <p>
+    A register of AI agent work, held under terms its contributors set. What the
+    register accepts is a scrubbed envelope carrying a <strong>consent scope</strong>
+    — the scope decides what any future query is permitted to do with that record, it
+    travels with the record, and it can be withdrawn. How the envelope gets produced
+    is open by design, because a register that only accepts work from people willing
+    to run one particular binary has capped who can put evidence in.
+  </p>
+  <p>
+    Two paths exist today. Individuals run
+    <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally, which
+    captures and scrubs the records their own agents produce; nothing but the scrubbed
+    envelope ever leaves the machine. Platforms that already sit where the work happens
+    — where people build, compete, or ship — can integrate the upload directly and read
+    scores back for their own users, so their participants contribute without adopting
+    a new tool at all. More paths are the point, not a complication.
+  </p>
+  <p>
+    Two gates decide what gets filed: one asks whether the record is genuinely
+    different from everything already in the register, the other whether it is
+    substantive work rather than template-shaped filler. Both must pass. The gates
+    are not quality control on suppliers — they are what keeps the register worth
+    opening. A corpus of near-duplicates teaches no one anything.
   </p>
   <p>
     A <strong>Trace Credit</strong> is the signed, on-chain record that one of a
-    contributor's submissions was accepted. Credits are non-transferable; they are
-    how recognition flows back when buyers later pay to query the evidence. This
-    site surfaces the public, opt-in slice of contributor activity: a leaderboard
-    of people who have explicitly chosen to be visible, and aggregate corpus
-    analytics protected by min-cell and noise guards.
+    contributor's submissions was accepted. Credits are non-transferable. They are
+    the contributor's standing claim on what the register earns.
+  </p>
+
+  <h2>Where we actually are</h2>
+  <p>
+    A register has to exist before it can be opened. Right now a small invited cohort
+    is building it, which means the most important thing on this page — open access
+    to the evidence — is not yet something you can exercise. We would rather state
+    the commitments below now, before they are convenient, than describe them once
+    they cost us nothing.
+  </p>
+
+  <h2>What we commit to</h2>
+  <ol>
+    <li>
+      <strong>Contributors set the terms of use, and those terms bind.</strong> A
+      record's <a href="/about/data-policy">consent scope</a> decides what any query
+      may do with it — debugging, evaluation, ranker training, training-data
+      inclusion. Nothing exceeds the scope it was given. Scopes are revocable, and
+      withdrawal takes effect at the next snapshot. This one is enforced in the
+      pipeline today, not promised.
+    </li>
+    <li>
+      <strong>Corpus-level analytics stay open to everyone.</strong> What the register
+      contains and how it is growing stays readable without an invite, an account, or
+      a payment. That is the point of the thing; putting it behind a gate would
+      reproduce the asymmetry we are trying to close.
+    </li>
+    <li>
+      <strong>When buyers pay to query the register, that flows to contributors.</strong>
+      Credits are the mechanism. Trace Commons is not a platform collecting rent on
+      other people's work.
+    </li>
+  </ol>
+
+  <h2>What is open right now</h2>
+  <p>
+    Two surfaces, already public, no invite required: <a href="/analytics">corpus
+    analytics</a> showing what the register holds in aggregate, and the
+    <a href="/leaderboard">leaderboard</a> of contributors who chose to be visible.
+    Both are built from snapshots that apply the deployment's release guards, so
+    aggregates never resolve to individual traces.
   </p>
 
   <h2>Top contributors (last 7d)</h2>
@@ -63,9 +128,11 @@ const topThree = data.leaderboard.slice(0, 3);
 
   <h2>How to join</h2>
   <p>
-    The pilot is invite-only. If you have an invite code and a workload token from
+    The pilot is invite-only while the register is being built. If you have an invite code and a workload token from
     the pilot operator, the contributor-side setup is documented in
     <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/operator/pilot-contributor-onboarding.md">pilot-contributor-onboarding.md</a>.
-    Once a few of your submissions have cleared both gates you can opt in to the public leaderboard.
+    Contributing is private by default. Once a few of your submissions have cleared
+    both gates, you can choose to be publicly visible — or stay unlisted and
+    contribute anyway.
   </p>
 </Base>
