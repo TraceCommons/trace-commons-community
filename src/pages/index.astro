@@ -29,12 +29,21 @@ const topThree = data.leaderboard.slice(0, 3);
 
   <h2>What Trace Commons is</h2>
   <p>
-    A register of AI agent work, held under terms its contributors set. Contributors
-    run <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally to
-    capture and scrub the records their own agents produce. Only the scrubbed
-    envelope leaves the machine, carrying a <strong>consent scope</strong> that
-    decides what any future query is permitted to do with it. The scope travels with
-    the record and can be withdrawn.
+    A register of AI agent work, held under terms its contributors set. What the
+    register accepts is a scrubbed envelope carrying a <strong>consent scope</strong>
+    — the scope decides what any future query is permitted to do with that record, it
+    travels with the record, and it can be withdrawn. How the envelope gets produced
+    is open by design, because a register that only accepts work from people willing
+    to run one particular binary has capped who can put evidence in.
+  </p>
+  <p>
+    Two paths exist today. Individuals run
+    <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally, which
+    captures and scrubs the records their own agents produce; nothing but the scrubbed
+    envelope ever leaves the machine. Platforms that already sit where the work happens
+    — where people build, compete, or ship — can integrate the upload directly and read
+    scores back for their own users, so their participants contribute without adopting
+    a new tool at all. More paths are the point, not a complication.
   </p>
   <p>
     Two gates decide what gets filed: one asks whether the record is genuinely

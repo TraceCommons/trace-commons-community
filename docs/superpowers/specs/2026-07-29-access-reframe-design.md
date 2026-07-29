@@ -20,6 +20,25 @@ Commons is a register of that evidence held under terms its contributors set.
 
 The inversion: the register is *held by* contributors, not *fed by* them.
 
+## Capture paths
+
+Ironclaw is one capture path, not the mechanism. What the register accepts is a
+scrubbed envelope carrying a consent scope; how that envelope is produced is
+deliberately open. Two paths exist today:
+
+- **Local** — individuals run Ironclaw, which captures and scrubs records their
+  own agents produce. Nothing but the scrubbed envelope leaves the machine.
+- **Platform** — platforms that already sit where the work happens integrate the
+  upload directly and read scores back for their own users, so participants
+  contribute without adopting a new tool.
+
+Widening ingress is part of the access argument, not separate from it: a register
+that only accepts work from people willing to run one binary has capped who can
+put evidence in.
+
+Public copy describes both paths but **names no partners** and does not link
+`/devfolio`, which is deliberately `noindex` and absent from nav.
+
 ## Published commitments
 
 Three, published before they are convenient:
