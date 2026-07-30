@@ -15,15 +15,22 @@ import Base from "../../layouts/Base.astro";
       published.
     </li>
     <li>
-      <strong>Aggregate-only analytics.</strong> Corpus dashboards apply min-cell
-      thresholds and Laplace noise before publication. No per-trace details, no
-      cross-tenant joins beyond the configured budget.
+      <strong>Aggregate-only analytics.</strong> Corpus dashboards apply a
+      minimum-cell threshold before publication, and publication is refused
+      unless that threshold and a tenant-cohort minimum are both met. No
+      per-trace details, no raw trace bodies, no per-handle trace timelines.
+      Aggregates are not currently perturbed by a calibrated
+      differential-privacy mechanism; see the data policy for what the
+      noise setting does and does not guarantee.
     </li>
     <li>
-      <strong>Withdrawal is immediate.</strong> Withdrawing public attribution
-      removes a contributor's handle from the leaderboard and their profile page
-      at the next snapshot (≤15 minutes). Database rows persist as soft-deletes
-      so the audit chain stays intact, but no public surface displays them.
+      <strong>Withdrawal.</strong> Withdrawing public attribution takes effect
+      immediately in the register: the contributor's profile is marked withdrawn
+      and excluded from every subsequent snapshot. A handle already present in
+      the most recently published snapshot is removed when that snapshot is next
+      recomputed, which is an operator-triggered action rather than a fixed
+      interval. Database rows persist as soft-deletes so the audit chain stays
+      intact, but no public surface displays them.
     </li>
   </ol>
 
@@ -46,8 +53,10 @@ import Base from "../../layouts/Base.astro";
 
   <h2>Withdrawing</h2>
   <p>
-    The <a href="/profile">profile page</a> (shipping in slice 3) exposes a
-    "withdraw public attribution" action that takes effect at the next snapshot.
-    Until that ships, ask the pilot operator to revoke your profile manually.
+    The <a href="/profile">profile page</a> exposes a "withdraw public
+    attribution" action. It takes effect in the register immediately and
+    excludes the handle from every later snapshot. To have a handle cleared
+    from the currently published snapshot without waiting for the next
+    recompute, ask the pilot operator.
   </p>
 </Base>
