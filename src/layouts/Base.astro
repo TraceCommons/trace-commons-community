@@ -13,8 +13,12 @@ const { title, description = "Trace Commons community surface: leaderboard, cont
     <meta name="description" content={description} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <slot name="head" />
-    <title>{title} — Trace Commons</title>
-    <style>
+    <title>{title} · Trace Commons</title>
+    <!-- is:global is required: page content arrives through <slot />, so it carries
+         the page's scope id, not this layout's. Without it every rule below that
+         targets page markup (table, h2, .stat, .banner, .muted) silently does
+         nothing and tables fall back to browser defaults. -->
+    <style is:global>
       :root {
         color-scheme: light dark;
         --bg: #fafafa;
