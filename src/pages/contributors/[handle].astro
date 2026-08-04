@@ -21,11 +21,13 @@ if (!profile) {
 const publicSince = new Date(profile.public_since);
 ---
 <Base title={`@${profile.display_handle}`} description={`Trace Commons contributor profile for @${profile.display_handle}.`}>
-  <p><a href="/leaderboard">← Back to leaderboard</a></p>
+  <p><a href="/leaderboard">Back to leaderboard</a></p>
 
-  <h2>@{profile.display_handle}</h2>
-  {profile.bio && <p>{profile.bio}</p>}
-  <p class="muted">Public since {publicSince.toISOString().slice(0, 10)}.</p>
+  <div class="stack">
+    <h2>@{profile.display_handle}</h2>
+    {profile.bio && <p>{profile.bio}</p>}
+    <p class="muted">Public since {publicSince.toISOString().slice(0, 10)}.</p>
+  </div>
 
   <div class="stat-grid">
     <div class="stat">

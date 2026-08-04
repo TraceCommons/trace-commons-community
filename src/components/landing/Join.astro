@@ -1,0 +1,53 @@
+---
+/* Instruction, not spectacle. Same restraint as the contributors block: plain
+   prose, no reveal. */
+---
+
+<section class="section" id="join">
+  <div class="quiet-head">
+    <h2>How to join</h2>
+    <p>
+      The pilot is invite-only. If you have an invite code and a workload token
+      from the pilot operator, the contributor-side setup is documented in <a
+        href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/operator/pilot-contributor-onboarding.md"
+        >pilot-contributor-onboarding.md</a
+      >. Once you have submitted a few traces you can opt in to the public
+      leaderboard from your <a href="/profile">profile page</a>, or stay unlisted
+      and contribute anyway.
+    </p>
+  </div>
+</section>
+
+<style>
+  .quiet-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .quiet-head h2 {
+    font-size: clamp(24px, 3vw, 38px);
+    line-height: 0.98;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+
+  .quiet-head p {
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    max-width: 62ch;
+  }
+
+  .quiet-head a {
+    color: var(--ink-color);
+  }
+
+  .quiet-head a:hover {
+    background: var(--accent);
+    color: var(--on-accent);
+    text-decoration: none;
+  }
+</style>

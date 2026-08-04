@@ -102,8 +102,18 @@ Landing sections become `src/components/landing/*.astro`, composed by
 Copied into `public/` unchanged: `vendor/three.min.js` (r128, MIT),
 `assets/near-logo.svg`.
 
-Ported byte-identical into `public/scripts/`, with only asset paths adjusted:
-`main.js` (globe), `coin.js`, `carousel.js`, `scroll.js`, `motion.js`.
+Ported byte-identical into `public/scripts/`: `coin.js`, `carousel.js`,
+`scroll.js`, `motion.js`.
+
+`main.js` is a one-line exception. Line 343 hardcodes `0xffe81f` as the globe's
+line colour while the page is inverted — the crawl yellow, applied by hand
+because WebGL cannot read the CSS custom properties. Since the inversion now
+takes ink to white, that constant changes with it. Nothing else in the file
+moves.
+
+A `.prettierignore` covers the ported files and `public/vendor/`. Keeping them
+byte-identical is what makes a future re-sync with site-v2 a diff rather than a
+merge, and a formatter run would silently destroy that.
 
 Dropped entirely: `score.js` and `assets/manifesto.mp3`. The audio existed to
 score a Star Wars crawl; `#worth` is no longer that. This also retires the

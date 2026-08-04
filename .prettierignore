@@ -1,0 +1,14 @@
+# Verbatim ports from trace-commons-site-v2. Keeping these byte-identical to
+# upstream is the point: it is what makes re-syncing a diff rather than a merge.
+# transcript.js is ours and is exempt.
+public/scripts/main.js
+public/scripts/coin.js
+public/scripts/carousel.js
+public/scripts/scroll.js
+public/scripts/motion.js
+
+# Vendored three.js r128, MIT. Never reformat a minified bundle.
+public/vendor/
+
+dist/
+.astro/
