@@ -65,6 +65,12 @@ function topContributorRow(entry: LeaderboardEntry): string {
   `;
 }
 
+function show(selector: string): void {
+  document
+    .querySelectorAll<HTMLElement>(selector)
+    .forEach((element) => (element.hidden = false));
+}
+
 function setText(selector: string, text: string): void {
   const element = document.querySelector<HTMLElement>(selector);
   if (element) element.textContent = text;
@@ -78,6 +84,12 @@ function renderLeaderboard(snapshot: Snapshot): void {
     snapshot.leaderboard.length === 0
       ? `<tr><td colspan="6" class="muted">No public contributors yet.</td></tr>`
       : snapshot.leaderboard.map(leaderboardRow).join("");
+
+  /* A build made against the fallback snapshot ships these hidden, because it
+     had no figures it was willing to assert. Real data arriving is what
+     unhides them. */
+  show("[data-leaderboard-table]");
+  show("[data-snapshot-summary]");
 
   const computedAt = new Date(snapshot.computed_at);
   setText(
@@ -111,6 +123,7 @@ function renderHome(snapshot: Snapshot): void {
 
 function renderAnalytics(snapshot: Snapshot): void {
   const a = snapshot.analytics;
+  show("[data-analytics-table]");
   setText(
     "[data-stat-total-submissions]",
     a.total_submissions.toLocaleString(),

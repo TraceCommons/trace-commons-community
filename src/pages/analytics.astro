@@ -2,52 +2,54 @@
 import Base from "../layouts/Base.astro";
 import snapshot from "../_data/snapshots/live-7d.json";
 import type { Snapshot } from "../types";
+import { isPlaceholder, NOT_LIVE_HEADING, NOT_LIVE_BODY } from "../lib/snapshot";
 
 const data = snapshot as Snapshot;
 const a = data.analytics;
-const maxHistogram = Math.max(...a.novelty_histogram.map((b) => b.count), 1);
-const gateEntries = Object.entries(a.gate_outcomes).sort((x, y) => y[1] - x[1]);
+const placeholder = isPlaceholder(data);
+
+/* Em dash rather than 0: a zero is a measurement, and there has not been one. */
+const stat = (value: number) => (placeholder ? "—" : value.toLocaleString());
+const rate = (value: number) =>
+  placeholder ? "—" : `${(value * 100).toFixed(0)}%`;
+
+const histogram = placeholder ? [] : a.novelty_histogram;
+const maxHistogram = Math.max(...histogram.map((b) => b.count), 1);
+const gateEntries = placeholder
+  ? []
+  : Object.entries(a.gate_outcomes).sort((x, y) => y[1] - x[1]);
 const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
-const isDummy = data.snapshot_id.startsWith("dummy-");
 ---
 
 <Base title="Analytics">
-  {
-    isDummy && (
-      <p class="banner" data-dummy-snapshot-banner>
-        <strong>Preview build.</strong> These aggregates come from the fallback
-        snapshot. Live figures carry the min-cell and noise guards applied at
-        compute time.
-      </p>
-    )
-  }
+  <p class="banner" data-dummy-snapshot-banner hidden={!placeholder}>
+    <strong>{NOT_LIVE_HEADING}.</strong> {NOT_LIVE_BODY}
+  </p>
 
-  <h2>Corpus analytics, <span data-analytics-window>{a.window}</span></h2>
+  <h2>
+    Corpus analytics, <span data-analytics-window>
+      {placeholder ? "no window yet" : a.window}
+    </span>
+  </h2>
 
   <div class="stat-grid">
     <div class="stat">
       <div class="label">Total submissions</div>
       <div class="value" data-stat-total-submissions>
-        {a.total_submissions.toLocaleString()}
+        {stat(a.total_submissions)}
       </div>
     </div>
     <div class="stat">
       <div class="label">Accepted</div>
-      <div class="value" data-stat-total-accepted>
-        {a.total_accepted.toLocaleString()}
-      </div>
+      <div class="value" data-stat-total-accepted>{stat(a.total_accepted)}</div>
     </div>
     <div class="stat">
       <div class="label">Rejected</div>
-      <div class="value" data-stat-total-rejected>
-        {a.total_rejected.toLocaleString()}
-      </div>
+      <div class="value" data-stat-total-rejected>{stat(a.total_rejected)}</div>
     </div>
     <div class="stat">
       <div class="label">Accept rate</div>
-      <div class="value" data-stat-accept-rate>
-        {(a.accept_rate * 100).toFixed(0)}%
-      </div>
+      <div class="value" data-stat-accept-rate>{rate(a.accept_rate)}</div>
     </div>
   </div>
 
@@ -56,7 +58,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
     <p class="muted">Bucketed in micros (0 to 1,000,000). Higher is more novel.</p>
   </div>
 
-  <div class="table-scroll">
+  <div class="table-scroll" data-analytics-table hidden={placeholder}>
     <table>
       <thead>
         <tr>
@@ -67,7 +69,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
       </thead>
       <tbody data-novelty-body>
         {
-          a.novelty_histogram.map((b) => (
+          histogram.map((b) => (
             <tr>
               <td class="num muted">{b.bucket_micros.toLocaleString()}</td>
               <td class="num">{b.count}</td>
@@ -86,7 +88,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
 
   <h2>Gate decision outcomes</h2>
 
-  <div class="table-scroll">
+  <div class="table-scroll" data-analytics-table hidden={placeholder}>
     <table>
       <thead>
         <tr>

@@ -2,11 +2,17 @@
 import Base from "../../layouts/Base.astro";
 import snapshot from "../../_data/snapshots/live-7d.json";
 import type { Snapshot } from "../../types";
+import { isPlaceholder } from "../../lib/snapshot";
 
 const data = snapshot as Snapshot;
 
 export async function getStaticPaths() {
   const snap = (await import("../../_data/snapshots/live-7d.json")).default as Snapshot;
+  /* No pages at all from the fallback snapshot. These are profile pages for
+     named people; generating them from invented contributors would put five
+     fabricated identities on the public site, and a banner on the page does
+     not unpublish the URL, the handle, or the numbers under it. */
+  if (isPlaceholder(snap)) return [];
   return Object.keys(snap.contributors).map((handle) => ({ params: { handle } }));
 }
 
