@@ -1,0 +1,120 @@
+---
+/* The numbering is kept because these four are genuinely a sequence: a record
+   is cleaned before it is checked, and checked before anything is earned. */
+const steps = [
+  {
+    num: "01",
+    name: "Record",
+    copy: "Your agent runs in Ironclaw, on your own computer. Nothing is sent anywhere until you switch sharing on.",
+  },
+  {
+    num: "02",
+    name: "Clean",
+    copy: "Names, messages and anything else you typed are taken out or swapped for stand-ins, before the record leaves your computer.",
+  },
+  {
+    num: "03",
+    name: "Check",
+    copy: "A sealed system works out whether your record teaches an AI something it did not already know, and returns a number. Nobody sees what went in.",
+  },
+  {
+    num: "04",
+    name: "Reward",
+    copy: "If your record helped, you earn credits for it. They stay with you and cannot be handed on.",
+  },
+];
+---
+
+<section class="section" id="how">
+  <div class="section-head">
+    <h2 class="section-title">How it works</h2>
+    <p class="body-text">
+      Trace Commons keeps the record on your own computer instead of sending it
+      to the company behind the AI. Anything you typed is taken out before it
+      leaves, and the part that works out what it is worth never sees your words.
+    </p>
+  </div>
+
+  <div class="pipeline">
+    {
+      steps.map((step) => (
+        <div class="step">
+          <div class="step-num">{step.num}</div>
+          <div class="step-name">{step.name}</div>
+          <p>{step.copy}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: var(--hairline);
+  }
+
+  .step {
+    padding: var(--space-4);
+    border-right: var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .step:last-child {
+    border-right: none;
+  }
+
+  .step-num {
+    font-family: var(--mono-font);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .step-name {
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+  }
+
+  .step p {
+    font-size: 16px;
+    line-height: 1.25;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  @media (max-width: 1024px) {
+    .pipeline {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .step:nth-child(2) {
+      border-right: none;
+    }
+
+    .step:nth-child(-n + 2) {
+      border-bottom: var(--rule);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .pipeline {
+      grid-template-columns: 1fr;
+    }
+
+    .step {
+      border-right: none;
+      border-bottom: var(--rule);
+    }
+
+    .step:last-child {
+      border-bottom: none;
+    }
+  }
+</style>
