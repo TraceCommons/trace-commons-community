@@ -21,6 +21,12 @@ const {
    this anywhere else needs the CSP updated with it. */
 const communityApiBase = import.meta.env.TC_COMMUNITY_API_BASE ?? "/api";
 
+/* Astro.site is the deployed origin, so these resolve to absolute URLs.
+   Unfurlers reject relative ones. */
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL("/assets/og-card.png", Astro.site).href;
+const socialTitle = landing ? "Trace Commons" : `${title} — Trace Commons`;
+
 const path = Astro.url.pathname;
 const isCurrent = (href: string) =>
   href === "/" ? path === "/" : path.startsWith(href);
@@ -46,6 +52,26 @@ const sectionLinks = [
     <meta name="description" content={description} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="tc-community-api-base" content={communityApiBase} />
+
+    {/* Without these, link unfurlers have nothing authoritative to read and
+        fall back to screenshotting the page — which renders the globe and the
+        coin as empty boxes, because both are drawn by WebGL that no preview
+        bot runs. The card below is a static image for exactly that reason. */}
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Trace Commons" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={socialTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Trace Commons — keep the data your agents produce" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={socialTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
     <slot name="head" />
     <title>{title} — Trace Commons</title>
   </head>

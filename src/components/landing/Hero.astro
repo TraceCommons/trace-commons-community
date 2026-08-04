@@ -26,7 +26,28 @@
     </div>
   </div>
 
-  <div class="hero-visual" id="canvas-container"></div>
+  {/* main.js appends a WebGL canvas here. Anything that does not run WebGL —
+      a link-preview bot, a text browser, a device where context creation
+      fails — got an empty bordered box before this fallback existed. It is
+      hidden by CSS the moment a canvas lands, so no script change is needed
+      and the port stays byte-identical. */}
+  <div class="hero-visual" id="canvas-container">
+    <svg
+      class="globe-fallback"
+      viewBox="0 0 200 200"
+      role="img"
+      aria-label="A wireframe globe of linked records"
+    >
+      <circle cx="100" cy="100" r="72" fill="none" stroke="currentColor" stroke-width="1" />
+      <ellipse cx="100" cy="100" rx="72" ry="26" fill="none" stroke="currentColor" stroke-width="1" />
+      <ellipse cx="100" cy="100" rx="26" ry="72" fill="none" stroke="currentColor" stroke-width="1" />
+      <ellipse cx="100" cy="100" rx="52" ry="72" fill="none" stroke="currentColor" stroke-width="1" />
+      <line x1="100" y1="28" x2="100" y2="172" stroke="currentColor" stroke-width="1" />
+      <circle cx="100" cy="28" r="3" fill="var(--accent)" />
+      <circle cx="152" cy="120" r="3" fill="var(--accent)" />
+      <circle cx="58" cy="72" r="3" fill="var(--accent)" />
+    </svg>
+  </div>
 </section>
 
 <style>
@@ -74,6 +95,20 @@
   }
 
   /* horizontal drags spin the globe, vertical swipes still scroll the page */
+  .globe-fallback {
+    width: min(70%, 340px);
+    height: auto;
+    color: var(--ink-color);
+    opacity: 0.55;
+  }
+
+  /* The canvas is appended after this element, so the moment WebGL succeeds
+     the fallback goes. Both are centred by the same flex container, so there
+     is no layout shift either way. */
+  .hero-visual:has(canvas) .globe-fallback {
+    display: none;
+  }
+
   .hero-visual :global(canvas) {
     touch-action: pan-y;
     cursor: grab;
