@@ -1,0 +1,10 @@
+/*
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+  Content-Security-Policy: default-src 'self'; connect-src 'self' https://ingest.tracecommons.ai https://issuer.tracecommons.ai; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Cross-Origin-Opener-Policy: same-origin
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/profile*
+  Cache-Control: no-store

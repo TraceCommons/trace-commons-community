@@ -14,7 +14,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
 <Base title="Analytics">
   {
     isDummy && (
-      <p class="banner">
+      <p class="banner" data-dummy-snapshot-banner>
         <strong>Preview build.</strong> These aggregates come from the fallback
         snapshot. Live figures carry the min-cell and noise guards applied at
         compute time.
@@ -22,24 +22,32 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
     )
   }
 
-  <h2>Corpus analytics, {a.window}</h2>
+  <h2>Corpus analytics, <span data-analytics-window>{a.window}</span></h2>
 
   <div class="stat-grid">
     <div class="stat">
       <div class="label">Total submissions</div>
-      <div class="value">{a.total_submissions.toLocaleString()}</div>
+      <div class="value" data-stat-total-submissions>
+        {a.total_submissions.toLocaleString()}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Accepted</div>
-      <div class="value">{a.total_accepted.toLocaleString()}</div>
+      <div class="value" data-stat-total-accepted>
+        {a.total_accepted.toLocaleString()}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Rejected</div>
-      <div class="value">{a.total_rejected.toLocaleString()}</div>
+      <div class="value" data-stat-total-rejected>
+        {a.total_rejected.toLocaleString()}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Accept rate</div>
-      <div class="value">{(a.accept_rate * 100).toFixed(0)}%</div>
+      <div class="value" data-stat-accept-rate>
+        {(a.accept_rate * 100).toFixed(0)}%
+      </div>
     </div>
   </div>
 
@@ -57,7 +65,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
           <th>Share of window</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody data-novelty-body>
         {
           a.novelty_histogram.map((b) => (
             <tr>
@@ -87,7 +95,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
           <th class="num">Share</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody data-gate-body>
         {
           gateEntries.map(([label, count]) => (
             <tr>
@@ -102,11 +110,20 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
       </tbody>
     </table>
   </div>
+
+  <p class="muted" data-live-snapshot-status></p>
+
+  <script>
+    import "../scripts/live-snapshot";
+  </script>
 </Base>
 
 <style>
-  /* Square, like everything else in the frame. */
-  .bar {
+  /* Global, not scoped: live-snapshot.ts rebuilds these rows with innerHTML,
+     and injected nodes never carry the data-astro-cid attribute a scoped
+     selector requires. Scoped, the bars would vanish on first refresh. */
+  :global(.bar) {
+    /* Square, like everything else in the frame. */
     display: inline-block;
     height: 10px;
     min-width: 2px;

@@ -15,6 +15,12 @@ const {
   landing = false,
 } = Astro.props;
 
+/* Same-origin by default, so the browser talks to the Pages worker in
+   public/_worker.js rather than to ingest directly. connect-src in
+   public/_headers only permits 'self' plus the two named hosts, so pointing
+   this anywhere else needs the CSP updated with it. */
+const communityApiBase = import.meta.env.TC_COMMUNITY_API_BASE ?? "/api";
+
 const path = Astro.url.pathname;
 const isCurrent = (href: string) =>
   href === "/" ? path === "/" : path.startsWith(href);
@@ -39,6 +45,7 @@ const sectionLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="tc-community-api-base" content={communityApiBase} />
     <slot name="head" />
     <title>{title} — Trace Commons</title>
   </head>

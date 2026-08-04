@@ -11,7 +11,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
 <Base title="Leaderboard">
   {
     isDummy && (
-      <p class="banner">
+      <p class="banner" data-dummy-snapshot-banner>
         <strong>Preview build.</strong> These figures come from the fallback
         snapshot, not from live contributor activity.
       </p>
@@ -20,7 +20,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
 
   <div class="stack">
     <h2>Leaderboard, 7 day window</h2>
-    <p class="muted">
+    <p class="muted" data-snapshot-summary>
       Ranked by <code>{data.metric}</code>. Snapshot <code
         >{data.snapshot_id.slice(0, 12)}…</code
       > computed at {computedAt.toUTCString()}. Min-cell guard: {
@@ -41,7 +41,16 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
           <th class="num">Public since</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody data-leaderboard-body>
+        {
+          data.leaderboard.length === 0 && (
+            <tr>
+              <td colspan="6" class="muted">
+                No public contributors yet.
+              </td>
+            </tr>
+          )
+        }
         {
           data.leaderboard.map((entry) => (
             <tr>
@@ -69,4 +78,10 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
     attribution. See <a href="/about/privacy">the privacy page</a> for the consent
     flow and withdrawal procedure.
   </p>
+
+  <p class="muted" data-live-snapshot-status></p>
+
+  <script>
+    import "../scripts/live-snapshot";
+  </script>
 </Base>
