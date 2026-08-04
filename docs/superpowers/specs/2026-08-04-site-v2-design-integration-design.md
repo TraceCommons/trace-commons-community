@@ -54,6 +54,13 @@ today's homepage. The register framing and the commitments move to
 `/about/*`, which already holds that material, and the landing links to them
 rather than duplicating them.
 
+The two carried-over blocks are rendered **quiet**: a plain table and plain
+prose on the light background, using the shared type and table styles, with no
+animation, no reveal, and no visual invention of their own. The landing
+already carries four set pieces — globe, takeover, coin, carousel — and adding
+a fifth and sixth flourish at the bottom would dilute all of them. These two
+blocks are proof and instruction; the argument is made above them.
+
 All existing routes survive and are restyled: `/leaderboard`, `/analytics`,
 `/profile`, `/contributors/[handle]`, `/about/privacy`, `/about/data-policy`,
 `/devfolio`.
@@ -122,6 +129,10 @@ upward-drifting text.
 Structure: a 220vh `.pin` containing a sticky 100svh stage. Changing `.pin`'s
 height changes reading pace and nothing else, as before.
 
+On narrow viewports the pin drops to 160vh. 220vh of scroll to clear one
+section is a long time to hold a phone reader in place, and the stanzas are
+shorter per line there anyway.
+
 The section's `<h2>`, "What a trace is worth", is retained in the markup for
 document structure and search, rendered as the left half of the status bar
 rather than as a display heading. It is not visually hidden.
@@ -140,11 +151,28 @@ coherent argument when skimmed alone.
 Scroll progress selects the live stanza:
 
 - The live stanza's headline renders at display size in `#f5c91f`.
-- Its supporting lines render in mono, mint, at low opacity, with a cursor
-  block on the last one.
-- Neighbouring stanzas dim.
-- A mono status bar shows `> emitting trace` on the left and `NN / 06` on the
+- Its supporting lines render in mono, mint, at **no less than 0.65 opacity**,
+  with a cursor block on the last one. See Contrast below — this is a floor,
+  not a starting point.
+- Neighbouring stanzas dim. They are not the current read, so they are exempt
+  from the contrast floor.
+- A mono status bar shows the section name on the left and `NN / 06` on the
   right.
+
+The supporting lines carry no `>` prefix. The chevron appears only in the
+status bar, which is genuine page chrome. The manifesto is authored prose, and
+setting it behind a prompt marker puts the author's argument in the machine's
+voice — the opposite of what the section argues. Mono is the quiet register
+here, not machine speech.
+
+The status bar's left half is the section name, "What a trace is worth". An
+earlier draft used `> emitting trace`; it was cut because nothing is being
+emitted. It described an operation that does not happen, which makes it
+decoration in the shape of a status readout.
+
+The counter is retained because it is true and useful: in a pinned section the
+reader cannot see a scrollbar's worth of progress, so `NN / 06` is what tells
+them the section ends.
 
 `html.inverted` is retained for the takeover and still flips the globe's line
 colours via `TCGlobe.setInverted`. It no longer sets `--ink-color` to
@@ -154,6 +182,49 @@ Reduced motion, and equally the no-JS case: the pin collapses to auto height,
 the stage becomes static, all six stanzas render stacked with every headline
 at display size, and no cursor renders. The manifesto is the argument for the
 product, so it must be fully readable with scripts disabled.
+
+### Typography
+
+site-v2 declares `--mono-font` as
+`'Helvetica Neue', Helvetica, Arial, sans-serif` — identical to
+`--font-stack`. There is no monospace on the site today.
+
+`brand.css` defines a real one:
+
+```
+--mono-font: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+             'Liberation Mono', monospace;
+```
+
+This is load-bearing in two places. `#worth`'s transcript register depends on
+it entirely — in a proportional face the treatment reads as small grey text
+rather than as a transcript. And numeric columns on `/leaderboard`,
+`/analytics`, and `/contributors/[handle]` use it with
+`font-variant-numeric: tabular-nums`, so credit figures align on the decimal
+and rank changes do not shift column width.
+
+That gives the site three type roles rather than two: Helvetica for display,
+Helvetica for body, and the mono stack for data and chrome. The display and
+body faces being the same family is site-v2's existing choice and is left
+alone.
+
+### Contrast
+
+The takeover section is light text on black and must clear WCAG AA (4.5:1) for
+anything the reader is currently expected to read.
+
+Measured against `#000000`:
+
+| Colour | Ratio | Verdict |
+| --- | --- | --- |
+| `#f5c91f` headline | 13.3:1 | passes |
+| `#00d4aa` at full opacity | 11.0:1 | passes |
+| `#00d4aa` at 0.45 opacity | 2.74:1 | **fails** |
+| `#00d4aa` at 0.65 opacity | 4.86:1 | passes |
+
+The 0.45 value came from the design mockups and is the reason the live
+stanza's supporting lines have an explicit 0.65 floor above. Dimmed
+neighbouring stanzas may go below it.
 
 ### Yellow
 
@@ -205,6 +276,11 @@ this work rather than after it:
 - Manual matrix on `/`: reduced motion, JavaScript disabled, mobile widths,
   and community API unreachable.
 - The manifesto is readable end to end with scripts disabled.
+- Keyboard: every interactive element has a visible focus ring against both
+  the light background and the black takeover. The rules carousel is already
+  `tabindex="0"` and must be operable by arrow key, not pointer only.
+- Contrast: the live stanza's supporting lines measure at or above 4.5:1
+  against black, verified with a contrast checker rather than by eye.
 - No route other than `/` requests `three.min.js`.
 - Lighthouse pass on `/`, measured rather than assumed, given the payload
   noted below.
