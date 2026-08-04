@@ -1,10 +1,51 @@
+# Cloudflare Pages MERGES every rule whose pattern matches, rather than letting
+# the most specific one win. A Cache-Control on /* is therefore appended to,
+# not replaced by, the one on /profile* — which shipped that page as
+# "public, max-age=900, ..., no-store". no-store wins in a conforming cache,
+# but /profile is the last page to leave that to an intermediary's parser.
+#
+# So /* carries the security headers, which every route wants identically, and
+# caching is stated per path. Adding a route means adding it here too; the
+# fallback is Pages' own default, not the policy above.
+
 /*
-  Cache-Control: public, max-age=900, stale-while-revalidate=300
   Content-Security-Policy: default-src 'self'; connect-src 'self' https://ingest.tracecommons.ai https://issuer.tracecommons.ai; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   Cross-Origin-Opener-Policy: same-origin
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
 
+# Handle and bio management, and short-lived upload claims. Never stored.
 /profile*
   Cache-Control: no-store
+
+# Snapshot-backed pages. 15 min matches the snapshot worker interval.
+/
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+
+/leaderboard*
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+
+/analytics*
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+
+/contributors/*
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+
+/about/*
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+
+# Astro content-hashes these, so the URL changes whenever the bytes do.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# These filenames are stable across content changes, so they cannot be
+# immutable — a stale copy would outlive the deploy that replaced it.
+/scripts/*
+  Cache-Control: public, max-age=900, stale-while-revalidate=300
+
+/vendor/*
+  Cache-Control: public, max-age=86400
+
+/assets/*
+  Cache-Control: public, max-age=86400
