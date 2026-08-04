@@ -1,7 +1,8 @@
 # Astro / Node build artifacts
 dist/
 .astro/
-node_modules/
+node_modules
+.wrangler/
 
 # Local snapshot cache (built at CI time from upstream API)
 src/_data/snapshots/*.json

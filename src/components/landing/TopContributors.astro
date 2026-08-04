@@ -6,9 +6,10 @@ import type { Snapshot } from "../../types";
    reveal-on-scroll, no visual invention of its own. The argument is made in the
    sections above it.
 
-   Rendered from the build-time snapshot. Runtime refresh against
-   /api/v1/community/leaderboard attaches to [data-top-contributors] once the
-   proxy and the live-snapshot module land. */
+   Rendered from the build-time snapshot, then refreshed at runtime by
+   live-snapshot.ts against /api/v1/community/leaderboard, which the Pages
+   worker proxies same-origin. If that fetch fails the build-time numbers
+   stand. */
 
 const data = snapshot as Snapshot;
 const topThree = data.leaderboard.slice(0, 3);
@@ -30,47 +31,52 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
 
   {
     isDummy && (
-      <p class="banner">
+      <p class="banner" data-dummy-snapshot-banner>
         <strong>Preview build.</strong> These figures come from the fallback
         snapshot, not from live contributor activity.
       </p>
     )
   }
 
-  {
-    topThree.length === 0 ? (
-      <p class="muted">No public contributors yet.</p>
-    ) : (
-      <div class="table-scroll" data-top-contributors>
-        <table>
-          <thead>
+  {/* Both states are always rendered and toggled by the `hidden` attribute
+      rather than branched on. A live refresh can move the block in either
+      direction, and it cannot unhide a node the build never emitted. */}
+
+  <p class="muted" data-top-contributors-empty hidden={topThree.length > 0}>
+    No public contributors yet.
+  </p>
+
+  <div class="table-scroll" data-top-contributors-table hidden={topThree.length === 0}>
+    <table>
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Handle</th>
+          <th class="num">Score</th>
+          <th class="num">Accepted</th>
+        </tr>
+      </thead>
+      <tbody data-top-contributors-body>
+        {
+          topThree.map((entry) => (
             <tr>
-              <th class="num">#</th>
-              <th>Handle</th>
-              <th class="num">Score</th>
-              <th class="num">Accepted</th>
+              <td class="num">{entry.rank}</td>
+              <td>
+                <a href={`/contributors/${entry.display_handle}`}>
+                  {entry.display_handle}
+                </a>
+              </td>
+              <td class="num">{entry.score.toFixed(1)}</td>
+              <td class="num">{entry.accepted_count}</td>
             </tr>
-          </thead>
-          <tbody>
-            {topThree.map((entry) => (
-              <tr>
-                <td class="num">{entry.rank}</td>
-                <td>
-                  <a href={`/contributors/${entry.display_handle}`}>
-                    {entry.display_handle}
-                  </a>
-                </td>
-                <td class="num">{entry.score.toFixed(1)}</td>
-                <td class="num">{entry.accepted_count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )
-  }
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
 
   <p><a href="/leaderboard">See the full leaderboard</a></p>
+  <p class="muted" data-live-snapshot-status></p>
 </section>
 
 <style>

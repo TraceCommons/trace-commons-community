@@ -33,5 +33,11 @@ import Closing from "../components/landing/Closing.astro";
     <script is:inline defer src="/scripts/scroll.js"></script>
     <script is:inline defer src="/scripts/transcript.js"></script>
     <script is:inline defer src="/scripts/motion.js"></script>
+
+    {/* Bundled by Astro rather than served verbatim, because it is our own
+        TypeScript and not a port from site-v2. */}
+    <script>
+      import "../scripts/live-snapshot";
+    </script>
   </Fragment>
 </Base>

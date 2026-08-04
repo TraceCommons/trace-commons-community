@@ -1,11 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 
-// SPA endpoints come from build-time env so the same bundle can target
-// any deployment. Default points at the pilot host; deploy pipelines
-// can override TC_INGEST_BASE / TC_ISSUER_BASE.
-const ingestBase = import.meta.env.TC_INGEST_BASE ?? "https://ingest.34-41-15-28.nip.io";
-const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.34-41-15-28.nip.io";
+// SPA endpoints come from build-time env so the same bundle can target any
+// deployment. The defaults are production, and they are the only two hosts
+// connect-src allows in public/_headers — a deployment that overrides them
+// has to widen the CSP to match, or every request from this page is blocked.
+const ingestBase = import.meta.env.TC_INGEST_BASE ?? "https://ingest.tracecommons.ai";
+const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.tracecommons.ai";
 ---
 <Base title="Profile" description="Manage your Trace Commons public attribution.">
   <Fragment slot="head">
