@@ -2,25 +2,25 @@
 import Base from "../layouts/Base.astro";
 import snapshot from "../_data/snapshots/live-7d.json";
 import type { Snapshot } from "../types";
+import { isPlaceholder, NOT_LIVE_HEADING, NOT_LIVE_BODY } from "../lib/snapshot";
 
 const data = snapshot as Snapshot;
 const computedAt = new Date(data.computed_at);
-const isDummy = data.snapshot_id.startsWith("dummy-");
+const placeholder = isPlaceholder(data);
+const rows = placeholder ? [] : data.leaderboard;
 ---
 
 <Base title="Leaderboard">
-  {
-    isDummy && (
-      <p class="banner" data-dummy-snapshot-banner>
-        <strong>Preview build.</strong> These figures come from the fallback
-        snapshot, not from live contributor activity.
-      </p>
-    )
-  }
-
   <div class="stack">
     <h2>Leaderboard, 7 day window</h2>
-    <p class="muted" data-snapshot-summary>
+    {/* Both are always present so a live refresh can swap them without a
+        rebuild: it fills the summary and hides anything marked as the
+        placeholder notice. */}
+    <p class="banner" data-dummy-snapshot-banner hidden={!placeholder}>
+      <strong>{NOT_LIVE_HEADING}.</strong> {NOT_LIVE_BODY}
+    </p>
+
+    <p class="muted" data-snapshot-summary hidden={placeholder}>
       Ranked by <code>{data.metric}</code>. Snapshot <code
         >{data.snapshot_id.slice(0, 12)}…</code
       > computed at {computedAt.toUTCString()}. Min-cell guard: {
@@ -29,7 +29,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
     </p>
   </div>
 
-  <div class="table-scroll">
+  <div class="table-scroll" data-leaderboard-table hidden={placeholder}>
     <table>
       <thead>
         <tr>
@@ -43,7 +43,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
       </thead>
       <tbody data-leaderboard-body>
         {
-          data.leaderboard.length === 0 && (
+          rows.length === 0 && !placeholder && (
             <tr>
               <td colspan="6" class="muted">
                 No public contributors yet.
@@ -52,7 +52,7 @@ const isDummy = data.snapshot_id.startsWith("dummy-");
           )
         }
         {
-          data.leaderboard.map((entry) => (
+          rows.map((entry) => (
             <tr>
               <td class="num">{entry.rank}</td>
               <td>
