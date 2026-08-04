@@ -32,6 +32,21 @@ const facts = [
       role="img"
       aria-label="A Trace Credit rendered as a slowly turning coin"
     >
+      {/* Same reason as the globe: coin.js appends a WebGL canvas, and
+          without one this was a blank tinted panel. */}
+      <svg class="coin-fallback" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="66" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="100" cy="100" r="54" fill="none" stroke="currentColor" stroke-width="1" />
+        <text
+          x="100"
+          y="108"
+          text-anchor="middle"
+          font-family="var(--mono-font)"
+          font-size="26"
+          font-weight="700"
+          fill="currentColor">TC</text
+        >
+      </svg>
     </div>
 
     <div class="facts">
@@ -61,6 +76,20 @@ const facts = [
     background: var(--tint);
     min-height: clamp(260px, 34vh, 400px);
     overflow: hidden;
+  }
+
+  .coin-fallback {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: min(60%, 200px);
+    height: 100%;
+    color: var(--ink-color);
+    opacity: 0.4;
+  }
+
+  .coin-visual:has(canvas) .coin-fallback {
+    display: none;
   }
 
   /* absolute so the canvas never contributes to the panel's own height */

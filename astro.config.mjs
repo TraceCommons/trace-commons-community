@@ -8,7 +8,7 @@ import { defineConfig } from "astro/config";
 // domain. The `compressHTML` flag is on so the build outputs
 // production-shaped HTML by default.
 export default defineConfig({
-  site: "https://community.trace-commons.example",
+  site: "https://tracecommons.ai",
   trailingSlash: "ignore",
   compressHTML: true,
   build: {
