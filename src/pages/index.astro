@@ -1,59 +1,43 @@
 ---
 import Base from "../layouts/Base.astro";
-import snapshot from "../_data/snapshots/live-7d.json";
-import type { Snapshot } from "../types";
-
-const data = snapshot as Snapshot;
-const topThree = data.leaderboard.slice(0, 3);
+import Hero from "../components/landing/Hero.astro";
+import Worth from "../components/landing/Worth.astro";
+import How from "../components/landing/How.astro";
+import Earn from "../components/landing/Earn.astro";
+import Rules from "../components/landing/Rules.astro";
+import TopContributors from "../components/landing/TopContributors.astro";
+import Join from "../components/landing/Join.astro";
+import Closing from "../components/landing/Closing.astro";
 ---
-<Base title="Home">
-  <div class="banner">
-    <strong>Preview build.</strong> This site is built against dummy snapshot data while the
-    upstream API ships. Numbers do not reflect real contributor activity yet.
-  </div>
 
-  <h2>What this is</h2>
-  <p>
-    Trace Commons is a privacy-preserving commons for AI agent traces. Contributors
-    run <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> locally; redacted
-    envelopes are uploaded to a hosted server that gates them for novelty before they
-    enter the shared corpus. This site surfaces the public, opt-in part of that activity:
-    a leaderboard of contributors who have explicitly chosen to be visible, and aggregate
-    corpus analytics protected by min-cell and noise guards.
-  </p>
+<Base title="Keep the data your agents produce" landing>
+  <Hero slot="hero" />
 
-  <h2>Top contributors (last 7d)</h2>
-  {topThree.length === 0 ? (
-    <p class="muted">No public contributors yet.</p>
-  ) : (
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Handle</th>
-          <th>Score</th>
-          <th>Accepted</th>
-        </tr>
-      </thead>
-      <tbody>
-        {topThree.map((entry) => (
-          <tr>
-            <td>{entry.rank}</td>
-            <td><a href={`/contributors/${entry.display_handle}`}>{entry.display_handle}</a></td>
-            <td>{entry.score.toFixed(1)}</td>
-            <td>{entry.accepted_count}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )}
-  <p><a href="/leaderboard">See the full leaderboard →</a></p>
+  <Worth />
+  <How />
+  <Earn />
+  <Rules />
+  <TopContributors />
+  <Join />
+  <Closing />
 
-  <h2>How to join</h2>
-  <p>
-    The pilot is invite-only. If you have an invite code and a workload token from
-    the pilot operator, the contributor-side setup is documented in
-    <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/operator/pilot-contributor-onboarding.md">pilot-contributor-onboarding.md</a>.
-    Once you have submitted a few traces you can opt in to the public leaderboard.
-  </p>
+  {/* Ported from site-v2 and loaded only on this route, so no other page pays
+      for three.js. `defer` keeps execution in source order, which matters:
+      three.js has to be there before the globe and the coin run. `is:inline`
+      stops Astro from bundling files that are deliberately verbatim. */}
+  <Fragment slot="body-end">
+    <script is:inline defer src="/vendor/three.min.js"></script>
+    <script is:inline defer src="/scripts/main.js"></script>
+    <script is:inline defer src="/scripts/coin.js"></script>
+    <script is:inline defer src="/scripts/carousel.js"></script>
+    <script is:inline defer src="/scripts/scroll.js"></script>
+    <script is:inline defer src="/scripts/transcript.js"></script>
+    <script is:inline defer src="/scripts/motion.js"></script>
+
+    {/* Bundled by Astro rather than served verbatim, because it is our own
+        TypeScript and not a port from site-v2. */}
+    <script>
+      import "../scripts/live-snapshot";
+    </script>
+  </Fragment>
 </Base>

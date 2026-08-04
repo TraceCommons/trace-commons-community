@@ -1,0 +1,120 @@
+---
+const facts = [
+  {
+    label: "Earned, not given",
+    copy: "Each credit is tied to one particular record of yours. Sending records, on its own, earns you nothing.",
+  },
+  {
+    label: "Nobody reads your work",
+    copy: "You can check exactly which program looked at your record. All we ever get back from it is a number.",
+  },
+  {
+    label: "Yours to keep",
+    copy: "Credits cannot be bought or sold, and nobody can take them off you. They are recorded publicly on NEAR and stay with you.",
+  },
+];
+---
+
+<section class="section" id="earn">
+  <div class="section-head">
+    <h2 class="section-title">How you earn</h2>
+    <p class="body-text">
+      A Trace Credit is a receipt for work that made an AI better. It shows which
+      of your records earned it, and how much that record helped. It shows
+      nothing about who you are.
+    </p>
+  </div>
+
+  <div class="earn-body">
+    <div
+      class="coin-visual"
+      id="coin-container"
+      role="img"
+      aria-label="A Trace Credit rendered as a slowly turning coin"
+    >
+    </div>
+
+    <div class="facts">
+      {
+        facts.map((fact) => (
+          <div class="fact">
+            <div class="fact-label">{fact.label}</div>
+            <p>{fact.copy}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .earn-body {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: var(--space-4);
+    align-items: stretch;
+  }
+
+  .coin-visual {
+    position: relative;
+    border: var(--hairline);
+    background: var(--tint);
+    min-height: clamp(260px, 34vh, 400px);
+    overflow: hidden;
+  }
+
+  /* absolute so the canvas never contributes to the panel's own height */
+  .coin-visual :global(canvas) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .facts {
+    display: flex;
+    flex-direction: column;
+    border: var(--hairline);
+  }
+
+  .fact {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-4) var(--space-5);
+    border-bottom: var(--rule);
+  }
+
+  .fact:last-child {
+    border-bottom: none;
+  }
+
+  .fact-label {
+    font-family: var(--mono-font);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    margin-bottom: var(--space-1);
+  }
+
+  .fact p {
+    font-size: 17px;
+    line-height: 1.25;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+
+  @media (max-width: 1024px) {
+    .earn-body {
+      grid-template-columns: 1fr;
+    }
+
+    .coin-visual {
+      min-height: clamp(240px, 30vh, 320px);
+    }
+  }
+</style>

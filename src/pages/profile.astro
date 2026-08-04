@@ -1,11 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 
-// SPA endpoints come from build-time env so the same bundle can target
-// any deployment. Default points at the pilot host; deploy pipelines
-// can override TC_INGEST_BASE / TC_ISSUER_BASE.
-const ingestBase = import.meta.env.TC_INGEST_BASE ?? "https://ingest.34-41-15-28.nip.io";
-const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.34-41-15-28.nip.io";
+// SPA endpoints come from build-time env so the same bundle can target any
+// deployment. The defaults are production, and they are the only two hosts
+// connect-src allows in public/_headers — a deployment that overrides them
+// has to widen the CSP to match, or every request from this page is blocked.
+const ingestBase = import.meta.env.TC_INGEST_BASE ?? "https://ingest.tracecommons.ai";
+const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.tracecommons.ai";
 ---
 <Base title="Profile" description="Manage your Trace Commons public attribution.">
   <Fragment slot="head">
@@ -28,47 +29,71 @@ const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.34-41-15-28
     [data-profile-app] form {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      max-width: 32rem;
-      margin: 1.5rem 0;
+      gap: var(--space-3);
+      max-width: 34rem;
+      margin: var(--space-5) 0;
+      border: var(--hairline);
+      padding: var(--space-4);
     }
+
     [data-profile-app] label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.9rem;
+      font-family: var(--mono-font);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--muted);
     }
+
     [data-profile-app] input,
     [data-profile-app] textarea {
-      padding: 0.45rem 0.55rem;
-      font: inherit;
-      border: 1px solid var(--border);
-      background: var(--row);
-      color: var(--fg);
-      border-radius: 4px;
+      font-family: var(--font-stack);
+      font-size: 16px;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: -0.01em;
+      color: var(--ink-color);
     }
+
     [data-profile-app] button {
       align-self: flex-start;
-      padding: 0.5rem 1rem;
-      font: inherit;
-      cursor: pointer;
-      border: 1px solid var(--border);
+      font-family: var(--mono-font);
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      padding: var(--space-3) var(--space-4);
+      border: var(--hairline);
       background: var(--accent);
-      color: var(--bg);
-      border-radius: 4px;
+      color: var(--on-accent);
+      cursor: pointer;
     }
+
     [data-profile-app] button:hover {
-      opacity: 0.9;
+      background: var(--accent-bright);
     }
+
+    /* Withdrawal is destructive and deliberately not the button the eye lands
+       on first. */
     [data-profile-app] [data-form="delete"] button {
-      background: transparent;
-      color: var(--fg);
+      background: var(--bg-color);
+      color: var(--ink-color);
     }
-    [data-profile-app] .success { color: #1a7f37; }
-    [data-profile-app] .error { color: #cf222e; }
-    @media (prefers-color-scheme: dark) {
-      [data-profile-app] .success { color: #6fcf85; }
-      [data-profile-app] .error { color: #ff6a6a; }
+
+    [data-profile-app] [data-form="delete"] button:hover {
+      background: var(--ink-color);
+      color: var(--bg-color);
+    }
+
+    /* Both clear 4.5:1 on the white page. */
+    [data-profile-app] .success {
+      color: #0a6b2d;
+      font-weight: 700;
+    }
+
+    [data-profile-app] .error {
+      color: #b3121f;
+      font-weight: 700;
     }
   </style>
 

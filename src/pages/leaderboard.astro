@@ -5,47 +5,83 @@ import type { Snapshot } from "../types";
 
 const data = snapshot as Snapshot;
 const computedAt = new Date(data.computed_at);
+const isDummy = data.snapshot_id.startsWith("dummy-");
 ---
+
 <Base title="Leaderboard">
-  <div class="banner">
-    <strong>Preview build.</strong> Dummy snapshot. Real data lands when the upstream
-    snapshot worker ships (server slice 2).
+  {
+    isDummy && (
+      <p class="banner" data-dummy-snapshot-banner>
+        <strong>Preview build.</strong> These figures come from the fallback
+        snapshot, not from live contributor activity.
+      </p>
+    )
+  }
+
+  <div class="stack">
+    <h2>Leaderboard, 7 day window</h2>
+    <p class="muted" data-snapshot-summary>
+      Ranked by <code>{data.metric}</code>. Snapshot <code
+        >{data.snapshot_id.slice(0, 12)}…</code
+      > computed at {computedAt.toUTCString()}. Min-cell guard: {
+        data.min_cell_count
+      }.
+    </p>
   </div>
 
-  <h2>Leaderboard — 7 day window</h2>
-  <p class="muted">
-    Ranked by <code>{data.metric}</code>. Snapshot <code>{data.snapshot_id.slice(0, 12)}…</code>
-    computed at {computedAt.toUTCString()}. Min-cell guard: {data.min_cell_count}.
-  </p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Handle</th>
-        <th>Score</th>
-        <th>Accepted</th>
-        <th>Accept rate</th>
-        <th>Public since</th>
-      </tr>
-    </thead>
-    <tbody>
-      {data.leaderboard.map((entry) => (
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td>{entry.rank}</td>
-          <td><a href={`/contributors/${entry.display_handle}`}>{entry.display_handle}</a></td>
-          <td>{entry.score.toFixed(1)}</td>
-          <td>{entry.accepted_count}</td>
-          <td>{(entry.accept_rate * 100).toFixed(0)}%</td>
-          <td class="muted">{new Date(entry.public_since).toISOString().slice(0, 10)}</td>
+          <th class="num">#</th>
+          <th>Handle</th>
+          <th class="num">Score</th>
+          <th class="num">Accepted</th>
+          <th class="num">Accept rate</th>
+          <th class="num">Public since</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
+      </thead>
+      <tbody data-leaderboard-body>
+        {
+          data.leaderboard.length === 0 && (
+            <tr>
+              <td colspan="6" class="muted">
+                No public contributors yet.
+              </td>
+            </tr>
+          )
+        }
+        {
+          data.leaderboard.map((entry) => (
+            <tr>
+              <td class="num">{entry.rank}</td>
+              <td>
+                <a href={`/contributors/${entry.display_handle}`}>
+                  {entry.display_handle}
+                </a>
+              </td>
+              <td class="num">{entry.score.toFixed(1)}</td>
+              <td class="num">{entry.accepted_count}</td>
+              <td class="num">{(entry.accept_rate * 100).toFixed(0)}%</td>
+              <td class="num muted">
+                {new Date(entry.public_since).toISOString().slice(0, 10)}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
 
   <p class="muted">
     Contributors are only listed here if they have explicitly opted in to public
     attribution. See <a href="/about/privacy">the privacy page</a> for the consent
     flow and withdrawal procedure.
   </p>
+
+  <p class="muted" data-live-snapshot-status></p>
+
+  <script>
+    import "../scripts/live-snapshot";
+  </script>
 </Base>

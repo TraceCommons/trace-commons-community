@@ -1,0 +1,556 @@
+/* Trace Commons brand system.
+ *
+ * Ported from trace-commons-site-v2's styles.css. This file holds only what
+ * every page needs: tokens, the frame, shared type, buttons, tables, footer.
+ * Section-specific styling for the landing page lives with the component that
+ * renders it, so app pages never load it.
+ */
+
+:root {
+    color-scheme: light;
+
+    --bg-color: #ffffff;
+    --ink-color: #000000;
+    --accent: #00d4aa;
+    --accent-bright: #00ef8b;
+    --on-accent: #000000;
+    --tint: #eafaf5;
+    --muted: #6b6b6b;
+
+    /* Deliberately not #ffe81f. Its only use today is the manifesto headline
+       in #worth; see the spec's Yellow section before extending it further. */
+    --yellow: #f5c91f;
+
+    --hairline: 2px solid var(--ink-color);
+    --rule: 1px solid var(--ink-color);
+
+    --font-stack: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    /* site-v2 declared --mono-font as the sans stack, so there was no monospace
+       on the site. The transcript treatment in #worth and the numeric columns
+       on the app pages both need a real one. */
+    --mono-font: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+                 'Liberation Mono', monospace;
+
+    /* One spacing scale. Nothing in this file should use a bare pixel value for
+       padding, margin or gap; if a new size is needed it belongs here first.
+
+       1  tight pairs, label to text
+       2  paragraph to paragraph
+       3  inside small cells
+       4  the standard gutter between bordered panels
+       5  inside large cells
+       6  heading to the block it introduces
+       7  section to section */
+    --space-1: 8px;
+    --space-2: 14px;
+    --space-3: 16px;
+    --space-4: 20px;
+    --space-5: 28px;
+    --space-6: clamp(26px, 3vw, 40px);
+    --space-7: clamp(48px, 6.5vw, 88px);
+
+    --page-gutter: clamp(16px, 3.5vw, 56px);
+    --frame-pad: 12px;
+
+    /* App pages sit in a reading column inside the 1600px frame. Wide enough to
+       read as the same site, narrow enough that leaderboard rows stay scannable. */
+    --content-max: 1100px;
+}
+
+/* The manifesto section takes the page over. Unlike site-v2 the ink goes white
+   rather than crawl yellow; the only yellow in the section is the headline. */
+html.inverted {
+    --bg-color: #000000;
+    --ink-color: #ffffff;
+    --muted: #8a8a8a;
+    --tint: #111111;
+}
+
+/* while inverted the page is the manifesto and nothing else: the frame and the
+   section rules drop out, leaving type on black */
+html.inverted .app-wrapper,
+html.inverted .section,
+html.inverted .transcript-stage {
+    border-color: transparent;
+}
+
+html.inverted body,
+html.inverted body * {
+    transition:
+        background-color 0.6s ease,
+        border-color 0.6s ease,
+        color 0.6s ease,
+        fill 0.6s ease,
+        stroke 0.6s ease;
+}
+
+body, body * {
+    transition:
+        background-color 0.6s ease,
+        border-color 0.6s ease,
+        color 0.6s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body, body *,
+    html.inverted body,
+    html.inverted body * {
+        transition: none;
+    }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding: 0 var(--page-gutter);
+}
+
+body, html {
+    width: 100%;
+    font-family: var(--font-stack);
+    color: var(--ink-color);
+    background-color: var(--bg-color);
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* clip rather than hidden, so <html> never becomes a scroll container */
+html, body { overflow-x: clip; }
+
+/* smooth anchor scrolling lives in scroll.js, so it can be cancelled mid-flight */
+
+/* Visible focus on both the light page and the black takeover. currentColor
+   keeps it legible through the inversion without a second rule. */
+:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+.app-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: var(--hairline);
+    padding: var(--frame-pad);
+}
+
+.main-card {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ---------- shared type ---------- */
+
+.section-title {
+    font-size: clamp(30px, 5.2vw, 68px);
+    line-height: 0.92;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+    max-width: 22ch;
+}
+
+.body-text {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    max-width: 62ch;
+}
+
+.body-text + .body-text { margin-top: var(--space-2); }
+
+.label {
+    font-family: var(--mono-font);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+}
+
+.muted { color: var(--muted); }
+
+/* ---------- header ---------- */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: var(--hairline);
+    padding-bottom: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.title {
+    font-size: clamp(46px, 12vw, 200px);
+    line-height: 0.85;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+}
+
+.title a { color: inherit; text-decoration: none; }
+
+/* App pages carry the wordmark as a line, not as a full-bleed display block. */
+.card-header.is-compact .title { font-size: clamp(24px, 3.4vw, 38px); }
+
+.nav-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    padding-top: var(--space-1);
+}
+
+.local-nav {
+    display: flex;
+    gap: var(--space-1) var(--space-3);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    font-family: var(--mono-font);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.local-nav a {
+    color: var(--ink-color);
+    text-decoration: underline;
+}
+
+.local-nav a:hover {
+    background-color: var(--accent);
+    color: var(--on-accent);
+    text-decoration: none;
+}
+
+.local-nav a[aria-current="page"] {
+    background-color: var(--accent);
+    color: var(--on-accent);
+    text-decoration: none;
+}
+
+/* The four landing anchors. Secondary to the app links above them. */
+.section-nav {
+    font-size: 13px;
+    gap: var(--space-1) var(--space-2);
+}
+
+.section-nav a { color: var(--muted); }
+
+/* ---------- sections ---------- */
+
+/* The hero owns a full screen. Every other section is as tall as its content,
+   with one rhythm above and below, so nothing floats in a half empty screen. */
+.screen {
+    min-height: calc(100vh - 24px);
+    min-height: calc(100svh - 24px);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-4);
+}
+
+.screen .hero { flex: 1; margin-bottom: 0; }
+
+.section {
+    border-top: var(--hairline);
+    padding: var(--space-7) 0;
+    scroll-margin-top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.section-head .body-text { margin-top: var(--space-3); }
+
+/* ---------- app page content column ---------- */
+
+.page {
+    width: 100%;
+    max-width: var(--content-max);
+    padding: var(--space-6) 0 var(--space-7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.page h2 {
+    font-size: clamp(24px, 3vw, 38px);
+    line-height: 0.98;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+}
+
+.page h3 {
+    font-size: 20px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+}
+
+.page p {
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    max-width: 68ch;
+}
+
+.page ul, .page ol {
+    padding-left: var(--space-4);
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 500;
+    max-width: 68ch;
+}
+
+.page li + li { margin-top: var(--space-1); }
+
+.page a { color: var(--ink-color); }
+
+.page a:hover { background-color: var(--accent); color: var(--on-accent); text-decoration: none; }
+
+.stack { display: flex; flex-direction: column; gap: var(--space-3); }
+
+code {
+    font-family: var(--mono-font);
+    font-size: 0.9em;
+    background: var(--tint);
+    padding: 0 4px;
+}
+
+/* ---------- form controls ---------- */
+
+input, textarea, select {
+    font-family: var(--font-stack);
+    font-size: 16px;
+    font-weight: 500;
+    padding: var(--space-1) var(--space-2);
+    border: var(--rule);
+    background: var(--bg-color);
+    color: var(--ink-color);
+}
+
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid var(--ink-color);
+    outline-offset: 1px;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+    display: inline-block;
+    font-family: var(--mono-font);
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    padding: var(--space-3) var(--space-4);
+    border: var(--hairline);
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--ink-color);
+    color: var(--on-accent);
+}
+
+.btn-primary:hover { background: var(--accent-bright); }
+
+.btn-secondary {
+    background: var(--bg-color);
+    color: var(--ink-color);
+}
+
+.btn-secondary:hover { background: var(--ink-color); color: var(--bg-color); }
+
+/* ---------- tables ----------
+   Density is deliberately unchanged from the pre-brand app pages: the frame,
+   palette and type are shared, the row height is not. */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border: var(--hairline);
+}
+
+th, td {
+    padding: var(--space-1) var(--space-3);
+    text-align: left;
+    border-bottom: var(--rule);
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+th {
+    font-family: var(--mono-font);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    border-bottom: var(--hairline);
+}
+
+td { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; }
+
+td a { color: var(--ink-color); }
+
+td a:hover { background: var(--accent); color: var(--on-accent); text-decoration: none; }
+
+/* Figures align on the decimal and a rank change never shifts column width. */
+.num, td.num, th.num {
+    font-family: var(--mono-font);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.table-scroll { overflow-x: auto; }
+
+/* ---------- stats ---------- */
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    border: var(--hairline);
+}
+
+.stat {
+    padding: var(--space-4);
+    border-right: var(--rule);
+    border-bottom: var(--rule);
+}
+
+.stat .label { margin-bottom: var(--space-1); }
+
+.stat .value {
+    font-family: var(--mono-font);
+    font-variant-numeric: tabular-nums;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+/* ---------- notices ---------- */
+
+.banner {
+    border: var(--hairline);
+    background: var(--tint);
+    padding: var(--space-3) var(--space-4);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- reveal on scroll ---------- */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.is-in {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------- footer ---------- */
+
+.site-footer {
+    border-top: var(--hairline);
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.site-footer p {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+    max-width: 70ch;
+}
+
+.site-footer a { color: var(--ink-color); }
+
+.powered-by {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--ink-color);
+    text-decoration: none;
+    font-family: var(--mono-font);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+}
+
+.powered-by:hover { text-decoration: underline; }
+
+.near-mark {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+/* ---------- responsive ----------
+   Layout changes only. Spacing shrinks by retuning the scale, not by
+   overriding individual rules. */
+
+@media (max-width: 1024px) {
+    .card-header { flex-direction: column; }
+    .nav-stack { align-items: flex-start; margin-top: var(--space-4); }
+    .local-nav { justify-content: flex-start; }
+    .title { font-size: 15vw; }
+    .card-header.is-compact .title { font-size: clamp(24px, 6vw, 38px); }
+}
+
+@media (max-width: 640px) {
+    :root {
+        --space-5: 20px;
+        --frame-pad: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --space-4: 16px;
+        --space-5: 16px;
+        --frame-pad: 8px;
+    }
+
+    .body-text { font-size: 17px; }
+    .btn { text-align: center; }
+}

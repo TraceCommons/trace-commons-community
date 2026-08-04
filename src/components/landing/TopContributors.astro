@@ -1,0 +1,117 @@
+---
+import snapshot from "../../_data/snapshots/live-7d.json";
+import type { Snapshot } from "../../types";
+
+/* Proof, not spectacle. This block is deliberately quiet: a plain table, no
+   reveal-on-scroll, no visual invention of its own. The argument is made in the
+   sections above it.
+
+   Rendered from the build-time snapshot, then refreshed at runtime by
+   live-snapshot.ts against /api/v1/community/leaderboard, which the Pages
+   worker proxies same-origin. If that fetch fails the build-time numbers
+   stand. */
+
+const data = snapshot as Snapshot;
+const topThree = data.leaderboard.slice(0, 3);
+
+/* The fallback snapshot is identifiable by its id, so the warning appears only
+   when the numbers really are placeholder — and it appears here, next to the
+   numbers, rather than at the top of a page that is mostly not about them. */
+const isDummy = data.snapshot_id.startsWith("dummy-");
+---
+
+<section class="section" id="top-contributors">
+  <div class="quiet-head">
+    <h2>Top contributors, last 7 days</h2>
+    <p>
+      Only contributors who chose public attribution appear here. Everyone else
+      contributes unlisted.
+    </p>
+  </div>
+
+  {
+    isDummy && (
+      <p class="banner" data-dummy-snapshot-banner>
+        <strong>Preview build.</strong> These figures come from the fallback
+        snapshot, not from live contributor activity.
+      </p>
+    )
+  }
+
+  {/* Both states are always rendered and toggled by the `hidden` attribute
+      rather than branched on. A live refresh can move the block in either
+      direction, and it cannot unhide a node the build never emitted. */}
+
+  <p class="muted" data-top-contributors-empty hidden={topThree.length > 0}>
+    No public contributors yet.
+  </p>
+
+  <div class="table-scroll" data-top-contributors-table hidden={topThree.length === 0}>
+    <table>
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Handle</th>
+          <th class="num">Score</th>
+          <th class="num">Accepted</th>
+        </tr>
+      </thead>
+      <tbody data-top-contributors-body>
+        {
+          topThree.map((entry) => (
+            <tr>
+              <td class="num">{entry.rank}</td>
+              <td>
+                <a href={`/contributors/${entry.display_handle}`}>
+                  {entry.display_handle}
+                </a>
+              </td>
+              <td class="num">{entry.score.toFixed(1)}</td>
+              <td class="num">{entry.accepted_count}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p><a href="/leaderboard">See the full leaderboard</a></p>
+  <p class="muted" data-live-snapshot-status></p>
+</section>
+
+<style>
+  /* Deliberately not .section-head: that class is what motion.js reveals on
+     scroll, and this block does not animate. */
+  .quiet-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .quiet-head h2 {
+    font-size: clamp(24px, 3vw, 38px);
+    line-height: 0.98;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+
+  .quiet-head p,
+  section > p {
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    max-width: 62ch;
+  }
+
+  section > p a {
+    color: var(--ink-color);
+  }
+
+  section > p a:hover {
+    background: var(--accent);
+    color: var(--on-accent);
+    text-decoration: none;
+  }
+</style>

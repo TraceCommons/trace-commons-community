@@ -1,0 +1,55 @@
+<section class="closing">
+  <div>
+    <h2 class="section-title">Mine the commons</h2>
+    <p class="body-text">
+      Run your agents in Ironclaw, share the records you choose to share, and
+      earn credits when they help.
+    </p>
+  </div>
+
+  <a
+    class="btn btn-primary"
+    href="https://github.com/TraceCommons"
+    target="_blank"
+    rel="noopener noreferrer">Start mining credits</a
+  >
+</section>
+
+<style>
+  .closing {
+    border: var(--hairline);
+    background: var(--ink-color);
+    color: var(--bg-color);
+    padding: var(--space-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-5);
+    margin-bottom: var(--space-4);
+  }
+
+  .closing .section-title {
+    max-width: 14ch;
+  }
+
+  .closing .body-text {
+    margin-top: var(--space-3);
+    max-width: 46ch;
+  }
+
+  .closing .btn-primary {
+    border-color: var(--accent);
+  }
+
+  .closing .btn-primary:hover {
+    background: var(--accent-bright);
+    border-color: var(--accent-bright);
+  }
+
+  @media (max-width: 1024px) {
+    .closing {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

@@ -8,75 +8,125 @@ const a = data.analytics;
 const maxHistogram = Math.max(...a.novelty_histogram.map((b) => b.count), 1);
 const gateEntries = Object.entries(a.gate_outcomes).sort((x, y) => y[1] - x[1]);
 const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
+const isDummy = data.snapshot_id.startsWith("dummy-");
 ---
-<Base title="Analytics">
-  <div class="banner">
-    <strong>Preview build.</strong> Dummy analytics. Real aggregates land when the
-    upstream snapshot worker ships (server slice 2), with the existing min-cell
-    and noise guards applied at compute time.
-  </div>
 
-  <h2>Corpus analytics — {a.window}</h2>
+<Base title="Analytics">
+  {
+    isDummy && (
+      <p class="banner" data-dummy-snapshot-banner>
+        <strong>Preview build.</strong> These aggregates come from the fallback
+        snapshot. Live figures carry the min-cell and noise guards applied at
+        compute time.
+      </p>
+    )
+  }
+
+  <h2>Corpus analytics, <span data-analytics-window>{a.window}</span></h2>
 
   <div class="stat-grid">
     <div class="stat">
       <div class="label">Total submissions</div>
-      <div class="value">{a.total_submissions.toLocaleString()}</div>
+      <div class="value" data-stat-total-submissions>
+        {a.total_submissions.toLocaleString()}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Accepted</div>
-      <div class="value">{a.total_accepted.toLocaleString()}</div>
+      <div class="value" data-stat-total-accepted>
+        {a.total_accepted.toLocaleString()}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Rejected</div>
-      <div class="value">{a.total_rejected.toLocaleString()}</div>
+      <div class="value" data-stat-total-rejected>
+        {a.total_rejected.toLocaleString()}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Accept rate</div>
-      <div class="value">{(a.accept_rate * 100).toFixed(0)}%</div>
+      <div class="value" data-stat-accept-rate>
+        {(a.accept_rate * 100).toFixed(0)}%
+      </div>
     </div>
   </div>
 
-  <h2>Novelty score distribution</h2>
-  <p class="muted">Bucketed in micros (0 – 1,000,000). Higher is more novel.</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Bucket</th>
-        <th>Count</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {a.novelty_histogram.map((b) => (
+  <div class="stack">
+    <h2>Novelty score distribution</h2>
+    <p class="muted">Bucketed in micros (0 to 1,000,000). Higher is more novel.</p>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td class="muted">{b.bucket_micros.toLocaleString()}</td>
-          <td>{b.count}</td>
-          <td>
-            <span style={`display: inline-block; height: 0.6rem; width: ${(b.count / maxHistogram) * 100}%; background: var(--accent); border-radius: 2px;`}></span>
-          </td>
+          <th class="num">Bucket</th>
+          <th class="num">Count</th>
+          <th>Share of window</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
+      </thead>
+      <tbody data-novelty-body>
+        {
+          a.novelty_histogram.map((b) => (
+            <tr>
+              <td class="num muted">{b.bucket_micros.toLocaleString()}</td>
+              <td class="num">{b.count}</td>
+              <td>
+                <span
+                  class="bar"
+                  style={`width: ${(b.count / maxHistogram) * 100}%`}
+                />
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
 
   <h2>Gate decision outcomes</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Outcome</th>
-        <th>Decisions</th>
-        <th>Share</th>
-      </tr>
-    </thead>
-    <tbody>
-      {gateEntries.map(([label, count]) => (
+
+  <div class="table-scroll">
+    <table>
+      <thead>
         <tr>
-          <td><code>{label}</code></td>
-          <td>{count}</td>
-          <td>{((count / gateTotal) * 100).toFixed(1)}%</td>
+          <th>Outcome</th>
+          <th class="num">Decisions</th>
+          <th class="num">Share</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
+      </thead>
+      <tbody data-gate-body>
+        {
+          gateEntries.map(([label, count]) => (
+            <tr>
+              <td>
+                <code>{label}</code>
+              </td>
+              <td class="num">{count}</td>
+              <td class="num">{((count / gateTotal) * 100).toFixed(1)}%</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="muted" data-live-snapshot-status></p>
+
+  <script>
+    import "../scripts/live-snapshot";
+  </script>
 </Base>
+
+<style>
+  /* Global, not scoped: live-snapshot.ts rebuilds these rows with innerHTML,
+     and injected nodes never carry the data-astro-cid attribute a scoped
+     selector requires. Scoped, the bars would vanish on first refresh. */
+  :global(.bar) {
+    /* Square, like everything else in the frame. */
+    display: inline-block;
+    height: 10px;
+    min-width: 2px;
+    background: var(--accent);
+  }
+</style>

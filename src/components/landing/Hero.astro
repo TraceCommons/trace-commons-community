@@ -1,0 +1,104 @@
+<section class="hero">
+  <div class="hero-copy">
+    <div>
+      <p class="hero-lead">Keep the data your agents produce.</p>
+      <p class="body-text">
+        Every time an AI agent works for you, it leaves a record of what it did.
+        Trace Commons keeps that record on your own computer, lets you decide
+        whether to share it, and pays you in credits when it helps make an AI
+        better.
+      </p>
+    </div>
+
+    <div class="hero-actions">
+      <a
+        class="btn btn-primary"
+        href="https://github.com/TraceCommons"
+        target="_blank"
+        rel="noopener noreferrer">Start mining credits</a
+      >
+      <a
+        class="btn btn-secondary"
+        href="https://github.com/TraceCommons"
+        target="_blank"
+        rel="noopener noreferrer">Read the protocol</a
+      >
+    </div>
+  </div>
+
+  <div class="hero-visual" id="canvas-container"></div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .hero-lead {
+    font-size: clamp(28px, 3.4vw, 46px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .hero-copy .body-text {
+    margin-top: var(--space-4);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .hero-visual {
+    position: relative;
+    width: 100%;
+    min-height: clamp(300px, 46vh, 560px);
+    border: var(--hairline);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* horizontal drags spin the globe, vertical swipes still scroll the page */
+  .hero-visual :global(canvas) {
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .hero-visual :global(canvas.is-grabbing) {
+    cursor: grabbing;
+  }
+
+  @media (max-width: 1024px) {
+    /* stacked hero: the globe takes whatever height the copy doesn't use */
+    .hero {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    .hero-visual {
+      min-height: clamp(280px, 42vh, 460px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>
