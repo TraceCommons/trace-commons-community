@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+
+/* Without this file Cloudflare Pages falls back to the root index for any
+   unmatched path, so every typo returned 200 and the whole landing page. That
+   matters most for /contributors/<handle>: those pages come and go as people
+   opt in and withdraw, and a withdrawn contributor's URL has to stop
+   resolving rather than quietly serve something else with a 200. */
+---
+
+<Base
+  title="Not found"
+  description="No page at this address on Trace Commons."
+>
+  <div class="stack">
+    <h2>No page at this address</h2>
+    <p>
+      If you followed a link to a contributor profile, that contributor may
+      have withdrawn from public attribution. Withdrawal removes the page at
+      the next build, and we do not keep a copy.
+    </p>
+    <p>
+      <a href="/">Back to the front page</a>, or the
+      <a href="/leaderboard">leaderboard</a>.
+    </p>
+  </div>
+</Base>
