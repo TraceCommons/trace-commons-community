@@ -35,7 +35,7 @@ const topThree = placeholder ? [] : data.leaderboard.slice(0, 3);
       branched on. A live refresh can move the block in either direction, and it
       cannot unhide a node the build never emitted. */}
 
-  <p class="banner" data-dummy-snapshot-banner hidden={!placeholder}>
+  <p class="banner" data-dummy-snapshot-banner data-snapshot-surface="roster" hidden={!placeholder}>
     <strong>{NOT_LIVE_HEADING}.</strong> {NOT_LIVE_BODY}
   </p>
 

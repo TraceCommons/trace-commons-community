@@ -16,7 +16,7 @@ const rows = placeholder ? [] : data.leaderboard;
     {/* Both are always present so a live refresh can swap them without a
         rebuild: it fills the summary and hides anything marked as the
         placeholder notice. */}
-    <p class="banner" data-dummy-snapshot-banner hidden={!placeholder}>
+    <p class="banner" data-dummy-snapshot-banner data-snapshot-surface="roster" hidden={!placeholder}>
       <strong>{NOT_LIVE_HEADING}.</strong> {NOT_LIVE_BODY}
     </p>
 

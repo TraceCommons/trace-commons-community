@@ -123,6 +123,12 @@ function renderHome(snapshot: Snapshot): void {
 
 function renderAnalytics(snapshot: Snapshot): void {
   const a = snapshot.analytics;
+  /* A live snapshot can carry a live roster and no analytics at all: the two
+     surfaces are gated separately on the server. Leave the page's withheld
+     state exactly as the build rendered it — it is still the true one — and
+     in particular do not unhide the tables or clear the banner. */
+  if (!a) return;
+  clearPreviewBanner("analytics");
   show("[data-analytics-table]");
   setText(
     "[data-stat-total-submissions]",
@@ -187,9 +193,16 @@ function isShowingPlaceholderState(): boolean {
   ).some((element) => !element.hidden);
 }
 
-function clearPreviewBanner(): void {
+/* Banners are cleared per surface, not globally. The roster and the corpus
+   analytics are gated separately on the server, so "real data arrived" can be
+   true for one and false for the other in the same response. Clearing both on
+   any success would leave the analytics page showing empty tables with
+   nothing explaining why. */
+function clearPreviewBanner(surface: "roster" | "analytics"): void {
   document
-    .querySelectorAll<HTMLElement>("[data-dummy-snapshot-banner]")
+    .querySelectorAll<HTMLElement>(
+      `[data-dummy-snapshot-banner][data-snapshot-surface="${surface}"]`,
+    )
     .forEach((element) => {
       element.hidden = true;
     });
@@ -231,7 +244,9 @@ async function fetchSnapshot(): Promise<Snapshot> {
 async function refreshSnapshot(): Promise<void> {
   try {
     const snapshot = await fetchSnapshot();
-    clearPreviewBanner();
+    // The roster is what this response always carries; renderAnalytics
+    // clears its own banner only if the aggregates came with it.
+    clearPreviewBanner("roster");
     renderHome(snapshot);
     renderLeaderboard(snapshot);
     renderAnalytics(snapshot);

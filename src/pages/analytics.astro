@@ -2,33 +2,42 @@
 import Base from "../layouts/Base.astro";
 import snapshot from "../_data/snapshots/live-7d.json";
 import type { Snapshot } from "../types";
-import { isPlaceholder, NOT_LIVE_HEADING, NOT_LIVE_BODY } from "../lib/snapshot";
+import {
+  isPlaceholder,
+  ANALYTICS_NOT_LIVE_HEADING,
+  ANALYTICS_NOT_LIVE_BODY,
+} from "../lib/snapshot";
 
 const data = snapshot as Snapshot;
 const a = data.analytics;
-const placeholder = isPlaceholder(data);
+
+/* Two ways to have no aggregates, and this page treats them identically: a
+   placeholder build, or a real snapshot whose analytics the server withheld
+   while still publishing the roster. Either way there is nothing to assert. */
+const withheld = isPlaceholder(data) || a === null;
 
 /* Em dash rather than 0: a zero is a measurement, and there has not been one. */
-const stat = (value: number) => (placeholder ? "—" : value.toLocaleString());
-const rate = (value: number) =>
-  placeholder ? "—" : `${(value * 100).toFixed(0)}%`;
+const stat = (value: number | undefined) =>
+  withheld || value === undefined ? "—" : value.toLocaleString();
+const rate = (value: number | undefined) =>
+  withheld || value === undefined ? "—" : `${(value * 100).toFixed(0)}%`;
 
-const histogram = placeholder ? [] : a.novelty_histogram;
+const histogram = withheld ? [] : (a?.novelty_histogram ?? []);
 const maxHistogram = Math.max(...histogram.map((b) => b.count), 1);
-const gateEntries = placeholder
+const gateEntries = withheld
   ? []
-  : Object.entries(a.gate_outcomes).sort((x, y) => y[1] - x[1]);
+  : Object.entries(a?.gate_outcomes ?? {}).sort((x, y) => y[1] - x[1]);
 const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
 ---
 
 <Base title="Analytics">
-  <p class="banner" data-dummy-snapshot-banner hidden={!placeholder}>
-    <strong>{NOT_LIVE_HEADING}.</strong> {NOT_LIVE_BODY}
+  <p class="banner" data-dummy-snapshot-banner data-snapshot-surface="analytics" hidden={!withheld}>
+    <strong>{ANALYTICS_NOT_LIVE_HEADING}.</strong> {ANALYTICS_NOT_LIVE_BODY}
   </p>
 
   <h2>
     Corpus analytics, <span data-analytics-window>
-      {placeholder ? "no window yet" : a.window}
+      {withheld ? "no window yet" : a?.window}
     </span>
   </h2>
 
@@ -36,20 +45,20 @@ const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
     <div class="stat">
       <div class="label">Total submissions</div>
       <div class="value" data-stat-total-submissions>
-        {stat(a.total_submissions)}
+        {stat(a?.total_submissions)}
       </div>
     </div>
     <div class="stat">
       <div class="label">Accepted</div>
-      <div class="value" data-stat-total-accepted>{stat(a.total_accepted)}</div>
+      <div class="value" data-stat-total-accepted>{stat(a?.total_accepted)}</div>
     </div>
     <div class="stat">
       <div class="label">Rejected</div>
-      <div class="value" data-stat-total-rejected>{stat(a.total_rejected)}</div>
+      <div class="value" data-stat-total-rejected>{stat(a?.total_rejected)}</div>
     </div>
     <div class="stat">
       <div class="label">Accept rate</div>
-      <div class="value" data-stat-accept-rate>{rate(a.accept_rate)}</div>
+      <div class="value" data-stat-accept-rate>{rate(a?.accept_rate)}</div>
     </div>
   </div>
 
@@ -58,7 +67,7 @@ const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
     <p class="muted">Bucketed in micros (0 to 1,000,000). Higher is more novel.</p>
   </div>
 
-  <div class="table-scroll" data-analytics-table hidden={placeholder}>
+  <div class="table-scroll" data-analytics-table hidden={withheld}>
     <table>
       <thead>
         <tr>
@@ -88,7 +97,7 @@ const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
 
   <h2>Gate decision outcomes</h2>
 
-  <div class="table-scroll" data-analytics-table hidden={placeholder}>
+  <div class="table-scroll" data-analytics-table hidden={withheld}>
     <table>
       <thead>
         <tr>

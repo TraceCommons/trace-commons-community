@@ -99,8 +99,17 @@ function validate(snapshot) {
   if (typeof snapshot.contributors !== "object" || snapshot.contributors === null) {
     throw new Error("snapshot.contributors must be an object");
   }
-  if (typeof snapshot.analytics !== "object" || snapshot.analytics === null) {
-    throw new Error("snapshot.analytics must be an object");
+  // null is a valid, deliberate value: the server publishes a roster-only
+  // snapshot when its analytics publication controls are unsatisfied, and
+  // does not compute the aggregates at all rather than computing and
+  // withholding them. The key must still be present, so a payload that
+  // omits it entirely is still a malformed snapshot rather than a withheld
+  // one — that distinction is checked by the `required` loop above.
+  if (
+    snapshot.analytics !== null &&
+    (typeof snapshot.analytics !== "object" || Array.isArray(snapshot.analytics))
+  ) {
+    throw new Error("snapshot.analytics must be an object or null");
   }
   const computedAt = new Date(snapshot.computed_at);
   if (Number.isNaN(computedAt.getTime())) {
