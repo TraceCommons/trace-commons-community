@@ -55,5 +55,9 @@ export interface Snapshot {
   min_cell_count: number;
   leaderboard: LeaderboardEntry[];
   contributors: Record<string, ContributorProfile>;
-  analytics: CorpusAnalyticsSummary;
+  /* null when the server withheld the aggregates: it publishes the roster
+     on consent and cohort shape, but will not publish corpus analytics
+     without an approved noise mechanism, and does not compute them at all
+     in that case. `privacy.analytics_withheld_controls` names the reason. */
+  analytics: CorpusAnalyticsSummary | null;
 }
