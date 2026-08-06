@@ -178,6 +178,15 @@ function renderAnalytics(snapshot: Snapshot): void {
   }
 }
 
+/* True when the build had no figures it was willing to assert, so the page is
+   currently explaining that rather than showing numbers. The banner is the
+   marker for that state and is hidden the moment real data arrives. */
+function isShowingPlaceholderState(): boolean {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>("[data-dummy-snapshot-banner]"),
+  ).some((element) => !element.hidden);
+}
+
 function clearPreviewBanner(): void {
   document
     .querySelectorAll<HTMLElement>("[data-dummy-snapshot-banner]")
@@ -198,13 +207,23 @@ function showRefreshStatus(
     });
 }
 
+/* The server answers 503 while it is deliberately withholding community
+   aggregates — it has publication controls it will not publish without. That
+   is the normal state today, not a fault, and the page already explains it in
+   prose. Distinguishing it here is what stops the reader being told the same
+   thing twice, once calmly and once in red with an HTTP status attached. */
+class SnapshotWithheld extends Error {}
+
 async function fetchSnapshot(): Promise<Snapshot> {
   const response = await fetch(`${readApiBase()}/v1/community/leaderboard`, {
     headers: { Accept: "application/json" },
     cache: "no-cache",
   });
+  if (response.status === 503) {
+    throw new SnapshotWithheld();
+  }
   if (!response.ok) {
-    throw new Error(`latest snapshot unavailable: HTTP ${response.status}`);
+    throw new Error(`HTTP ${response.status}`);
   }
   return (await response.json()) as Snapshot;
 }
@@ -220,7 +239,27 @@ async function refreshSnapshot(): Promise<void> {
       `Live snapshot refreshed ${new Date(snapshot.computed_at).toLocaleString()}.`,
     );
   } catch (error) {
-    showRefreshStatus((error as Error).message, "error");
+    if (error instanceof SnapshotWithheld) {
+      // Say nothing. The build-time state is already on the page and is
+      // still accurate, and a reader who is told "not live yet" does not
+      // also need to be told the fetch for it returned 503.
+      showRefreshStatus("");
+      return;
+    }
+    // Anything else is a genuine fault, but the status code belongs in the
+    // console for whoever is debugging, not in the page for whoever is
+    // reading. What the reader needs is whether the figures above are stale.
+    console.warn("[trace-commons] live snapshot refresh failed:", error);
+    // On a placeholder build there are no figures above to be stale about,
+    // and the page says so already. Telling that reader the refresh failed
+    // adds a second, worse explanation of the same situation.
+    if (isShowingPlaceholderState()) {
+      showRefreshStatus("");
+      return;
+    }
+    showRefreshStatus(
+      "Could not reach the live figures just now. The numbers above are from the last build.",
+    );
   }
 }
 
