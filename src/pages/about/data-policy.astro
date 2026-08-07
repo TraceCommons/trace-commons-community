@@ -35,7 +35,8 @@ import Base from "../../layouts/Base.astro";
   </p>
   <ul>
     <li><code>TRACE_COMMONS_ANALYTICS_MIN_CELL_COUNT</code> — a leaderboard row is suppressed if the contributor's window count is below this threshold. Publication is refused outright unless this is at least 2.</li>
-    <li><code>TRACE_COMMONS_COMMUNITY_TENANT_IDS</code> — the tenants aggregated into the community surface. Publication is refused unless at least two tenants are in the cohort, so a "community" figure is never one tenant's corpus under another name.</li>
+    <li><code>TRACE_COMMONS_COMMUNITY_TENANT_IDS</code> — the tenants aggregated into the community surface. Under the stricter publication basis, publication is refused unless at least two tenants are in the cohort, so a "community" figure is never one tenant's corpus under another name. This deployment publishes under cell suppression, which waives that check; see below.</li>
+    <li><code>TRACE_COMMONS_COMMUNITY_ANALYTICS_PUBLICATION_BASIS</code> — what published aggregates rest on: an approved noise mechanism, or cell suppression alone. Each published snapshot records which basis produced it.</li>
     <li><code>TRACE_COMMONS_ANALYTICS_BROAD_RELEASE_NOISE</code> — when enabled, applies keyed bounded jitter to aggregate counts. See the note below.</li>
     <li><code>TRACE_COMMONS_ANALYTICS_BROAD_RELEASE_PRIVACY_ACCOUNTING</code> — budget tracking across snapshots.</li>
   </ul>
@@ -54,11 +55,47 @@ import Base from "../../layouts/Base.astro";
     <strong>not</strong> a differentially private mechanism and it carries no
     formal privacy guarantee, so it should not be relied on as one.
   </p>
+  <h2>What protects the corpus analytics on this deployment</h2>
   <p>
-    Until a calibrated mechanism is implemented and reviewed, the server treats
-    no noise mechanism as approved and therefore refuses to publish community
-    aggregates at all. Publication resumes when the minimum-cell threshold, the
-    tenant-cohort minimum, and an approved mechanism are all satisfied.
+    The server records what each published set of aggregates rests on, and this
+    deployment publishes them under <strong>cell suppression alone</strong>. No
+    noise is applied to them. We would rather say that plainly than imply a
+    guarantee we are not providing.
+  </p>
+  <p>What that does protect:</p>
+  <ul>
+    <li>
+      Any novelty bucket or gate outcome holding fewer records than the
+      minimum-cell threshold is dropped before publication. A dropped cell is
+      indistinguishable from an empty one, so its absence does not reveal how
+      few records it held.
+    </li>
+    <li>
+      Only contributors who chose public attribution are ever named. The
+      aggregates carry no handles.
+    </li>
+  </ul>
+  <p>What it does not protect:</p>
+  <ul>
+    <li>
+      <strong>The totals are exact.</strong> Total submissions, accepted,
+      rejected and the acceptance rate are published as computed. They are not
+      cells, so cell suppression does not cover them.
+    </li>
+    <li>
+      While the contributor base is small, an exact total is close to a
+      statement about the handful of people who produced it. This is a real
+      limitation of publishing at pilot scale, not a theoretical one.
+    </li>
+    <li>
+      There is no formal privacy guarantee attached to these figures, and no
+      epsilon is charged, because no calibrated mechanism is in force.
+    </li>
+  </ul>
+  <p>
+    A calibrated mechanism is intended as the contributor base grows, at which
+    point the published aggregates will record that basis instead. The
+    minimum-cell threshold applies either way and is never waived.
   </p>
 
   <h2>Source-of-truth links</h2>
