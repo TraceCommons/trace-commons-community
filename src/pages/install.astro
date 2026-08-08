@@ -1,0 +1,115 @@
+---
+import Base from "../layouts/Base.astro";
+
+/* One page for everything a contributor has to do on their own machine.
+   Until now this was spread across an operator runbook, a crate README and a
+   Slack DM, which is most of the distance between having an invite and making
+   a first submission.
+
+   The download links are deliberately not written yet. There is no tagged
+   release, so pointing at one would 404, and a page that lies about what it
+   offers is worse than a page that admits the binaries are coming. When the
+   first `contributor-v*` tag lands, the build-from-source block moves down
+   and the table above it fills in. */
+
+const REPO = "https://github.com/TraceCommons/trace-commons-server";
+---
+
+<Base
+  title="Install"
+  description="Install the Trace Commons contributor CLI and make your first submission."
+>
+  <div class="stack">
+    <h2>Install the contributor CLI</h2>
+    <p>
+      Everything here runs on your own machine. Nothing is sent anywhere until
+      you run <code>submit</code>, and <code>submit --dry-run</code> shows you
+      exactly what would go before anything does.
+    </p>
+  </div>
+
+  <p class="banner">
+    <strong>Prebuilt binaries are not published yet.</strong> Building from
+    source needs a Rust toolchain, which is real friction and we know it. The
+    release pipeline is written and lands with the first tagged release; until
+    then the steps below are the whole path.
+  </p>
+
+  <h2>1. Build it</h2>
+  <pre><code>git clone {REPO}
+cd trace-commons-server
+cargo build --release -p trace-commons-contributor
+./target/release/trace-commons-contributor --help</code></pre>
+
+  <h2>2. Enrol</h2>
+  <p>
+    The pilot is invite-only. With an invite link from the operator:
+  </p>
+  <pre><code>trace-commons-contributor login --invite &lt;url&gt; \
+  --scopes debugging_evaluation,public_attribution</code></pre>
+  <p class="muted">
+    Scopes are yours to choose. <code>public_attribution</code> is what lets you
+    claim a handle and appear on the <a href="/leaderboard">leaderboard</a>;
+    leave it off and you contribute unlisted. Everything else the instance
+    permits is listed when you run <code>login</code> interactively.
+  </p>
+
+  <h2>3. See what would be sent</h2>
+  <pre><code>trace-commons-contributor submit --dry-run --since 7d</code></pre>
+  <p class="muted">
+    This discovers local Claude Code and Codex sessions, redacts them, and
+    reports what each envelope would contain — without uploading. Use
+    <code>--project &lt;path&gt;</code> to scope discovery to one repository
+    rather than everything you have worked on this week. Read the list before
+    you submit: it is the point at which you decide, and the only one.
+  </p>
+
+  <h2>4. Submit</h2>
+  <pre><code>trace-commons-contributor submit --since 7d</code></pre>
+  <p class="muted">
+    Each session is judged on novelty and substance. Not everything is
+    accepted, and an accepted submission earns credit only if it clears the
+    scoring floor — <code>status</code> shows you what happened to each one.
+  </p>
+
+  <h2>5. Claim a handle</h2>
+  <pre><code>trace-commons-contributor profile --handle &lt;name&gt; --no-bio</code></pre>
+  <p class="muted">
+    Setting a handle replaces your whole public profile, so you have to say
+    whether you want a bio (<code>--bio &lt;text&gt;</code>) or not
+    (<code>--no-bio</code>). <code>profile --withdraw</code> removes your public
+    attribution; the row goes at the next snapshot.
+  </p>
+
+  <div class="stack">
+    <h2>What leaves your machine</h2>
+    <p>
+      A redacted envelope, and nothing else. Secret scrubbing runs locally
+      before anything is sent and covers message text, tool calls, tool results
+      and structured payloads alike — raw content is never sent out to be
+      scrubbed elsewhere. The <a href="/about/data-policy">data policy</a> sets
+      out what is stored and what the aggregate figures do and do not protect.
+    </p>
+  </div>
+</Base>
+
+<style>
+  pre {
+    border: var(--hairline);
+    padding: var(--space-3);
+    overflow-x: auto;
+    font-family: var(--mono-font);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  pre code {
+    border: 0;
+    padding: 0;
+    background: none;
+  }
+
+  h2 {
+    margin-top: var(--space-5);
+  }
+</style>
