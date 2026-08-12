@@ -11,7 +11,7 @@ The API path is for clients that already own capture and can produce the version
 
 ## Request sequence
 
-1. Enroll or register a device through the issuer flow provided by the deployment.
+1. [Enroll a device with an invite](/start/invites-and-enrollment/#build-an-enrollment-client) or another issuer flow provided by the deployment.
 2. Build and locally redact an `ironclaw.trace_contribution.v1` envelope.
 3. Ask the issuer for a short-lived upload claim bound to the contributor and requested scopes.
 4. Submit the envelope with that claim.

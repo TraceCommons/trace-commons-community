@@ -18,10 +18,15 @@ A refusal is a safety result, not an upload failure. Inspect the safe reason. Co
 ## Login or claim refresh fails
 
 - Check system time; short-lived signatures depend on it.
-- Confirm the invite/grant has not expired.
+- For `InviteMalformed`, copy the complete invite link, including the `#CODE` fragment.
+- `InviteNotValid` intentionally covers an unknown, expired, or revoked invite; ask the operator to check it rather than guessing.
+- For `InviteAlreadyConsumed`, reuse the saved enrollment or request a new invite. Do not keep retrying with newly generated device keys.
+- Treat `InviteRegistryNotConfigured` and `InviteRegistryStale` as service-side failures and contact the operator.
 - Confirm issuer and ingest hosts match the persisted allowlist.
 - Verify the device key still matches the registered `device_key_id`.
 - Do not reuse an upload claim after expiry or against another audience.
+
+See [Invites and enrollment](/start/invites-and-enrollment/) for what redemption changes and what remains local.
 
 ## The desktop app cannot reach the daemon
 
@@ -48,4 +53,3 @@ The server is currently moving through a coordinated merge/deploy. Compare the d
 ## Report a documentation issue
 
 Include the page URL, client and server versions, command or endpoint name, and a sanitized error code. Never attach a bearer token, device private key, raw trace, or unredacted server body.
-
