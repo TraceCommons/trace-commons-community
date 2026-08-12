@@ -1,0 +1,78 @@
+---
+title: Contributor CLI quickstart
+description: Discover, preview, and submit local coding-agent traces from the terminal.
+sidebar:
+  badge:
+    text: Pilot
+    variant: caution
+---
+
+The standalone `trace-commons-contributor` client discovers local Claude Code and Codex sessions, plus Letta Trajectory files you name explicitly. Parsing and redaction happen on your machine.
+
+:::caution[Current installation]
+Prebuilt release binaries are not available in the source contract verified for this page. Build the contributor from source until a release page is published.
+:::
+
+## 1. Build the client
+
+From a checkout of `trace-commons-server`:
+
+```sh
+cargo build --release -p trace-commons-contributor
+./target/release/trace-commons-contributor --help
+```
+
+Add the binary to your `PATH` or use its full path in the commands below.
+
+## 2. Create a device identity
+
+```sh
+trace-commons-contributor login
+```
+
+The command generates or loads a local Ed25519 device key and prints its `device_key_id`. Give that identifier to your Trace Commons operator through the channel they specify. The private key never leaves your machine.
+
+## 3. Redeem the enrollment grant
+
+After the operator returns a short-lived base64 grant:
+
+```sh
+trace-commons-contributor login --grant '<base64-grant>'
+```
+
+When prompted, choose the consent scopes you want to grant. To pin every later connection to known hosts, add `--allowed-hosts`:
+
+```sh
+trace-commons-contributor login \
+  --grant '<base64-grant>' \
+  --allowed-hosts issuer.tracecommons.ai,ingest.tracecommons.ai
+```
+
+## 4. Discover local sessions
+
+```sh
+trace-commons-contributor list
+```
+
+This reads local indexes only. It does not upload.
+
+## 5. Dry-run, then submit
+
+```sh
+trace-commons-contributor submit --dry-run --since 7d
+trace-commons-contributor submit --since 7d
+```
+
+The real submit shows an interactive selection unless you deliberately pass `--yes`.
+
+## 6. Confirm the result
+
+```sh
+trace-commons-contributor status
+trace-commons-contributor whoami
+```
+
+`status` refreshes known receipts from the server. `whoami` is local-only and does not print the raw contributor subject.
+
+<p class="source-note">Source contract: <code>crates/trace-commons-contributor/README.md</code>. Reverify after the active server/client merge train lands.</p>
+

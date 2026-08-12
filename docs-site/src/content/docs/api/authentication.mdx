@@ -1,0 +1,42 @@
+---
+title: API authentication
+description: Use short-lived, scope-bound upload claims with the Trace Commons API.
+---
+
+## Upload claims
+
+In production, ingest accepts a short-lived signed upload claim rather than a long-lived contributor secret. The claim binds authorization facts such as tenant, principal, role, consent scopes, allowed uses, issuer, audience, and expiry.
+
+The standard endpoint is:
+
+```http
+POST https://issuer.tracecommons.ai/v1/trace-upload-claim
+Content-Type: application/json
+```
+
+Registered devices authenticate the exact request body using their local Ed25519 key:
+
+```http
+x-trace-device-key-id: sha256:<64-hex>
+x-trace-device-signature: <base64-ed25519-signature>
+```
+
+The request schema is versioned as `ironclaw.trace_upload_claim_request.v1`.
+
+## Safe claim handling
+
+- Keep the device private key in platform-protected local storage.
+- Sign the exact serialized claim request body.
+- Request only the scopes needed for the pending contribution.
+- Keep the upload claim in memory and honor its short expiry.
+- Send it only to the pinned ingest host and expected audience.
+- Never place claims in URLs, logs, analytics, crash reports, or checked-in examples.
+
+## Workload identities
+
+Some controlled deployments exchange a workload JWT for an upload claim. Treat the workload JWT as a bearer secret and prefer registered device keys for contributor clients. Static tokens and symmetric bridge credentials may be disabled when the deployment requires managed EdDSA claims.
+
+## Authorization failures
+
+A `401` means the presented authentication could not be accepted. A `403` means the authenticated principal is not authorized for the requested operation, tenant, scope, or use. Refresh once when a short-lived claim has expired; do not loop on a policy refusal.
+

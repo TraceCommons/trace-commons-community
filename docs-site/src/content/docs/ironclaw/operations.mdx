@@ -1,0 +1,67 @@
+---
+title: Ironclaw queues and operations
+description: Inspect, flush, diagnose, and stop Ironclaw trace contribution.
+---
+
+## Inspect the queue
+
+```sh
+ironclaw traces queue-status --json
+```
+
+Queue diagnostics distinguish active entries, held entries, retry backoff, manual-review holds, policy holds, malformed envelopes, and whether the current policy has usable credentials.
+
+## Preview and enqueue manually
+
+```sh
+ironclaw traces preview \
+  --recorded-trace ./trace.json \
+  --scope debugging-evaluation \
+  --channel cli \
+  --output ./envelope.json
+
+ironclaw traces enqueue --envelope ./envelope.json
+ironclaw traces flush-queue --limit 25
+```
+
+Preview does not imply submission. `enqueue` adds an already-previewed envelope to the local queue; `flush-queue` sends eligible entries under the standing policy.
+
+## Submit one prepared envelope
+
+For a manual integration test, submit an existing envelope to an explicit endpoint:
+
+```sh
+export IRONCLAW_TRACE_SUBMIT_TOKEN='<short-lived-upload-claim>'
+
+ironclaw traces submit \
+  --envelope ./envelope.json \
+  --endpoint https://ingest.tracecommons.ai/v1/traces
+```
+
+Prefer device-key claim refresh and the queue worker for normal operation. Do not store the bearer in policy files or shell history.
+
+## Status, credits, and profile
+
+```sh
+ironclaw traces list-submissions --summary
+ironclaw traces credit
+ironclaw traces profile set --handle example-handle
+```
+
+Public attribution is a second opt-in. Changing a public profile does not add trace-content permissions.
+
+## Revoke or stop
+
+```sh
+ironclaw traces revoke '<submission-id>' \
+  --endpoint https://ingest.tracecommons.ai/v1/traces
+
+# Scoped user opt-out
+ironclaw traces opt-out --user-scope '<tenant-id>/<user-id>'
+
+# Full instance/global off switch
+ironclaw traces opt-out
+```
+
+Opt-out stops future autonomous contribution. Revocation addresses a trace that was already submitted; use both when your intent is to stop and withdraw.
+

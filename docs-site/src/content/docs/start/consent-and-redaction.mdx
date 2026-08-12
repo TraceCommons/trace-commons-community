@@ -1,0 +1,41 @@
+---
+title: Consent and redaction
+description: Understand what a contribution permits and how sensitive data is removed.
+---
+
+## Consent scopes
+
+Consent is carried with the trace. A deployment can impose a narrower ceiling, but a client cannot use that ceiling to grant more than the contributor selected.
+
+Common scopes include:
+
+- `debugging_evaluation` — debugging, evaluation, and permitted aggregate analysis.
+- `benchmark_only` — bounded benchmark generation.
+- `ranking_training` — ranking-model training.
+- `model_training` — broader model training.
+- `public_attribution` — a separate profile permission; it does not grant trace-content use by itself.
+
+The exact set returned during enrollment is authoritative for that contributor and deployment.
+
+## Local redaction
+
+The standalone contributor tooling performs deterministic local redaction across message text, reasoning, tool calls, tool results, and structured payloads. Known token patterns, private-key blocks, private paths, and cue-adjacent high-entropy credentials are replaced before upload.
+
+After redaction, a fail-closed guard scans the finished envelope. If secret-shaped content still survives, that session is refused instead of being partially uploaded.
+
+:::caution[Reasoning needs deliberate review]
+Reasoning records can quote files and repeat values observed by the model. They are redacted, but they remain the least predictable part of an agent transcript. Use `--no-reasoning` in the contributor CLI when you do not want to include them.
+:::
+
+## Optional external PII filtering
+
+The CLI can add the NEAR AI privacy filter with `--pii-filter near-ai`. This sends only already-locally-redacted message text to the configured TEE-hosted filter; structured tool payloads do not use this path. If the requested filter is unavailable or fails its canary, the batch is refused.
+
+## What to check before approving
+
+- The project and time range are correct.
+- The envelope does not contain text or tool payloads you did not intend to include.
+- The consent scopes match the uses you want to allow.
+- Reasoning inclusion is intentional.
+- Refused sessions remain local and are not represented as successful uploads.
+

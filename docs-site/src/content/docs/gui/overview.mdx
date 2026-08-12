@@ -1,0 +1,44 @@
+---
+title: Desktop app overview
+description: Use the native Trace Commons contributor interfaces without handing them raw credentials.
+sidebar:
+  badge:
+    text: Rolling out
+    variant: caution
+---
+
+The new contributor interfaces are thin native clients over the local `trace-commons-contributor daemon`. They use the same source discovery, redaction, consent, receipt, and upload implementation as the CLI.
+
+:::caution[Availability is release-dependent]
+The desktop clients are landing alongside the current server merge train. Only install an artifact published by Trace Commons. If your platform build is not published yet, use the [contributor CLI](/cli/quickstart/).
+:::
+
+## What the app can do
+
+- Connect the local device to a Trace Commons instance.
+- Show discovered projects without exposing full paths over the GUI socket.
+- List pending sessions and their safe project labels.
+- Generate and display the exact redacted envelope that an approval will send.
+- Approve one item or a bounded batch.
+- Ignore a project or explicitly arm it for automatic upload.
+- Surface receipts, refusal reasons, daemon health, and local audit history.
+
+## What the app never receives
+
+- The device private key.
+- A reusable raw upload claim.
+- Full local project paths in daemon responses.
+- Raw server error bodies that might contain sensitive values.
+
+The app connects through a user-protected Unix socket on macOS/Linux or a user-only named pipe on Windows. It refers to projects by opaque `project_id` values minted by the daemon.
+
+## Project modes
+
+| Mode | Behavior |
+| --- | --- |
+| Ask / pending | New eligible sessions wait for review. |
+| Ignore | Sessions from the project are not offered for upload. |
+| Auto-upload | Future eligible sessions can upload under the standing policy after the app makes the armed state explicit. |
+
+Auto-upload is a durable opt-in. The app must keep armed projects visible and provide a direct way to disarm them.
+

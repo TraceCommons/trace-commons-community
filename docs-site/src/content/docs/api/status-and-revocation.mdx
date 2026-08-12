@@ -1,0 +1,43 @@
+---
+title: Status and revocation
+description: Track known submissions and withdraw a contributed trace.
+---
+
+## Read contributor status
+
+Status reads are scoped to identifiers the client already knows:
+
+```sh
+curl --fail-with-body \
+  --request POST \
+  --url https://ingest.tracecommons.ai/v1/contributors/me/submission-status \
+  --header "authorization: Bearer $TRACE_COMMONS_UPLOAD_CLAIM" \
+  --header "content-type: application/json" \
+  --data '{"submission_ids":["<submission-id>"]}'
+```
+
+Unknown, cross-tenant, and cross-principal identifiers are omitted rather than distinguished. Clients should treat an omitted row as unavailable, not as proof that no trace exists.
+
+## Revoke a submission
+
+The contributor clients expose revocation directly and should be preferred over hand-built requests:
+
+```sh
+ironclaw traces revoke '<submission-id>' \
+  --endpoint https://ingest.tracecommons.ai/v1/traces
+```
+
+Revocation is tenant- and contributor-scoped. It marks the trace unavailable for future use and starts propagation to derived artifacts according to the deployed retention and deletion machinery.
+
+## Stop versus revoke
+
+- **Opt out / disarm** stops future automatic submission.
+- **Revoke** withdraws a trace that has already been submitted.
+- **Logout** removes local identity and receipt state.
+
+These are separate actions. A client should not imply that logging out or stopping the queue revokes prior contributions.
+
+:::caution[Preserve receipts until withdrawal finishes]
+The stable `submission_id` is the join key for status and revocation. Do not erase receipt state before completing any revocations the contributor requested.
+:::
+

@@ -1,0 +1,56 @@
+---
+title: API quickstart
+description: Submit a Trace Commons contribution envelope from your own client.
+sidebar:
+  badge:
+    text: Contract moving
+    variant: caution
+---
+
+The API path is for clients that already own capture and can produce the versioned Trace Commons envelope. Do not send raw chat logs directly to ingest.
+
+:::caution[Reverify before production]
+The server PR merge and deployment train is active. The sequence below is stable, but request fields and production auth policy will be checked against the deployed build before launch.
+:::
+
+## Request sequence
+
+1. Enroll or register a device through the issuer flow provided by the deployment.
+2. Build and locally redact an `ironclaw.trace_contribution.v1` envelope.
+3. Ask the issuer for a short-lived upload claim bound to the contributor and requested scopes.
+4. Submit the envelope with that claim.
+5. Persist the returned `submission_id` and outcome.
+
+## Submit an envelope
+
+```sh
+curl --fail-with-body \
+  --request POST \
+  --url https://ingest.tracecommons.ai/v1/traces \
+  --header "authorization: Bearer $TRACE_COMMONS_UPLOAD_CLAIM" \
+  --header "content-type: application/json" \
+  --data-binary @envelope.json
+```
+
+Illustrative receipt shape:
+
+```json
+{
+  "submission_id": "7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77",
+  "status": "accepted",
+  "credit_points_pending": 5.2,
+  "explanation": ["Accepted into the private redacted corpus."]
+}
+```
+
+Treat the deployed response schema as authoritative. Never log the bearer, raw source trace, or unrestricted server error bodies.
+
+## Client requirements
+
+- HTTPS, except an explicit loopback development endpoint.
+- No credential-bearing redirects.
+- Bounded connect, request, and response-body limits.
+- Retry only operations that are safe under the stable submission identity.
+- Local fail-closed redaction before the first network call.
+- Durable storage for receipts, but not raw credentials.
+

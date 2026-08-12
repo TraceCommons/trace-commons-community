@@ -34,6 +34,11 @@ into `src/_data/snapshots/live-7d.json` before starting Astro:
 - Otherwise falls back to the checked-in dummy snapshot at
   `src/_data/snapshots/dummy-7d.json`.
 
+The independent documentation site for `docs.tracecommons.ai` lives in
+[`docs-site/`](./docs-site/README.md). It has its own dependencies, build,
+content tree, and Cloudflare Pages target so documentation releases do not
+depend on the community snapshot build.
+
 ```sh
 npm run build                                                 # dummy fallback
 TC_API_BASE=https://ingest.<host> npm run build               # live snapshot

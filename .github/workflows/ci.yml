@@ -27,3 +27,24 @@ jobs:
           name: dist
           path: dist/
           retention-days: 7
+
+  docs:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: docs-site
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22.12.0"
+          cache: npm
+          cache-dependency-path: docs-site/package-lock.json
+      - run: npm ci
+      - run: npm run verify
+      - name: Upload docs site
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-dist
+          path: docs-site/dist/
+          retention-days: 7
