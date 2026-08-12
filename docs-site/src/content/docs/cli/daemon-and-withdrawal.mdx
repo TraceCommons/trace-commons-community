@@ -1,0 +1,85 @@
+---
+title: Daemon and withdrawal
+description: Run the contributor in the background, manage its queue, and withdraw submitted traces.
+---
+
+The background daemon watches for eligible local sessions and keeps every upload decision visible through the CLI and desktop apps. New projects default to a reviewable mode; standing automatic upload requires an explicit project-level opt-in.
+
+## Run and inspect the daemon
+
+```sh
+# Foreground process; use a service manager for normal background operation
+trace-commons-contributor daemon run
+
+trace-commons-contributor daemon status
+trace-commons-contributor daemon pending
+trace-commons-contributor daemon projects
+```
+
+On Linux, install or remove the systemd user unit with `daemon install` and `daemon uninstall`. On macOS, the native app owns startup instead.
+
+## Preview and approve
+
+```sh
+trace-commons-contributor daemon preview '<entry-id>'
+trace-commons-contributor daemon approve '<entry-id>'
+
+# Explicit bounded bulk decision
+trace-commons-contributor daemon approve --all
+```
+
+Pause and resume discovery and uploads without changing project policy:
+
+```sh
+trace-commons-contributor daemon pause
+trace-commons-contributor daemon resume
+```
+
+Set a known project's future behavior with `auto`, `notify`, or `ignore`:
+
+```sh
+trace-commons-contributor daemon project . --mode notify
+```
+
+Use `daemon history --refresh` for contribution history and credit rollups, and `daemon audit` for local policy changes such as arming autonomy or bulk approval.
+
+## Sign in for withdrawal
+
+Uploads use the device key. Withdrawal deliberately requires the contributor's account session so a stolen device key cannot delete contribution history.
+
+```sh
+trace-commons-contributor account login
+trace-commons-contributor account status
+```
+
+On a headless machine, print the login URL instead of opening a browser:
+
+```sh
+trace-commons-contributor account login --no-browser
+```
+
+## Withdraw traces
+
+Withdraw one owned submission by its stable ID:
+
+```sh
+trace-commons-contributor daemon withdraw '<submission-id>'
+```
+
+Or withdraw every owned trace currently held for privacy review:
+
+```sh
+trace-commons-contributor daemon withdraw --all-quarantined
+```
+
+The operation is idempotent. Trace Commons deletes stored content, removes the trace from derived surfaces and future exports, and returns one of three reach tiers:
+
+| Reach | Meaning |
+| --- | --- |
+| `not_distributed` | The trace had not entered the commons. |
+| `commons_not_distributed` | It was in the commons but not in a published export. |
+| `commons_distributed` | It appeared in a published export; already-distributed copies cannot be recalled. |
+
+Credit already recorded is retained in every tier. Logging out, pausing, or changing project mode does not withdraw earlier submissions.
+
+<p class="source-note">Verified against the merged contributor command surface and daemon IPC v1.1.</p>

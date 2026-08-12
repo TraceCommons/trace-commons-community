@@ -24,10 +24,6 @@ export default defineConfig({
           href: "https://github.com/TraceCommons",
         },
       ],
-      editLink: {
-        baseUrl:
-          "https://github.com/TraceCommons/trace-commons-community/edit/feat/docs-site/docs-site/",
-      },
       lastUpdated: true,
       sidebar: [
         {
@@ -43,6 +39,10 @@ export default defineConfig({
           items: [
             { label: "CLI quickstart", slug: "cli/quickstart" },
             { label: "Select and submit traces", slug: "cli/submitting" },
+            {
+              label: "Daemon and withdrawal",
+              slug: "cli/daemon-and-withdrawal",
+            },
           ],
         },
         {
@@ -65,7 +65,7 @@ export default defineConfig({
             { label: "API quickstart", slug: "api/quickstart" },
             { label: "Authentication", slug: "api/authentication" },
             { label: "Envelope contract", slug: "api/envelope" },
-            { label: "Status and revocation", slug: "api/status-and-revocation" },
+            { label: "Status and withdrawal", slug: "api/status-and-revocation" },
           ],
         },
         {
@@ -73,6 +73,7 @@ export default defineConfig({
           items: [
             { label: "Statuses and outcomes", slug: "reference/statuses" },
             { label: "Troubleshooting", slug: "reference/troubleshooting" },
+            { label: "Verified source versions", slug: "reference/versions" },
           ],
         },
       ],

@@ -1,5 +1,5 @@
 ---
-title: Status and revocation
+title: Status and withdrawal
 description: Track known submissions and withdraw a contributed trace.
 ---
 
@@ -18,26 +18,44 @@ curl --fail-with-body \
 
 Unknown, cross-tenant, and cross-principal identifiers are omitted rather than distinguished. Clients should treat an omitted row as unavailable, not as proof that no trace exists.
 
-## Revoke a submission
+## Device-authenticated revocation
 
-The contributor clients expose revocation directly and should be preferred over hand-built requests:
+The upload-claim API retains the device-authenticated revocation route for clients such as Ironclaw:
 
 ```sh
 ironclaw traces revoke '<submission-id>' \
   --endpoint https://ingest.tracecommons.ai/v1/traces
 ```
 
-Revocation is tenant- and contributor-scoped. It marks the trace unavailable for future use and starts propagation to derived artifacts according to the deployed retention and deletion machinery.
+This route is tenant- and contributor-scoped and uses the same upload-claim authorization family as submission.
+
+## Account-authenticated withdrawal
+
+The desktop app and contributor daemon use the account surface:
+
+```http
+POST /v1/account/traces/{submission_id}/withdraw
+Authorization: Bearer <short-lived-account-session-token>
+```
+
+Use the contributor client instead of hand-building the browser/loopback sign-in flow:
+
+```sh
+trace-commons-contributor account login
+trace-commons-contributor daemon withdraw '<submission-id>'
+```
+
+Withdrawal is idempotent and account-scoped. It deletes stored content, evicts the trace from derived surfaces and future exports, and reports whether it had already been distributed. If it had appeared in a published export, copies already distributed cannot be recalled. Credit already recorded stays.
 
 ## Stop versus revoke
 
 - **Opt out / disarm** stops future automatic submission.
-- **Revoke** withdraws a trace that has already been submitted.
+- **Revoke** is the device-authenticated Trace Commons API action used by clients such as Ironclaw.
+- **Withdraw** is the account-authenticated contributor action exposed by the daemon and desktop apps.
 - **Logout** removes local identity and receipt state.
 
 These are separate actions. A client should not imply that logging out or stopping the queue revokes prior contributions.
 
 :::caution[Preserve receipts until withdrawal finishes]
-The stable `submission_id` is the join key for status and revocation. Do not erase receipt state before completing any revocations the contributor requested.
+The stable `submission_id` is the join key for status, revocation, and withdrawal. Do not erase receipt state before completing the contributor's requested action.
 :::
-

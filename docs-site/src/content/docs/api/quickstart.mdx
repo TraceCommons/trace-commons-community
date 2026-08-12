@@ -3,15 +3,11 @@ title: API quickstart
 description: Submit a Trace Commons contribution envelope from your own client.
 sidebar:
   badge:
-    text: Contract moving
-    variant: caution
+    text: v1 verified
+    variant: success
 ---
 
 The API path is for clients that already own capture and can produce the versioned Trace Commons envelope. Do not send raw chat logs directly to ingest.
-
-:::caution[Reverify before production]
-The server PR merge and deployment train is active. The sequence below is stable, but request fields and production auth policy will be checked against the deployed build before launch.
-:::
 
 ## Request sequence
 
@@ -32,18 +28,17 @@ curl --fail-with-body \
   --data-binary @envelope.json
 ```
 
-Illustrative receipt shape:
+The `submission_id` is supplied in the envelope and remains the stable identifier for retries, status, and withdrawal. The response receipt describes the server outcome:
 
 ```json
 {
-  "submission_id": "7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77",
   "status": "accepted",
   "credit_points_pending": 5.2,
   "explanation": ["Accepted into the private redacted corpus."]
 }
 ```
 
-Treat the deployed response schema as authoritative. Never log the bearer, raw source trace, or unrestricted server error bodies.
+`credit_points_final` may be included after settlement. Never log the bearer, raw source trace, or unrestricted server error bodies.
 
 ## Client requirements
 
@@ -53,4 +48,3 @@ Treat the deployed response schema as authoritative. Never log the bearer, raw s
 - Retry only operations that are safe under the stable submission identity.
 - Local fail-closed redaction before the first network call.
 - Durable storage for receipts, but not raw credentials.
-

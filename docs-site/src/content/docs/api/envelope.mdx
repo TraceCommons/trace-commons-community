@@ -10,7 +10,7 @@ The authoritative envelope type lives in the `trace-commons-protocol` crate. If 
 | Area | Purpose |
 | --- | --- |
 | `schema_version` | Selects the versioned contract; currently `ironclaw.trace_contribution.v1`. |
-| `submission_id` | Stable content-derived identity used for idempotency, status, and revocation. |
+| `submission_id` | Stable identity used for idempotency, status, revocation, and withdrawal. |
 | `trace_card` | Consent scopes, allowed uses, source channel, tool categories, retention, and revocation metadata. |
 | `events` | Locally redacted trace events, including distinct reasoning events when enabled. |
 | `value_card` | Versioned local scorecard and user-visible limitations/explanation. |
@@ -43,4 +43,3 @@ A locally valid envelope is not automatically accepted. Ingest authenticates the
 :::
 
 <p class="source-note">Authoritative source: <code>crates/trace-commons-protocol/src/trace_contribution.rs</code>.</p>
-

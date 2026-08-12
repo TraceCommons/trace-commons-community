@@ -28,7 +28,12 @@ A notification may open the review screen, but it must not contain an action tha
 
 An app can offer a short undo window after an approval. If the source changes before upload, the prepared approval is invalidated and the session returns to review. Automatic uploads and standing-policy changes are recorded in a local, hash-only audit log.
 
+## Withdraw a submitted trace
+
+Withdrawal requires an account session, not only the device key used for uploads. Sign in from the app, select an owned submission, review the tier-aware confirmation, and confirm withdrawal. The app reports whether the trace had never entered the commons, was in the commons but not distributed, or had already appeared in a published export.
+
+Withdrawal deletes Trace Commons' stored content and excludes the trace from future exports. If a copy was already distributed, the app says that it cannot be recalled. Credit already recorded stays.
+
 ## When something is not sent
 
 Pending, refused, failed, ignored, and successfully uploaded states must remain distinguishable. A refusal means the safety pipeline deliberately kept the trace local; it should never be rendered as a successful contribution.
-

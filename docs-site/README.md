@@ -28,8 +28,9 @@ User-facing facts are derived from the current implementations in:
 - `TraceCommons/trace-commons-server`: contributor CLI/GUI, protocol, and server.
 - `iqlusioninc/ironclaw`: trace CLI, client, queue worker, and web UI.
 
-The server/client merge train is active. Reverify examples against merged source
-and the deployed pilot before publishing the production domain.
+Last reconciled on 2026-08-12 against server
+`47a3351c27176fa5278f244b43f9d5f8318f32ff` and Ironclaw
+`173f078bbabfbf3770f6a0b2d637d88942e4f31e`.
 
 ## Cloudflare Pages
 
@@ -40,3 +41,9 @@ and the deployed pilot before publishing the production domain.
 | Output directory | `dist` |
 | Node version | `22.12.0` or newer |
 | Production domain | `docs.tracecommons.ai` |
+
+Deploy the verified static build with:
+
+```sh
+npm run deploy
+```

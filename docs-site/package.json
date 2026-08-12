@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "deploy": "npm run verify && wrangler pages deploy dist --project-name trace-commons-docs --branch main",
     "check": "astro check",
     "check:links": "node scripts/check-links.mjs",
     "verify": "npm run check && npm run build && npm run check:links"
@@ -18,7 +19,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.122.0"
   },
   "engines": {
     "node": ">=22.12.0"
