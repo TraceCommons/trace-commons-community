@@ -18,6 +18,8 @@ curl --fail-with-body \
 
 Unknown, cross-tenant, and cross-principal identifiers are omitted rather than distinguished. Clients should treat an omitted row as unavailable, not as proof that no trace exists.
 
+The response can include current status, pending and final credit, delayed-credit ledger totals, safe explanations, and the recorded consent scopes. See [What happens after submission](/start/after-submission/) for the full lifecycle.
+
 ## Device-authenticated revocation
 
 The upload-claim API retains the device-authenticated revocation route for clients such as Ironclaw:

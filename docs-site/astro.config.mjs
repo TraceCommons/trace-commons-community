@@ -32,6 +32,7 @@ export default defineConfig({
             { label: "Choose a submission path", slug: "start/choose-a-path" },
             { label: "Invites and enrollment", slug: "start/invites-and-enrollment" },
             { label: "How submission works", slug: "start/how-it-works" },
+            { label: "After submission", slug: "start/after-submission" },
             { label: "Consent and redaction", slug: "start/consent-and-redaction" },
           ],
         },

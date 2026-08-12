@@ -15,9 +15,11 @@ description: The local-first lifecycle shared by every Trace Commons client.
 8. **Gate or review.** Low-risk, substantive, novel traces can be accepted. Other valid traces may be quarantined for review.
 9. **Track or revoke.** The contributor retains the stable `submission_id` for status reads and revocation.
 
+Continue with [What happens after submission](/start/after-submission/) for the receipt, review, credit, community, and withdrawal timeline.
+
 ## What comes back
 
-A successful upload returns a receipt with the submission identifier and an acceptance outcome. `accepted` and `quarantined` both mean the server received and stored the envelope; they differ in whether the trace can proceed without manual privacy review.
+A successful upload returns a receipt with the submission identifier and a server status. `accepted` and `quarantined` both mean the server received and stored the envelope; they differ in whether the trace can proceed without manual privacy review. `awaiting_pii_backstop` is a separate automated privacy hold.
 
 Duplicate content uses a stable submission identity. Repeating an upload does not create an unrelated second trace.
 
@@ -29,4 +31,3 @@ Duplicate content uses a stable submission identity. Repeating an upload does no
 | Upload-claim issuer | Authenticate the device/workload and narrow tenant, principal, role, scopes, uses, and lifetime |
 | Ingest service | Authorize, validate, re-scrub, rate-limit, persist, gate, audit, and return a safe receipt |
 | Contributor | Decide what to share and withdraw access when their decision changes |
-

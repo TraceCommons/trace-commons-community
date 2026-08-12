@@ -19,6 +19,7 @@ description: Interpret local queue states and server submission outcomes.
 | Outcome | Meaning | Next step |
 | --- | --- | --- |
 | `accepted` | Valid trace cleared the immediate ingest/gating lane | Store the receipt and poll status as needed |
+| `awaiting_pii_backstop` | Otherwise eligible trace is held for an additional automated privacy pass | Refresh status later; do not resubmit with a new ID |
 | `quarantined` | Valid upload is held for privacy or manual review | Store the receipt; do not resubmit blindly |
 | `already-submitted` | Stable content identity already exists for this contribution | Keep the returned/known ID |
 | `rejected` | Server policy or validation refused the trace | Correct only the named safe failure; do not brute-force retries |
@@ -38,3 +39,5 @@ description: Interpret local queue states and server submission outcomes.
 | `503` | Required service unavailable or fail-closed; retry with bounded backoff |
 
 The deployed API's structured error code is more specific than the HTTP class. User-facing clients should show safe remediation without displaying raw response bodies.
+
+See [What happens after submission](/start/after-submission/) for how these states affect credits, public snapshots, downstream use, and withdrawal.
