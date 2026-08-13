@@ -103,7 +103,10 @@ New module `crates/trace-commons-server/src/near_legion_claim.rs`.
 
 **`POST /v1/onboard/near-legion/challenge`**
 Request `{ account_id }` → `200 { nonce, message, recipient, expires_at }`.
-Nonce is 32 CSPRNG bytes, single-use, 5-minute TTL, bound to `account_id`.
+Nonce is 32 CSPRNG bytes, single-use, bound to `account_id`. TTL is the
+existing `account_passkey::CEREMONY_TTL` — **3 minutes**, not the 5 this spec
+originally claimed. NEP-413 requires the nonce be exactly 32 bytes; the client
+rejects any other length before calling the wallet.
 
 **`POST /v1/onboard/near-legion/claim`**
 Request `{ account_id, public_key, signature, nonce }` →
@@ -266,29 +269,74 @@ Written test-first, per the project workflow.
 - Status fetch failure degrades gracefully — the page still allows a claim
   attempt rather than blocking on an unavailable counter.
 
+## Validation against the NEAR ecosystem
+
+Checked after implementation against wallet-selector's own source, NEP-413, and
+comparable open-source implementations. Two defects were found and fixed.
+
+**Encoder confirmed correct.** wallet-selector exports `serializeNep413` and
+`verifySignature`. Its `payloadSchema` is `tag: u32` (`2147484061`), `message:
+string`, `nonce: 32-byte fixed array`, `recipient: string`, `callbackUrl:
+option string`, then sha256, then a base64 signature. Our Rust `Nep413Payload`
+matches field-for-field and in order. This closes the "no gold-standard
+cross-check" gap for the *encoding*; a captured real-wallet signature would
+still be a stronger end-to-end check.
+
+**Key check matches.** Their `verifyFullKeyBelongsToUser` calls
+`view_access_key` and asserts `permission === "FullAccess"`. Ours scans
+`view_access_key_list` for the same — equivalent, and NEP-413 states messages
+MUST be signed with a Full Access Key.
+
+**DEFECT FOUND AND FIXED — the nonce type.** wallet-selector runs
+`validateSignMessageParams` on every `signMessage` call:
+
+```js
+if (!Buffer.isBuffer(nonce) || nonce.length !== 32) throw ...
+```
+
+The first implementation passed a plain `Uint8Array` and shimmed only
+`Buffer.from`, so this threw `TypeError: Buffer.isBuffer is not a function`
+100% of the time at the signing step. The shim is now a `Uint8Array` subclass
+with an overridden `toString`, and the nonce is built through the `Buffer`
+global so it stays correct if a real polyfill is added later. Verified in Node
+with the real `Buffer` deleted: base64 output matches Node's byte-for-byte, and
+a plain `Uint8Array` is confirmed to produce `0,207,214,…` instead — the silent
+corruption this avoids.
+
+**DEFECT FOUND AND FIXED — errors swallowed as cancellations.** The signing
+`catch` treated every throw as "user rejected", which is what would have hidden
+the above. Integration faults now surface as an error state and log to console.
+
+**Where we are stricter than the references.** The nonce is server-issued,
+single-use, and account-bound; `better-near-auth` and the NEAR docs tutorial
+both generate it client-side. Full-access is always required, where
+`better-near-auth` permits function-call keys. Note the official NEAR docs
+example uses `Buffer.from(crypto.randomUUID())` — 36 bytes — which current
+wallet-selector rejects outright.
+
+**Non-standard: the Buffer shim.** The ecosystem norm is
+`vite-plugin-node-polyfills` or the `buffer` package. Nothing in our tree
+provides `Buffer`. The shim covers the three call sites this flow reaches and
+is verified, but a new NEAR code path could touch Buffer surface it lacks.
+Switching to the standard polyfill is a one-line config change and one
+dependency, and needs approval.
+
 ## Residual risks
 
 Recorded because they are what could still go wrong, not to be reassuring.
 
-**The browser flow has never been run.** All 25 server tests are hermetic — no
-database, no network, no browser. Nothing has exercised a real wallet against a
-real popup. Three things are unverified until someone loads `/legion` with
-MyNearWallet:
+**The browser flow still has never been run.** All 25 server tests are
+hermetic, and the shim verification is a Node harness, not a browser. What
+remains unverified: `handlePopupTransaction` resolving rather than redirecting
+(read from bundle source, not observed), and popup-blocker behaviour.
 
-1. The **Buffer shim**. If `Buffer.from(nonce).toString("base64")` is not the
-   only Buffer surface the module touches, signing throws. Look here first.
-2. That the wallet's `signature` is base64 over `sha256(borsh(payload))`
-   exactly as `verify_nep413` expects. The encoder is pinned by an independent
-   mirror in `router_tests`, so both sides agree with each other — but both
-   could still disagree with a real wallet.
-3. `handlePopupTransaction` resolving rather than redirecting. Read from the
-   bundle source, not observed.
-
-**No captured real-wallet vector.** `account_near`'s own docs flag this same
-gap for the account ceremony: the layout is canonically correct and
-round-trips through our encoder, but a `{message, nonce, recipient, publicKey,
-signature}` captured from a real wallet should be added as the gold-standard
-cross-check before contributor traffic. That applies here too.
+**The challenge store is in-process and single-instance.** `CeremonyStore` is a
+`Mutex<HashMap>` and the module documents a "single-instance limitation." If
+the issuer is ever run behind a load balancer with more than one replica, a
+challenge minted by one replica cannot be redeemed at another and users get
+intermittent `ChallengeNonceInvalid`. A restart drops all in-flight challenges.
+This is acceptable for the pilot's single issuer; it must be revisited before
+horizontal scaling. `better-near-auth` uses a database for exactly this reason.
 
 **The cap is soft.** The count and the insert are not one transaction, so
 concurrent claims can overshoot by the in-flight count. The status endpoint

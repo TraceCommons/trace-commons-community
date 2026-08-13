@@ -26,35 +26,63 @@ import type { WalletSelectorModal } from "@near-wallet-selector/modal-ui";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 
 /**
- * Minimal `Buffer` shim.
+ * A `Buffer` stand-in that satisfies the exact contract wallet-selector checks.
  *
- * The MyNearWallet module calls `Buffer.from(nonce).toString("base64")` on the
- * challenge nonce, but `Buffer` is a Node global that does not exist in the
- * browser. Rather than pull in the `buffer` polyfill package and its tree, this
- * supplies the one method that code path uses. Installed only when `Buffer` is
- * genuinely absent, so a bundler that already provides one wins.
+ * Subclassing `Uint8Array` is load-bearing, not stylistic. wallet-selector's
+ * `validateSignMessageParams` runs on every `signMessage` call and rejects the
+ * nonce unless BOTH hold:
+ *
+ *     if (!Buffer.isBuffer(nonce) || nonce.length !== 32) throw ...
+ *
+ * A plain object cannot satisfy `.length`, and a plain `Uint8Array` cannot
+ * satisfy `toString("base64")` — its inherited `toString` returns
+ * comma-separated digits, which would silently send the wallet a wrong nonce
+ * rather than failing loudly. A Uint8Array subclass with an overridden
+ * `toString` satisfies every consumer:
+ *
+ *   - `Buffer.isBuffer(nonce)`  (core, signMessage validation)
+ *   - `nonce.length === 32`     (core, same check)
+ *   - `Buffer.from(nonce).toString("base64")` (my-near-wallet, builds the URL)
+ */
+class ShimBuffer extends Uint8Array {
+  toString(encoding?: string): string {
+    if (encoding === "base64") {
+      let binary = "";
+      for (const b of this) binary += String.fromCharCode(b);
+      return btoa(binary);
+    }
+    return new TextDecoder().decode(this);
+  }
+}
+
+/**
+ * Install the `Buffer` global the NEAR packages assume.
+ *
+ * `Buffer` is a Node global with no browser equivalent, and nothing in the
+ * dependency tree provides it — there is no `buffer` package installed. The
+ * ecosystem norm is `vite-plugin-node-polyfills`; this covers the three call
+ * sites our flow actually reaches without adding a dependency. Installed only
+ * when `Buffer` is genuinely absent, so a real polyfill always wins.
  */
 function installBufferShim(): void {
   const g = globalThis as Record<string, unknown>;
   if (g.Buffer) return;
   g.Buffer = {
-    from(input: ArrayBuffer | Uint8Array | number[] | string) {
-      const bytes =
-        typeof input === "string"
-          ? new TextEncoder().encode(input)
-          : input instanceof Uint8Array
-            ? input
-            : new Uint8Array(input as ArrayBuffer);
-      return {
-        toString(encoding?: string) {
-          if (encoding === "base64") {
-            let binary = "";
-            for (const b of bytes) binary += String.fromCharCode(b);
-            return btoa(binary);
-          }
-          return new TextDecoder().decode(bytes);
-        },
-      };
+    from(input: ArrayBuffer | Uint8Array | number[] | string): ShimBuffer {
+      if (typeof input === "string") {
+        return new ShimBuffer(new TextEncoder().encode(input));
+      }
+      if (input instanceof Uint8Array) {
+        return new ShimBuffer(input);
+      }
+      return new ShimBuffer(
+        input instanceof ArrayBuffer
+          ? new Uint8Array(input)
+          : Uint8Array.from(input),
+      );
+    },
+    isBuffer(value: unknown): boolean {
+      return value instanceof Uint8Array;
     },
   };
 }
@@ -157,6 +185,29 @@ function hexToBytes(hex: string): Uint8Array {
     out[i] = Number.parseInt(clean.slice(i * 2, i * 2 + 2), 16);
   }
   return out;
+}
+
+/**
+ * Decode the server's hex nonce into the exact type `signMessage` demands.
+ *
+ * Built through whatever `Buffer` global is in scope rather than returned as a
+ * bare `Uint8Array`. Under a real polyfill, `Buffer.isBuffer(uint8array)` is
+ * **false** — a real Buffer is a distinct subclass — so passing raw bytes would
+ * fail validation the moment anyone adds `vite-plugin-node-polyfills`. Going
+ * through the global is correct under both the shim and a real Buffer.
+ */
+function nonceForWallet(hex: string): SignMessageParams["nonce"] {
+  const bytes = hexToBytes(hex);
+  if (bytes.length !== 32) {
+    // wallet-selector rejects any other length; fail here with a clear cause
+    // rather than as an opaque "Invalid nonce" from inside the library.
+    throw new Error(`Server nonce was ${bytes.length} bytes, expected 32`);
+  }
+  const bufferGlobal = (globalThis as Record<string, unknown>).Buffer as
+    | { from(input: Uint8Array): unknown }
+    | undefined;
+  const nonce = bufferGlobal ? bufferGlobal.from(bytes) : bytes;
+  return nonce as SignMessageParams["nonce"];
 }
 
 /**
@@ -288,17 +339,32 @@ class LegionClaimApp {
       signed = await wallet.signMessage({
         message: challenge.message,
         recipient: challenge.recipient,
-        // The wallet-selector type declares this as a Node `Buffer`, but the
-        // MyNearWallet module only ever does `Buffer.from(nonce)` on it, which
-        // accepts a Uint8Array. Casting through the declared type avoids
-        // pulling Node types into a browser bundle.
-        nonce: hexToBytes(
-          challenge.nonce,
-        ) as unknown as SignMessageParams["nonce"],
+        nonce: nonceForWallet(challenge.nonce),
       });
-    } catch {
-      // User rejected the request in the wallet, or the popup was closed.
-      this.state = { ...this.state, stage: "connected", errorLabel: undefined };
+    } catch (error) {
+      // Cancelling in the wallet and a genuine integration fault both land
+      // here. Treating everything as a cancellation would silently hide a
+      // broken flow behind "nothing happened" — wallet-selector's own nonce
+      // validation throws exactly like this. Anything that is not plausibly a
+      // user action is surfaced as an error and logged.
+      const message = error instanceof Error ? error.message : String(error);
+      const looksLikeIntegrationFault =
+        /invalid (nonce|message|recipient)/i.test(message) ||
+        error instanceof TypeError;
+      if (looksLikeIntegrationFault) {
+        console.error("[legion-claim] signMessage failed", error);
+        this.state = {
+          ...this.state,
+          stage: "error",
+          errorLabel: "WalletSignatureUnsupported",
+        };
+      } else {
+        this.state = {
+          ...this.state,
+          stage: "connected",
+          errorLabel: undefined,
+        };
+      }
       this.render();
       return;
     }
@@ -419,9 +485,11 @@ class LegionClaimApp {
     if (stage === "error") {
       const copy =
         (errorLabel && ERROR_COPY[errorLabel]) ??
-        (errorLabel === "WalletUnavailable"
-          ? "Could not start the NEAR wallet connection. Check that your browser is not blocking popups, then reload."
-          : GENERIC_ERROR);
+        (errorLabel === "WalletSignatureUnsupported"
+          ? "Your wallet could not sign the request. This is a fault on our side, not something you did — the details are in the browser console."
+          : errorLabel === "WalletUnavailable"
+            ? "Could not start the NEAR wallet connection. Check that your browser is not blocking popups, then reload."
+            : GENERIC_ERROR);
       const terminal =
         errorLabel === "InviteCredentialAlreadyBound" ||
         errorLabel === "NearLegionClaimCapReached";
