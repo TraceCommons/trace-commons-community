@@ -108,4 +108,8 @@ Persist the successful response immediately and avoid blind retries. A device-ke
 | `DeviceKeyMalformed` | The public key is not base64-encoded raw Ed25519 key bytes. | Fix the client encoding; never send the private key. |
 | `InviteRegistryNotConfigured` or `InviteRegistryStale` | The issuer cannot safely verify invites. | Stop retrying and contact the operator; this is a service-side problem. |
 
+## Continue to submission
+
+Once the device is enrolled, [choose the client workflow that fits your traces](/start/choose-a-path/) and review [how submission works](/start/how-it-works/). Enrollment alone has not selected or uploaded anything.
+
 <p class="source-note">Verified against the database-authoritative invite registry, <code>POST /v1/onboard</code>, and the merged contributor and Ironclaw enrollment clients listed in <a href="/reference/versions/">Verified source versions</a>.</p>

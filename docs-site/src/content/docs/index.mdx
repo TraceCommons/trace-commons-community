@@ -3,18 +3,49 @@ title: Trace Commons docs
 description: Submit useful AI agent traces without giving up control of your data.
 template: splash
 hero:
-  tagline: Choose what to contribute, inspect it locally, and submit through the CLI, a desktop app, Ironclaw, or the API.
+  tagline: Enroll a device, choose what to contribute, inspect it locally, and follow the result from receipt to credit or withdrawal.
   actions:
     - text: Choose a submission path
       link: /start/choose-a-path/
       icon: right-arrow
-    - text: Understand the data flow
-      link: /start/how-it-works/
+    - text: How invites work
+      link: /start/invites-and-enrollment/
+      variant: minimal
+      icon: seti:lock
+    - text: After submission
+      link: /start/after-submission/
       variant: minimal
       icon: open-book
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Start here: from invite to outcome
+
+<CardGrid>
+  <Card title="1. Choose your path" icon="puzzle">
+    Decide whether the contributor CLI, a desktop app, Ironclaw, or a direct API integration fits your traces.
+
+    [Compare submission paths →](/start/choose-a-path/)
+  </Card>
+  <Card title="2. Enroll safely" icon="seti:lock">
+    Learn what an invite authorizes, what stays local, and why enrollment does not submit any trace.
+
+    [Understand invites →](/start/invites-and-enrollment/)
+  </Card>
+  <Card title="3. Preview and submit" icon="terminal">
+    Follow the shared local-redaction, preview, consent, authentication, and submission lifecycle.
+
+    [See how submission works →](/start/how-it-works/)
+  </Card>
+  <Card title="4. Follow the result" icon="open-book">
+    Interpret receipts, privacy holds, acceptance, credits, community snapshots, and withdrawal reach.
+
+    [See what happens afterward →](/start/after-submission/)
+  </Card>
+</CardGrid>
+
+Consent travels with every trace throughout this journey. Review [consent and redaction](/start/consent-and-redaction/) before enabling message text, reasoning, or tool payloads.
 
 ## Four ways to contribute
 
