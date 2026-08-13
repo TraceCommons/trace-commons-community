@@ -43,11 +43,15 @@ collection, so a time cutoff would require an indexer rather than an RPC view
 call.
 
 **Holder distribution is treasury-heavy.** `nft_total_supply` reports 3,333;
-nearblocks reports 1,326 indexed tokens across 266 holders. In a 600-token
-sample, `nearlegion.near` (treasury) held 422 and `intents.near` held 52, with
-72 of 84 remaining accounts holding exactly one. The addressable set is roughly
-**260 real accounts**. (The 266 figure is nearblocks'; first-party enumeration
-was cut short by public-RPC rate limiting.)
+nearblocks reports 1,326 indexed tokens across 266 holders. A direct
+`nft_supply_for_owner` call confirms `nearlegion.near` (treasury) holds
+**2,683 of 3,333** — roughly 80% of supply — and `intents.near` holds more as a
+contract. Of the remainder, most accounts hold exactly one. The addressable set
+is roughly **260 real accounts**. (The 266 figure is nearblocks'; first-party
+enumeration was cut short by public-RPC rate limiting.)
+
+This is why the denylist is load-bearing rather than defensive: without it the
+treasury passes every other check and could take the entire pool.
 
 **Consequence:** the NFT is a soft signal, not a gate. The **global cap is what
 actually bounds this feature**, and the public copy must say so rather than
@@ -122,10 +126,20 @@ Checks, in order, each with a distinct error label:
 6. Global cap — count live `near-legion` grants; reject if at cap.
 7. `insert_invite_grant(...)`. `CredentialAlreadyBound` maps to `409`.
 
-**`GET /v1/community/near-legion-status`**
-→ `200 { claimed, cap, remaining }`. Public and cacheable. Deliberately placed
-under `/v1/community/` so the existing `public/_worker.js` proxy serves it with
-no worker change.
+**`GET /v1/onboard/near-legion/status`**
+→ `200 { claimed, cap, remaining, maxUses }`. Public and cacheable.
+
+**Where these are mounted (revised during implementation).** The spec first
+placed these on the ingest service under `/v1/community/`, to reuse the
+`public/_worker.js` GET proxy. That was wrong: the invite grant table, the
+`PgBackend` invite-registry pool, and `insert_invite_grant` all live on the
+**upload-claim issuer**, not on ingest. The routes therefore mount on the
+issuer's public router, directly beside the existing `/v1/onboard` they feed.
+
+Consequence: all three routes are cross-origin from the community site, so the
+sub-router carries **its own `CorsLayer`** (`TRACE_COMMONS_NEAR_LEGION_CORS_ORIGINS`,
+defaulting to the community origins) rather than depending on reverse-proxy
+configuration. The `_worker.js` proxy is untouched.
 
 ### Error taxonomy
 
@@ -170,10 +184,9 @@ New Astro page `src/pages/legion.astro` plus a client island
 `src/scripts/legion-claim.ts`, following the `/profile` + `profile-app.ts`
 pattern already in the repo.
 
-Backend calls go **cross-origin directly to `TC_INGEST_BASE`**, the same way
-`profile-app.ts` already calls the issuer and ingest. This requires CORS on the
-two claim routes. The remaining-count call goes same-origin through the
-existing proxy.
+All three backend calls go **cross-origin directly to `TC_ISSUER_BASE`**, the
+same way `profile-app.ts` already calls the issuer. `TC_NEAR_NETWORK` selects
+the wallet network and must match the server's `TRACE_COMMONS_NEAR_NETWORK`.
 
 ### State machine
 
@@ -197,15 +210,27 @@ user who navigates away has lost the code permanently.
 ### Dependency
 
 NEP-413 `signMessage` in the browser requires NEAR wallet-selector. Approved by
-the user on 2026-08-13. Minimum viable set:
+the user on 2026-08-13. Shipped set, all `^10.1.4`:
 
 - `@near-wallet-selector/core`
 - `@near-wallet-selector/modal-ui`
-- one or more wallet modules (MyNearWallet, Meteor, HERE)
+- `@near-wallet-selector/my-near-wallet`
 
-Exact versions, transitive counts, and maintenance status to be recorded in
-`~/.claude/approved-dependencies.md` at install time. The island must be lazily
-loaded so the bundle does not weigh on any other page.
+**`meteor-wallet` was evaluated and dropped.** It pulls `@meteorwallet/sdk`,
+which pins an outdated `near-api-js`/`nanoid` and added 2 high advisories whose
+only offered remedy was a semver-major downgrade. MyNearWallet alone supports
+NEP-413 and needs no extension. Measured against a stashed-lockfile baseline,
+the shipped set adds **zero high and zero moderate advisories** (8/4 before and
+after); the 11 new low advisories are `@near-js/*` transitives and `elliptic`.
+
+Bundle: 934 KB raw / 294 KB gzipped, isolated by Astro to `/legion` alone —
+every other page's JS is unchanged. Full record in
+`~/.claude/approved-dependencies.md`.
+
+**Buffer shim.** The MyNearWallet module calls `Buffer.from(nonce)` on a Node
+global absent in browsers. Rather than add the `buffer` polyfill package,
+`legion-claim.ts` installs a ~20-line shim supplying the one method that path
+uses. This is the least-verified part of the integration — see Residual risks.
 
 ### Copy changes
 
@@ -240,6 +265,38 @@ Written test-first, per the project workflow.
 - Error taxonomy renders distinct copy per label.
 - Status fetch failure degrades gracefully — the page still allows a claim
   attempt rather than blocking on an unavailable counter.
+
+## Residual risks
+
+Recorded because they are what could still go wrong, not to be reassuring.
+
+**The browser flow has never been run.** All 25 server tests are hermetic — no
+database, no network, no browser. Nothing has exercised a real wallet against a
+real popup. Three things are unverified until someone loads `/legion` with
+MyNearWallet:
+
+1. The **Buffer shim**. If `Buffer.from(nonce).toString("base64")` is not the
+   only Buffer surface the module touches, signing throws. Look here first.
+2. That the wallet's `signature` is base64 over `sha256(borsh(payload))`
+   exactly as `verify_nep413` expects. The encoder is pinned by an independent
+   mirror in `router_tests`, so both sides agree with each other — but both
+   could still disagree with a real wallet.
+3. `handlePopupTransaction` resolving rather than redirecting. Read from the
+   bundle source, not observed.
+
+**No captured real-wallet vector.** `account_near`'s own docs flag this same
+gap for the account ceremony: the layout is canonically correct and
+round-trips through our encoder, but a `{message, nonce, recipient, publicKey,
+signature}` captured from a real wallet should be added as the gold-standard
+cross-check before contributor traffic. That applies here too.
+
+**The cap is soft.** The count and the insert are not one transaction, so
+concurrent claims can overshoot by the in-flight count. The status endpoint
+saturates at zero rather than underflowing.
+
+**A determined person can still take several allotments** by minting into
+several NEAR accounts. This is inherent to the no-cutoff decision; the cap
+bounds the damage.
 
 ## Out of scope
 

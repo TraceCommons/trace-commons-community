@@ -1,0 +1,141 @@
+---
+import Base from "../layouts/Base.astro";
+
+// Claim endpoints come from build-time env so the same bundle can target any
+// deployment. The claim routes live on the issuer, next to /v1/onboard.
+const issuerBase = import.meta.env.TC_ISSUER_BASE ?? "https://issuer.tracecommons.ai";
+const nearNetwork = import.meta.env.TC_NEAR_NETWORK ?? "mainnet";
+---
+
+<Base
+  title="NEAR Legion invites"
+  description="NEAR Legion token holders can claim invite codes to the Trace Commons pilot."
+>
+  <Fragment slot="head">
+    <meta name="tc-issuer-base" content={issuerBase} />
+    <meta name="tc-near-network" content={nearNetwork} />
+  </Fragment>
+
+  <h1>Invites for the NEAR Legion</h1>
+
+  <p>
+    The pilot is invite-only while the register is being built, and every invite
+    so far has been handed out by the operator. This is the first self-serve
+    path in: connect a NEAR account that holds a
+    <a href="https://nearlegion.com">NEAR Legion</a> token, prove you control it,
+    and get invite codes to hand out.
+  </p>
+
+  <p>
+    The Legion is an adjacent community — people building and arguing about
+    decentralized AI — which is roughly the population whose agent traces the
+    register most wants. That is the whole reason this door exists.
+  </p>
+
+  <noscript>
+    <p class="banner">
+      Claiming requires JavaScript, because it needs your wallet to sign a
+      message. The rest of the site — leaderboard, contributor pages, analytics
+      — does not.
+    </p>
+  </noscript>
+
+  <div data-legion-claim>
+    <p class="muted">Loading…</p>
+  </div>
+
+  <h2>What you are actually getting</h2>
+  <p>
+    One invite code, redeemable a fixed number of times, bound to the NEAR
+    account you sign with. One allotment per account. Codes are yours to give
+    away — to collaborators, to people whose agent work you would want in the
+    register, to whoever you think should be able to see this evidence.
+  </p>
+  <p>
+    Contributing is private by default. Someone who redeems your code runs
+    Ironclaw locally and sets their own consent scope; nothing about them
+    becomes public unless they later choose it from the
+    <a href="/profile">profile page</a>.
+  </p>
+
+  <h2>Being straight about the gate</h2>
+  <p>
+    Holding a NEAR Legion token is a signal, not a qualification, and we would
+    rather say so than imply this is more selective than it is. The collection
+    is described as soulbound but is in fact transferable, and minting is open
+    to anyone who wants one. So the token does not prove much on its own.
+  </p>
+  <p>
+    <strong>The cap is the real bound.</strong> A fixed number of allotments
+    exist; the counter above is live. When they are gone, this round is closed.
+    Treasury and contract accounts are excluded, because one treasury account
+    holds the large majority of the supply and could otherwise take the lot.
+  </p>
+
+  <h2>What signing does and does not do</h2>
+  <p>
+    You sign a message, not a transaction. It costs no gas, moves no tokens, and
+    grants this site no permission over your account. It is a
+    <a href="https://github.com/near/NEPs/blob/master/neps/nep-0413.md">NEP-413</a>
+    signature over a one-time challenge we issue, which is how we know the
+    account is yours rather than one you typed in.
+  </p>
+  <p>
+    We record a hash of your account ID, and nothing else about you. The raw
+    account ID is never stored. That is the same posture as the rest of this
+    site — see the <a href="/about/privacy">privacy notes</a>.
+  </p>
+
+  <style>
+    [data-legion-claim] {
+      margin: 1.5rem 0;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--row);
+    }
+    [data-legion-claim] .claim-panel > *:first-child {
+      margin-top: 0;
+    }
+    [data-legion-claim] .claim-panel > *:last-child {
+      margin-bottom: 0;
+    }
+    [data-legion-claim] button {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--accent);
+      color: var(--bg);
+      border-radius: 4px;
+    }
+    [data-legion-claim] button:hover {
+      opacity: 0.9;
+    }
+    [data-legion-claim] .claim-code code {
+      display: block;
+      padding: 0.75rem 1rem;
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+      word-break: break-all;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+    }
+    [data-legion-claim] .warn {
+      font-size: 0.95rem;
+    }
+    [data-legion-claim] .error {
+      color: #cf222e;
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-legion-claim] .error {
+        color: #ff6a6a;
+      }
+    }
+  </style>
+
+  <script>
+    import "../scripts/legion-claim";
+  </script>
+</Base>
