@@ -34,6 +34,39 @@ brew install trace-commons-contributor
 
 `brew trust` is required — Homebrew refuses to load a formula from a third-party tap without it, stopping at *"Refusing to load formula … from untrusted tap"*.
 
+On Windows, in PowerShell — there is no one-command installer for Windows yet, so this is the supported path:
+
+```powershell
+$exe  = "trace-commons-contributor-x86_64-pc-windows-msvc.exe"
+$base = "https://github.com/TraceCommons/trace-commons-server/releases/download/contributor-v0.1.0"
+
+Invoke-WebRequest "$base/$exe" -OutFile $exe
+Invoke-WebRequest "$base/$exe.sha256" -OutFile "$exe.sha256"
+
+# The published checksum must match.
+$want = ((Get-Content "$exe.sha256") -split '\s+')[0]
+$got  = (Get-FileHash $exe -Algorithm SHA256).Hash
+if ($got -ne $want) { throw "checksum mismatch: got $got, published $want" }
+
+# The signature must be valid AND ours.
+$sig = Get-AuthenticodeSignature $exe
+if ($sig.Status -ne "Valid") { throw "signature not valid: $($sig.StatusMessage)" }
+if ($sig.SignerCertificate.Subject -notmatch "O=Iqlusion Inc") {
+  throw "unexpected signer: $($sig.SignerCertificate.Subject)"
+}
+
+# Install under your own profile -- no admin rights required.
+$dir = "$env:LOCALAPPDATA\Programs\TraceCommons"
+New-Item -ItemType Directory -Force $dir | Out-Null
+Move-Item -Force $exe "$dir\trace-commons-contributor.exe"
+[Environment]::SetEnvironmentVariable(
+  "Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$dir", "User")
+```
+
+Reopen the terminal afterwards so the new `PATH` applies. `Get-AuthenticodeSignature` ships with Windows PowerShell and needs no Visual Studio or SDK, unlike `signtool`. Check the *subject* rather than only `Status -eq "Valid"`: a validly signed binary from somebody else passes a status-only check.
+
+The Windows certificate is short-lived by design — the one that signed 0.1.0 was valid for three days — because Azure Trusted Signing issues a fresh certificate per signing job. The RFC3161 timestamp records that signing happened while it was live, so the signature keeps verifying afterwards. A past expiry date is expected here.
+
 Or download a binary by hand from [contributor-v0.1.0](https://github.com/TraceCommons/trace-commons-server/releases/tag/contributor-v0.1.0), the current CLI release. Note the tag: this repository publishes CLI releases as `contributor-v*` and desktop-app releases as `app-v*`, so GitHub's "latest release" is whichever was cut most recently and may hold no CLI binaries at all.
 
 | Platform | File | Signed by |
@@ -43,7 +76,7 @@ Or download a binary by hand from [contributor-v0.1.0](https://github.com/TraceC
 | Windows, x86_64 | `trace-commons-contributor-x86_64-pc-windows-msvc.exe` | Authenticode, timestamped |
 | Linux, x86_64 | `trace-commons-contributor-x86_64-unknown-linux-gnu` | not signed |
 
-A downloaded binary needs `chmod +x` and a place on your `PATH`. A `.sha256` sits beside each file.
+On macOS and Linux a downloaded binary needs `chmod +x` and a place on your `PATH`; on Windows use the PowerShell steps above. A `.sha256` sits beside each file.
 
 The macOS and Windows signatures are checkable offline, against Apple's and Microsoft's roots rather than against us, so they still mean something if the file was mirrored or re-hosted:
 

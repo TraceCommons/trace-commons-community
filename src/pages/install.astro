@@ -76,6 +76,40 @@ brew install trace-commons-contributor</code></pre>
     install stops at <em>“Refusing to load formula … from untrusted tap”</em>.
   </p>
 
+  <p>On Windows, in PowerShell:</p>
+  <pre><code>{`$exe  = "trace-commons-contributor-x86_64-pc-windows-msvc.exe"
+$base = "${DL}"
+
+Invoke-WebRequest "$base/$exe" -OutFile $exe
+Invoke-WebRequest "$base/$exe.sha256" -OutFile "$exe.sha256"
+
+# The published checksum must match.
+$want = ((Get-Content "$exe.sha256") -split '\\s+')[0]
+$got  = (Get-FileHash $exe -Algorithm SHA256).Hash
+if ($got -ne $want) { throw "checksum mismatch: got $got, published $want" }
+
+# The signature must be valid AND ours.
+$sig = Get-AuthenticodeSignature $exe
+if ($sig.Status -ne "Valid") { throw "signature not valid: $($sig.StatusMessage)" }
+if ($sig.SignerCertificate.Subject -notmatch "O=Iqlusion Inc") {
+  throw "unexpected signer: $($sig.SignerCertificate.Subject)"
+}
+
+# Somewhere on your PATH, under your own profile -- no admin rights needed.
+$dir = "$env:LOCALAPPDATA\\Programs\\TraceCommons"
+New-Item -ItemType Directory -Force $dir | Out-Null
+Move-Item -Force $exe "$dir\\trace-commons-contributor.exe"
+[Environment]::SetEnvironmentVariable(
+  "Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$dir", "User")`}</code></pre>
+  <p class="muted">
+    Reopen your terminal after the last line so the new
+    <code>PATH</code> takes effect. <code>Get-AuthenticodeSignature</code> is
+    built into Windows PowerShell — unlike <code>signtool</code>, it needs no
+    Visual Studio or SDK install. Checking the subject and not merely
+    <code>Status -eq "Valid"</code> is the part that matters: a validly signed
+    binary from somebody else would pass the status check on its own.
+  </p>
+
   <p>
     Or take a binary straight from
     <a href={RELEASES}>{CLI_TAG}</a>, the current CLI release:
@@ -110,9 +144,10 @@ brew install trace-commons-contributor</code></pre>
   </table>
 
   <p class="muted">
-    A downloaded binary needs <code>chmod +x</code> and somewhere on your
-    <code>PATH</code>. A <code>.sha256</code> sits beside each file if you want
-    to check the download arrived intact.
+    On macOS and Linux a downloaded binary needs <code>chmod +x</code> and
+    somewhere on your <code>PATH</code>; on Windows use the PowerShell steps
+    above. A <code>.sha256</code> sits beside each file if you want to check the
+    download arrived intact.
   </p>
 
   <details>
@@ -128,8 +163,18 @@ codesign -dvvv trace-commons-contributor-aarch64-apple-darwin 2>&1 | grep Author
 # Authority=Developer ID Certification Authority
 # Authority=Apple Root CA
 
-# Windows, from a Developer Command Prompt
-signtool verify /pa trace-commons-contributor-x86_64-pc-windows-msvc.exe`}</code></pre>
+# Windows, in PowerShell -- no SDK needed
+$sig = Get-AuthenticodeSignature trace-commons-contributor-x86_64-pc-windows-msvc.exe
+$sig.Status                        # Valid
+$sig.SignerCertificate.Subject     # CN=Iqlusion Inc, O=Iqlusion Inc, L=Santa Clara, S=California, C=US`}</code></pre>
+    <p class="muted">
+      The Windows certificate is deliberately short-lived — the one that signed
+      0.1.0 was valid for three days — because Azure Trusted Signing issues a
+      fresh certificate per signing job. The signature stays verifiable long
+      after that window through its RFC3161 timestamp, which records that the
+      signing happened while the certificate was live. An expiry date in the
+      past is expected here and is not a sign of anything wrong.
+    </p>
     <p class="muted">
       The Linux binary carries no signature, so the checksum is the only check
       available for it. The Linux desktop app is distributed as a GPG-signed
