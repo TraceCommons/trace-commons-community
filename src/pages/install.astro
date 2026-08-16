@@ -6,13 +6,15 @@ import Base from "../layouts/Base.astro";
    Slack DM, which is most of the distance between having an invite and making
    a first submission.
 
-   The download links are deliberately not written yet. There is no tagged
-   release, so pointing at one would 404, and a page that lies about what it
-   offers is worse than a page that admits the binaries are coming. When the
-   first `contributor-v*` tag lands, the build-from-source block moves down
-   and the table above it fills in. */
+   Downloads lead now that contributor-v0.1.0 is published, and building from
+   source has moved to the bottom as the fallback it became. Every command and
+   filename here was run or fetched against the real release rather than
+   written from the workflow that produces it -- if you change a filename, check
+   the release, do not assume. */
 
 const REPO = "https://github.com/TraceCommons/trace-commons-server";
+const RELEASES = `${REPO}/releases/latest`;
+const DL = `${REPO}/releases/latest/download`;
 ---
 
 <Base
@@ -28,18 +30,108 @@ const REPO = "https://github.com/TraceCommons/trace-commons-server";
     </p>
   </div>
 
-  <p class="banner">
-    <strong>Prebuilt binaries are not published yet.</strong> Building from
-    source needs a Rust toolchain, which is real friction and we know it. The
-    release pipeline is written and lands with the first tagged release; until
-    then the steps below are the whole path.
+  <h2>1. Install it</h2>
+
+  <p>On macOS, from our Homebrew tap:</p>
+  <pre><code>brew tap TraceCommons/tap
+brew trust tracecommons/tap
+brew install trace-commons-contributor</code></pre>
+  <p class="muted">
+    <code>brew trust</code> is not optional. Homebrew refuses to load a formula
+    from a third-party tap until you say you trust it, and without it the
+    install stops at <em>“Refusing to load formula … from untrusted tap”</em>.
   </p>
 
-  <h2>1. Build it</h2>
-  <pre><code>git clone {REPO}
-cd trace-commons-server
-cargo build --release -p trace-commons-contributor
-./target/release/trace-commons-contributor --help</code></pre>
+  <p>
+    Or take a binary straight from the
+    <a href={RELEASES}>latest release</a>:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Platform</th><th>File</th><th>Signed by</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>macOS, Apple silicon</td>
+        <td><a href={`${DL}/trace-commons-contributor-aarch64-apple-darwin`}><code>…-aarch64-apple-darwin</code></a></td>
+        <td>Developer ID, notarized</td>
+      </tr>
+      <tr>
+        <td>macOS, Intel</td>
+        <td><a href={`${DL}/trace-commons-contributor-x86_64-apple-darwin`}><code>…-x86_64-apple-darwin</code></a></td>
+        <td>Developer ID, notarized</td>
+      </tr>
+      <tr>
+        <td>Windows, x86_64</td>
+        <td><a href={`${DL}/trace-commons-contributor-x86_64-pc-windows-msvc.exe`}><code>…-x86_64-pc-windows-msvc.exe</code></a></td>
+        <td>Authenticode, timestamped</td>
+      </tr>
+      <tr>
+        <td>Linux, x86_64</td>
+        <td><a href={`${DL}/trace-commons-contributor-x86_64-unknown-linux-gnu`}><code>…-x86_64-unknown-linux-gnu</code></a></td>
+        <td>not signed</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="muted">
+    A downloaded binary needs <code>chmod +x</code> and somewhere on your
+    <code>PATH</code>. A <code>.sha256</code> sits beside each file if you want
+    to check the download arrived intact.
+  </p>
+
+  <details>
+    <summary>Confirming who built it</summary>
+    <p>
+      The signature is checkable offline, against Apple's and Microsoft's
+      roots rather than against us — so it still means something if the file
+      was mirrored, re-hosted, or served by someone other than GitHub.
+    </p>
+    <pre><code>{`# macOS
+codesign -dvvv trace-commons-contributor-aarch64-apple-darwin 2>&1 | grep Authority
+# Authority=Developer ID Application: Iqlusion Inc (KXSWJN7WY8)
+# Authority=Developer ID Certification Authority
+# Authority=Apple Root CA
+
+# Windows, from a Developer Command Prompt
+signtool verify /pa trace-commons-contributor-x86_64-pc-windows-msvc.exe`}</code></pre>
+    <p class="muted">
+      The Linux binary carries no signature, so the checksum is the only check
+      available for it. The Linux desktop app is distributed as a GPG-signed
+      flatpak instead.
+    </p>
+  </details>
+
+  <div class="stack">
+    <h2>Or install the desktop app</h2>
+    <p>
+      The app does the same work with a window instead of a terminal: it watches
+      for new sessions, shows you what each one would send, and waits for you to
+      approve it. The CLI remains the whole story if you would rather not run a
+      background application at all.
+    </p>
+    <p>On macOS:</p>
+    <pre><code>brew tap TraceCommons/tap
+brew trust tracecommons/tap
+brew install --cask trace-commons</code></pre>
+    <p class="muted">
+      Or take <a href={`${DL}/TraceCommons-0.1.0.dmg`}><code>TraceCommons-0.1.0.dmg</code></a>
+      directly. It is a universal build, so it runs on both Apple silicon and
+      Intel, and it is notarized and stapled — it opens without a Gatekeeper
+      prompt even offline.
+    </p>
+    <p>On Linux, as a flatpak:</p>
+    <pre><code>flatpak install --from \
+  https://storage.googleapis.com/tracecommons-flatpak/ai.tracecommons.Contributor.flatpakref</code></pre>
+    <p class="muted">
+      The OSTree repo behind that is GPG-signed and flatpak verifies it as part
+      of the install. The app is confined: it asks for read-only access to
+      <code>~/.claude/projects</code> and <code>~/.codex/sessions</code> and
+      nothing wider, which you can check with
+      <code>flatpak info --show-permissions ai.tracecommons.Contributor</code>.
+    </p>
+  </div>
 
   <h2>2. Enrol</h2>
   <p>
@@ -80,6 +172,18 @@ cargo build --release -p trace-commons-contributor
     (<code>--no-bio</code>). <code>profile --withdraw</code> removes your public
     attribution; the row goes at the next snapshot.
   </p>
+
+  <div class="stack">
+    <h2>Building from source instead</h2>
+    <p>
+      Still supported, and necessary on any platform not in the table above —
+      Linux on arm64, for instance. It needs a Rust toolchain.
+    </p>
+    <pre><code>git clone {REPO}
+cd trace-commons-server
+cargo build --release --bin trace-commons-contributor
+./target/release/trace-commons-contributor --help</code></pre>
+  </div>
 
   <div class="stack">
     <h2>What leaves your machine</h2>
