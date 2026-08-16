@@ -1,0 +1,150 @@
+name: deploy
+
+# Publishes both Cloudflare Pages projects on every push to main.
+#
+# Why this exists: neither project has ever had a Git integration. Every
+# deployment in their history was an ad-hoc `wrangler pages deploy` from
+# somebody's laptop (the API reports `source: null` and
+# `deployment_trigger.type: "ad_hoc"` on all of them). Merging was not
+# publishing, and nothing said so -- tracecommons.ai served "prebuilt binaries
+# are not published yet" for four days after the signed releases shipped.
+#
+# It cannot be fixed by connecting the existing projects: "If you choose Direct
+# Upload, you cannot switch to Git integration later. You will have to create a
+# new project with Git integration" -- Cloudflare's own docs. Converting would
+# mean new projects and re-pointing the live custom domains. Deploying from CI
+# keeps the projects, the domains, and the history, and puts the pipeline in
+# version control where it can be reviewed.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two deploys of the same project overlap, and never cancel one
+# mid-upload -- a half-uploaded deployment is worse than a late one.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  community:
+    name: tracecommons.ai
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+          cache: npm
+
+      # Turn a missing secret into a message that names what to create,
+      # instead of an opaque wrangler authentication failure.
+      - name: Check deploy credentials are configured
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            echo "Create an API token with the 'Cloudflare Pages: Edit' permission" >&2
+            echo "and add both secrets under Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+
+      - run: npm ci
+
+      # The live snapshot, not the checked-in dummy. Without TC_API_BASE the
+      # fetcher falls back to dummy-7d.json with only a console warning, and the
+      # site ships a leaderboard banner reading "computed at 19 May 2026" --
+      # which is exactly what a hand-deploy without this variable published.
+      # The fetcher refuses snapshots older than an hour, so a stale or
+      # disabled upstream fails the deploy rather than quietly publishing
+      # fabricated numbers.
+      - name: Build against the live snapshot
+        env:
+          TC_API_BASE: https://ingest.tracecommons.ai
+        run: npm run build
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4.122.0 pages deploy dist \
+            --project-name trace-commons-community \
+            --branch main \
+            --commit-hash "$GITHUB_SHA"
+
+      - name: Confirm the deploy is actually serving
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            code="$(curl -sIL --max-time 20 -o /dev/null -w '%{http_code}' https://tracecommons.ai/install/ || true)"
+            [ "$code" = "200" ] && { echo "live (HTTP $code)"; exit 0; }
+            echo "attempt $attempt: HTTP $code, retrying"
+            sleep 10
+          done
+          echo "::error::tracecommons.ai did not serve HTTP 200 after the deploy"
+          exit 1
+
+  docs:
+    name: docs.tracecommons.ai
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22.12.0"
+          cache: npm
+          cache-dependency-path: docs-site/package-lock.json
+
+      - name: Check deploy credentials are configured
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            exit 1
+          fi
+
+      # Root deps as well as docs-site's: docs-site/tsconfig.json extends
+      # astro/tsconfigs/strict and the resolver walks up to the root tsconfig,
+      # whose own extends resolves against the ROOT node_modules. Same reason
+      # ci.yml does this -- see the longer note there.
+      - run: npm ci
+      - run: npm ci
+        working-directory: docs-site
+      - run: npm run build
+        working-directory: docs-site
+
+      - name: Deploy
+        working-directory: docs-site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4.122.0 pages deploy dist \
+            --project-name trace-commons-docs \
+            --branch main \
+            --commit-hash "$GITHUB_SHA"
+
+      - name: Confirm the deploy is actually serving
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            code="$(curl -sIL --max-time 20 -o /dev/null -w '%{http_code}' https://docs.tracecommons.ai/cli/quickstart/ || true)"
+            [ "$code" = "200" ] && { echo "live (HTTP $code)"; exit 0; }
+            echo "attempt $attempt: HTTP $code, retrying"
+            sleep 10
+          done
+          echo "::error::docs.tracecommons.ai did not serve HTTP 200 after the deploy"
+          exit 1
