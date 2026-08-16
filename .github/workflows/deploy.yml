@@ -72,6 +72,15 @@ jobs:
           TC_API_BASE: https://ingest.tracecommons.ai
         run: npm run build
 
+      # The build above runs on Node 20 to match what ci.yml validates, but
+      # wrangler 4.x requires Node >= 22 and hard-exits on 20. Switch versions
+      # for the upload only: it ships the already-built dist/, so the runtime
+      # cannot affect the output -- whereas building on a version CI never
+      # tests could.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22.12.0"
+
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
