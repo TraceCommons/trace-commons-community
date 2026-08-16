@@ -9,20 +9,48 @@ sidebar:
 
 The standalone `trace-commons-contributor` client discovers local Claude Code and Codex sessions, plus Letta Trajectory files you name explicitly. Parsing and redaction happen on your machine.
 
-:::caution[Current installation]
-Prebuilt release binaries are not available in the source contract verified for this page. Build the contributor from source until a release page is published.
-:::
+## 1. Install the client
 
-## 1. Build the client
-
-From a checkout of `trace-commons-server`:
+On macOS, from the Homebrew tap:
 
 ```sh
-cargo build --release -p trace-commons-contributor
-./target/release/trace-commons-contributor --help
+brew tap TraceCommons/tap
+brew trust tracecommons/tap
+brew install trace-commons-contributor
 ```
 
-Add the binary to your `PATH` or use its full path in the commands below.
+`brew trust` is required — Homebrew refuses to load a formula from a third-party tap without it, stopping at *"Refusing to load formula … from untrusted tap"*.
+
+Otherwise download a binary from the [latest release](https://github.com/TraceCommons/trace-commons-server/releases/latest):
+
+| Platform | File | Signed by |
+| --- | --- | --- |
+| macOS, Apple silicon | `trace-commons-contributor-aarch64-apple-darwin` | Developer ID, notarized |
+| macOS, Intel | `trace-commons-contributor-x86_64-apple-darwin` | Developer ID, notarized |
+| Windows, x86_64 | `trace-commons-contributor-x86_64-pc-windows-msvc.exe` | Authenticode, timestamped |
+| Linux, x86_64 | `trace-commons-contributor-x86_64-unknown-linux-gnu` | not signed |
+
+A downloaded binary needs `chmod +x` and a place on your `PATH`. A `.sha256` sits beside each file.
+
+The macOS and Windows signatures are checkable offline, against Apple's and Microsoft's roots rather than against us, so they still mean something if the file was mirrored or re-hosted:
+
+```sh
+codesign -dvvv trace-commons-contributor-aarch64-apple-darwin 2>&1 | grep Authority
+# Authority=Developer ID Application: Iqlusion Inc (KXSWJN7WY8)
+# Authority=Developer ID Certification Authority
+# Authority=Apple Root CA
+```
+
+The Linux binary carries no signature; the Linux desktop app is distributed as a GPG-signed flatpak instead.
+
+### Building from source instead
+
+Still supported, and necessary on platforms not in the table — Linux on arm64, for example. Needs a Rust toolchain:
+
+```sh
+cargo build --release --bin trace-commons-contributor
+./target/release/trace-commons-contributor --help
+```
 
 ## 2. Redeem your invite
 
