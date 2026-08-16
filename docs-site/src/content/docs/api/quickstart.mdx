@@ -1,0 +1,52 @@
+---
+title: API quickstart
+description: Submit a Trace Commons contribution envelope from your own client.
+sidebar:
+  badge:
+    text: v1 verified
+    variant: success
+---
+
+The API path is for clients that already own capture and can produce the versioned Trace Commons envelope. Do not send raw chat logs directly to ingest.
+
+## Request sequence
+
+1. [Enroll a device with an invite](/start/invites-and-enrollment/#build-an-enrollment-client) or another issuer flow provided by the deployment.
+2. Build and locally redact an `ironclaw.trace_contribution.v1` envelope.
+3. Ask the issuer for a short-lived upload claim bound to the contributor and requested scopes.
+4. Submit the envelope with that claim.
+5. Persist the returned `submission_id` and outcome.
+
+## Submit an envelope
+
+```sh
+curl --fail-with-body \
+  --request POST \
+  --url https://ingest.tracecommons.ai/v1/traces \
+  --header "authorization: Bearer $TRACE_COMMONS_UPLOAD_CLAIM" \
+  --header "content-type: application/json" \
+  --data-binary @envelope.json
+```
+
+The `submission_id` is supplied in the envelope and remains the stable identifier for retries, status, and withdrawal. The response receipt describes the server outcome:
+
+```json
+{
+  "status": "accepted",
+  "credit_points_pending": 5.2,
+  "explanation": ["Accepted into the private redacted corpus."]
+}
+```
+
+`credit_points_final` may be included after settlement. Never log the bearer, raw source trace, or unrestricted server error bodies.
+
+Continue with [What happens after submission](/start/after-submission/) for automated privacy holds, quarantine remediation, credits, downstream eligibility, public snapshots, and withdrawal.
+
+## Client requirements
+
+- HTTPS, except an explicit loopback development endpoint.
+- No credential-bearing redirects.
+- Bounded connect, request, and response-body limits.
+- Retry only operations that are safe under the stable submission identity.
+- Local fail-closed redaction before the first network call.
+- Durable storage for receipts, but not raw credentials.

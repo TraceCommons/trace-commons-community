@@ -4,6 +4,11 @@ dist/
 node_modules
 .wrangler/
 
+# Independent documentation site outputs
+docs-site/node_modules/
+docs-site/dist/
+docs-site/.astro/
+
 # Local snapshot cache (built at CI time from upstream API)
 src/_data/snapshots/*.json
 !src/_data/snapshots/.gitkeep

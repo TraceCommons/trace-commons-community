@@ -1,0 +1,41 @@
+---
+title: Review and approve in the desktop app
+description: Preview exactly what will be sent and understand one-time and standing approvals.
+---
+
+## Review a pending trace
+
+1. Open the contributor app and select a pending session.
+2. Confirm the safe project label and source.
+3. Generate the redacted preview.
+4. Review the event types, included text, reasoning, tool payloads, consent scopes, and warnings.
+5. Approve the prepared envelope or leave it pending.
+
+The daemon writes the prepared envelope before showing it. Upload reads those same bytes rather than redacting the source a second time, so the preview and upload cannot silently diverge.
+
+## Approval choices
+
+- **Approve once** uploads only the prepared trace.
+- **Approve selected** uploads the selected bounded set after a single confirmation.
+- **Auto-upload this project** changes the project's standing mode for future eligible sessions.
+- **Ignore project** prevents newly discovered sessions for that project from entering the approval queue.
+
+:::note[Notifications do not upload]
+A notification may open the review screen, but it must not contain an action that uploads a trace. Upload approval happens in the application where the full preview and consent context are visible.
+:::
+
+## Undo and visibility
+
+An app can offer a short undo window after an approval. If the source changes before upload, the prepared approval is invalidated and the session returns to review. Automatic uploads and standing-policy changes are recorded in a local, hash-only audit log.
+
+## Withdraw a submitted trace
+
+Withdrawal requires an account session, not only the device key used for uploads. Sign in from the app, select an owned submission, review the tier-aware confirmation, and confirm withdrawal. The app reports whether the trace had never entered the commons, was in the commons but not distributed, or had already appeared in a published export.
+
+Withdrawal deletes Trace Commons' stored content and excludes the trace from future exports. If a copy was already distributed, the app says that it cannot be recalled. Credit already recorded stays.
+
+## When something is not sent
+
+Pending, refused, failed, ignored, and successfully uploaded states must remain distinguishable. A refusal means the safety pipeline deliberately kept the trace local; it should never be rendered as a successful contribution.
+
+Once an upload has a receipt, follow [What happens after submission](/start/after-submission/) to interpret server holds, acceptance, credits, community visibility, and withdrawal reach.

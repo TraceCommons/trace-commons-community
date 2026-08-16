@@ -1,0 +1,44 @@
+---
+title: Desktop app overview
+description: Use the native Trace Commons contributor interfaces without handing them raw credentials.
+sidebar:
+  badge:
+    text: macOS + Linux
+    variant: success
+---
+
+The contributor desktop interfaces use the same source discovery, redaction, consent, receipt, and upload implementation as the CLI.
+
+:::note[Current platform implementations]
+The merged source contains a SwiftUI menu-bar app for macOS and a GTK 4/libadwaita window for Linux. The Linux window connects to the systemd-managed contributor daemon; the macOS app hosts the daemon in-process. Published installer availability can lag the source, so use only a Trace Commons release artifact. There is no released Windows desktop app documented yet.
+:::
+
+## What the app can do
+
+- Connect the local device to a Trace Commons instance.
+- Show discovered projects without exposing full paths over the GUI socket.
+- List pending sessions and their safe project labels.
+- Generate and display the exact redacted envelope that an approval will send.
+- Approve one item or a bounded batch.
+- Ignore a project or explicitly arm it for automatic upload.
+- Surface receipts, refusal reasons, daemon health, and local audit history.
+- Sign in to the contributor's account and withdraw previously submitted traces.
+
+## What the app never receives
+
+- The device private key.
+- A reusable raw upload claim.
+- Full local project paths in daemon responses.
+- Raw server error bodies that might contain sensitive values.
+
+The Linux app connects through a user-protected Unix socket. The macOS app uses the same daemon contract through its in-process bridge. Project references cross the interface as opaque `project_id` values minted by the daemon, not full paths.
+
+## Project modes
+
+| Mode | Behavior |
+| --- | --- |
+| Ask / pending | New eligible sessions wait for review. |
+| Ignore | Sessions from the project are not offered for upload. |
+| Auto-upload | Future eligible sessions can upload under the standing policy after the app makes the armed state explicit. |
+
+Auto-upload is a durable opt-in. The app must keep armed projects visible and provide a direct way to disarm them.

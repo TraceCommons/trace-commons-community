@@ -1,0 +1,18 @@
+---
+title: Verified source versions
+description: Exact source and live-service versions used to verify these docs.
+---
+
+The command names, API routes, wire fields, and client behavior in this site were reconciled on **12 August 2026** against:
+
+| Component | Verified revision |
+| --- | --- |
+| `TraceCommons/trace-commons-server` | `47a3351c27176fa5278f244b43f9d5f8318f32ff` |
+| `iqlusioninc/ironclaw` | `173f078bbabfbf3770f6a0b2d637d88942e4f31e` |
+
+At the same verification point:
+
+- `https://ingest.tracecommons.ai/health` returned HTTP 200 with schema version `ironclaw.trace_contribution.v1`.
+- `https://issuer.tracecommons.ai/health` returned HTTP 200 with healthy signing-key and workload-public-key checks.
+
+The source revision verifies the contract represented here. A healthy endpoint confirms service availability, but does not by itself expose a deploy SHA; when deployment and source move independently, treat the deployed API response as authoritative and report any mismatch.

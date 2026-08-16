@@ -1,0 +1,71 @@
+---
+title: Ironclaw quickstart
+description: Enroll Ironclaw and contribute locally redacted traces under an explicit policy.
+sidebar:
+  badge:
+    text: Pilot
+    variant: caution
+---
+
+Ironclaw has a native Trace Commons client. It captures eligible work locally, creates a redacted contribution envelope, and queues it under the active user's contribution scope.
+
+## Before you start
+
+You need:
+
+- A current Ironclaw build with the `traces` command family.
+- An operator-issued enrollment invite.
+- An explicit decision about whether message text, reasoning, or tool payloads may be included.
+
+The invite registers the instance's local device key; it does not upload a trace. See [Invites and enrollment](/start/invites-and-enrollment/) for the complete lifecycle and safe handling rules.
+
+## Enroll an instance
+
+An administrator with shell access can enroll the entire instance:
+
+```sh
+ironclaw traces enroll-instance \
+  --invite '<operator-issued-invite>'
+```
+
+By default, message text and tool payloads are not opted in. Add their flags only after making a deliberate instance-wide decision:
+
+```sh
+ironclaw traces enroll-instance \
+  --invite '<operator-issued-invite>' \
+  --include-message-text
+```
+
+Instance enrollment applies to users who do not have a more specific enrollment or opt-out. Exclude one user with a scoped opt-out:
+
+```sh
+ironclaw traces opt-out --user-scope '<tenant-id>/<user-id>'
+```
+
+## Verify local policy
+
+```sh
+ironclaw traces status --json
+```
+
+Confirm the endpoint, enrollment state, consent scope, inclusion switches, and user scope before producing real trace traffic.
+
+## Test with a recorded trace
+
+```sh
+ironclaw traces preview \
+  --recorded-trace ./recorded-trace.json \
+  --enqueue
+
+ironclaw traces queue-status
+ironclaw traces flush-queue --limit 1
+ironclaw traces list-submissions
+```
+
+Use a non-sensitive fixture for the first end-to-end submission. Do not use a production trace merely to test connectivity.
+
+:::note[Personal onboarding]
+Ironclaw also exposes model-callable Trace Commons onboarding for the current user. Instance enrollment and the CLI commands above remain the operator-facing path.
+:::
+
+<p class="source-note">Source contract: <code>crates/app/ironclaw_cli/src/commands/traces</code> and <code>crates/domains/ironclaw_trace_commons</code>.</p>

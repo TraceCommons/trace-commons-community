@@ -1,0 +1,45 @@
+---
+title: Contribution envelope
+description: The versioned contract accepted by Trace Commons ingest.
+---
+
+The authoritative envelope type lives in the `trace-commons-protocol` crate. If prose and the Rust type disagree, the protocol crate wins.
+
+## Top-level responsibilities
+
+| Area | Purpose |
+| --- | --- |
+| `schema_version` | Selects the versioned contract; currently `ironclaw.trace_contribution.v1`. |
+| `submission_id` | Stable identity used for idempotency, status, revocation, and withdrawal. |
+| `trace_card` | Consent scopes, allowed uses, source channel, tool categories, retention, and revocation metadata. |
+| `events` | Locally redacted trace events, including distinct reasoning events when enabled. |
+| `value_card` | Versioned local scorecard and user-visible limitations/explanation. |
+| `contributor` | Pseudonymous attribution and tenant scope reference; never an authorization input. |
+| Derived fields | Redacted summaries, hashes, novelty inputs, and optional later labels. |
+
+## Build envelopes with the protocol library
+
+The safest implementation strategy is to depend on `trace-commons-protocol` and its constructors rather than recreating the wire schema by hand. The library owns:
+
+- Schema constants and serialization.
+- Consent and allowed-use combinations.
+- Deterministic redaction helpers.
+- Stable submission identity.
+- Size, scorecard, and trace-card validation.
+
+## Validation rules
+
+Before upload, reject an envelope when:
+
+- Its schema version is unsupported.
+- Required consent or revocation metadata is missing.
+- It contains no eligible redacted trace content.
+- A post-redaction secret scan still finds credential-shaped content.
+- Its requested uses exceed the contributor's selected scope.
+- It exceeds the client's or server's bounded size limits.
+
+:::note[Server-side validation is additional]
+A locally valid envelope is not automatically accepted. Ingest authenticates the principal, checks tenant and policy constraints, re-scrubs the body, and recomputes safety-sensitive values.
+:::
+
+<p class="source-note">Authoritative source: <code>crates/trace-commons-protocol/src/trace_contribution.rs</code>.</p>

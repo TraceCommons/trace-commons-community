@@ -1,0 +1,33 @@
+---
+title: How submission works
+description: The local-first lifecycle shared by every Trace Commons client.
+---
+
+## The lifecycle
+
+1. **Discover or capture.** A client finds a supported local session or records an agent run.
+2. **Select.** You choose a session, a bounded batch, or an explicitly armed project.
+3. **Redact locally.** The client removes known secret shapes, private paths, and sensitive structured fields before network access.
+4. **Preview and consent.** The envelope carries the uses you allowed. Interactive clients show what is about to be sent.
+5. **Authenticate.** The client obtains a short-lived upload claim tied to its tenant, principal, and allowed scopes.
+6. **Submit.** The client sends the versioned envelope to `POST /v1/traces`.
+7. **Validate and re-scrub.** Ingest treats the client as untrusted, validates the schema and authorization, and applies server-side redaction again.
+8. **Gate or review.** Low-risk, substantive, novel traces can be accepted. Other valid traces may be quarantined for review.
+9. **Track or revoke.** The contributor retains the stable `submission_id` for status reads and revocation.
+
+Continue with [What happens after submission](/start/after-submission/) for the receipt, review, credit, community, and withdrawal timeline.
+
+## What comes back
+
+A successful upload returns a receipt with the submission identifier and a server status. `accepted` and `quarantined` both mean the server received and stored the envelope; they differ in whether the trace can proceed without manual privacy review. `awaiting_pii_backstop` is a separate automated privacy hold.
+
+Duplicate content uses a stable submission identity. Repeating an upload does not create an unrelated second trace.
+
+## Trust boundaries
+
+| Boundary | Responsibility |
+| --- | --- |
+| Local client | Source discovery, selection, first redaction pass, consent, preview, and safe credential handling |
+| Upload-claim issuer | Authenticate the device/workload and narrow tenant, principal, role, scopes, uses, and lifetime |
+| Ingest service | Authorize, validate, re-scrub, rate-limit, persist, gate, audit, and return a safe receipt |
+| Contributor | Decide what to share and withdraw access when their decision changes |

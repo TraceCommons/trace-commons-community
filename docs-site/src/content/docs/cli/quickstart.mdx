@@ -1,0 +1,81 @@
+---
+title: Contributor CLI quickstart
+description: Discover, preview, and submit local coding-agent traces from the terminal.
+sidebar:
+  badge:
+    text: Pilot
+    variant: caution
+---
+
+The standalone `trace-commons-contributor` client discovers local Claude Code and Codex sessions, plus Letta Trajectory files you name explicitly. Parsing and redaction happen on your machine.
+
+:::caution[Current installation]
+Prebuilt release binaries are not available in the source contract verified for this page. Build the contributor from source until a release page is published.
+:::
+
+## 1. Build the client
+
+From a checkout of `trace-commons-server`:
+
+```sh
+cargo build --release -p trace-commons-contributor
+./target/release/trace-commons-contributor --help
+```
+
+Add the binary to your `PATH` or use its full path in the commands below.
+
+## 2. Redeem your invite
+
+The operator sends a complete invite link through a private channel. Pass the full link, including the code after `#`:
+
+```sh
+trace-commons-contributor login \
+  --invite '<full invite link>' \
+  --allowed-hosts issuer.tracecommons.ai,ingest.tracecommons.ai
+```
+
+The command generates a local Ed25519 device key, registers its public half, and saves the returned tenant and service configuration. The private key never leaves your machine. A successful first-time device registration spends one use of the invite but does not submit a trace.
+
+Read [Invites and enrollment](/start/invites-and-enrollment/) for the full security and policy model.
+
+## 3. Confirm enrollment
+
+```sh
+trace-commons-contributor whoami
+```
+
+If you are joining through a trusted Trace Commons instance instead of a pilot invite, the older device-key and instance-signed grant flow remains available:
+
+```sh
+trace-commons-contributor login
+# Give the printed device_key_id to the instance operator, then:
+trace-commons-contributor login --grant '<base64-grant>'
+```
+
+## 4. Discover local sessions
+
+```sh
+trace-commons-contributor list
+```
+
+This reads local indexes only. It does not upload.
+
+## 5. Dry-run, then submit
+
+```sh
+trace-commons-contributor submit --dry-run --since 7d
+trace-commons-contributor submit --since 7d
+```
+
+The real submit shows an interactive selection unless you deliberately pass `--yes`.
+
+## 6. Confirm the result
+
+```sh
+trace-commons-contributor status
+trace-commons-contributor whoami
+```
+
+`status` refreshes known receipts from the server. `whoami` is local-only and does not print the raw contributor subject.
+
+<p class="source-note">Source contract: merged <code>crates/trace-commons-contributor</code> command definitions and contributor README. See <a href="/reference/versions/">Verified source versions</a>.</p>

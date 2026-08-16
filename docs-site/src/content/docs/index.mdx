@@ -1,0 +1,85 @@
+---
+title: Trace Commons docs
+description: Submit useful AI agent traces without giving up control of your data.
+template: splash
+hero:
+  tagline: Enroll a device, choose what to contribute, inspect it locally, and follow the result from receipt to credit or withdrawal.
+  actions:
+    - text: Choose a submission path
+      link: /start/choose-a-path/
+      icon: right-arrow
+    - text: How invites work
+      link: /start/invites-and-enrollment/
+      variant: minimal
+      icon: seti:lock
+    - text: After submission
+      link: /start/after-submission/
+      variant: minimal
+      icon: open-book
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Start here: from invite to outcome
+
+<CardGrid>
+  <Card title="1. Choose your path" icon="puzzle">
+    Decide whether the contributor CLI, a desktop app, Ironclaw, or a direct API integration fits your traces.
+
+    [Compare submission paths →](/start/choose-a-path/)
+  </Card>
+  <Card title="2. Enroll safely" icon="seti:lock">
+    Learn what an invite authorizes, what stays local, and why enrollment does not submit any trace.
+
+    [Understand invites →](/start/invites-and-enrollment/)
+  </Card>
+  <Card title="3. Preview and submit" icon="terminal">
+    Follow the shared local-redaction, preview, consent, authentication, and submission lifecycle.
+
+    [See how submission works →](/start/how-it-works/)
+  </Card>
+  <Card title="4. Follow the result" icon="open-book">
+    Interpret receipts, privacy holds, acceptance, credits, community snapshots, and withdrawal reach.
+
+    [See what happens afterward →](/start/after-submission/)
+  </Card>
+</CardGrid>
+
+Consent travels with every trace throughout this journey. Review [consent and redaction](/start/consent-and-redaction/) before enabling message text, reasoning, or tool payloads.
+
+## Four ways to contribute
+
+<CardGrid stagger>
+  <Card title="Contributor CLI" icon="terminal">
+    Discover Claude Code, Codex, or Letta Trajectory sessions. Dry-run, filter by project or date, then upload only the sessions you select.
+
+    [Start with the CLI →](/cli/quickstart/)
+  </Card>
+  <Card title="Desktop apps" icon="setting">
+    Review a redacted preview, approve once, or explicitly arm a project for future uploads through the native contributor interface.
+
+    [Use a desktop app →](/gui/overview/)
+  </Card>
+  <Card title="Ironclaw" icon="rocket">
+    Enroll an Ironclaw instance or user, capture eligible traces locally, and let its bounded queue worker submit under a standing policy.
+
+    [Connect Ironclaw →](/ironclaw/quickstart/)
+  </Card>
+  <Card title="Direct API" icon="puzzle">
+    Build your own client against the versioned contribution envelope and short-lived upload-claim flow.
+
+    [Build with the API →](/api/quickstart/)
+  </Card>
+</CardGrid>
+
+## The rule that applies everywhere
+
+Raw session files stay on the contributor's machine. A client parses and redacts locally, applies the contributor's consent scope, and submits a versioned envelope. The server validates and re-scrubs every envelope before accepting it into the register or holding it for review.
+
+:::tip[You stay in control]
+Submission is opt-in. Use a dry run or preview before the first upload, inspect what will leave the machine, and withdraw contributed traces later.
+:::
+
+## Current deployment
+
+Trace Commons is in an active pilot. These pages were aligned on 12 August 2026 with the merged server and Ironclaw source listed in [Verified source versions](/reference/versions/). The production ingest and issuer health endpoints were also healthy at verification time.

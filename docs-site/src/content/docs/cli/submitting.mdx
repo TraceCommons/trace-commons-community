@@ -1,0 +1,71 @@
+---
+title: Select and submit traces
+description: Scope contributor CLI uploads by project, source, time, or trajectory.
+---
+
+## Scope the candidate set
+
+Use the narrowest selector that describes your intent.
+
+```sh
+# Sessions from the last day
+trace-commons-contributor submit --since 1d
+
+# Sessions whose real working directory is this project or a descendant
+trace-commons-contributor submit --project .
+
+# Only locally discovered Codex sessions
+trace-commons-contributor submit --source codex --since 7d
+
+# Explicit Letta Trajectory v1 file or directory
+trace-commons-contributor submit \
+  --source trajectory \
+  --trajectory ./trajectory-output
+```
+
+Trajectory files are never discovered implicitly. A missing `--trajectory` path is an error, not an empty batch.
+
+## Inspect without uploading
+
+`--dry-run` runs parsing, redaction, the privacy canary, and envelope sizing without making the upload request.
+
+```sh
+trace-commons-contributor submit \
+  --project . \
+  --no-reasoning \
+  --dry-run
+```
+
+## Produce a submission manifest
+
+A project integration can retain the successfully submitted IDs:
+
+```sh
+trace-commons-contributor submit \
+  --project . \
+  --manifest trace-commons-ids.json
+```
+
+The manifest includes successful and already-submitted receipts. Refused and failed sessions are excluded. A manifest cannot be combined with `--dry-run`, because dry-run identifiers do not exist server-side.
+
+Keep the manifest or local receipts: the stable IDs are how you [track what happens after submission](/start/after-submission/), remediate quarantine, and withdraw later.
+
+## Handle quarantined sessions
+
+After addressing the reason a session was quarantined, re-run the bounded remediation path:
+
+```sh
+trace-commons-contributor submit --remediate-quarantined
+```
+
+Remediation preserves the stable `submission_id` so the corrected envelope can supersede the earlier stored version.
+
+## Local state and logout
+
+The client keeps configuration, the device key, and hash-only receipts in its platform configuration directory. Override that directory with `--config-dir` or `TRACE_COMMONS_CONTRIBUTOR_DIR` when isolating environments.
+
+```sh
+trace-commons-contributor logout
+```
+
+Logout deletes the local contributor configuration, device key, receipts, and orphaned temporary files. It is not a substitute for withdrawing already submitted traces. See [Daemon and withdrawal](/cli/daemon-and-withdrawal/).

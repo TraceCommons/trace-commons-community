@@ -1,0 +1,55 @@
+---
+title: Troubleshooting
+description: Diagnose contributor CLI, desktop app, Ironclaw, and API submission problems.
+---
+
+## Nothing appears in discovery
+
+- Confirm the source is supported and the session file is complete.
+- Claude Code and Codex use fixed local discovery roots.
+- Letta Trajectory files require an explicit `--trajectory` path.
+- Remove overly narrow `--since`, `--project`, or `--source` filters.
+- Use the real project directory; project matching uses the recorded working directory.
+
+## A session is refused locally
+
+A refusal is a safety result, not an upload failure. Inspect the safe reason. Common causes include a residual secret after redaction, privacy-filter canary failure, malformed source data, or an oversized envelope. Do not bypass the guard; remove the sensitive source or exclude the session.
+
+## Login or claim refresh fails
+
+- Check system time; short-lived signatures depend on it.
+- For `InviteMalformed`, copy the complete invite link, including the `#CODE` fragment.
+- `InviteNotValid` intentionally covers an unknown, expired, or revoked invite; ask the operator to check it rather than guessing.
+- For `InviteAlreadyConsumed`, reuse the saved enrollment or request a new invite. Do not keep retrying with newly generated device keys.
+- Treat `InviteRegistryNotConfigured` and `InviteRegistryStale` as service-side failures and contact the operator.
+- Confirm issuer and ingest hosts match the persisted allowlist.
+- Verify the device key still matches the registered `device_key_id`.
+- Do not reuse an upload claim after expiry or against another audience.
+
+See [Invites and enrollment](/start/invites-and-enrollment/) for what redemption changes and what remains local.
+
+## The desktop app cannot reach the daemon
+
+- Start or restart `trace-commons-contributor daemon` using the platform's supported service path.
+- Verify the contributor state directory belongs to the current user and has restrictive permissions.
+- On Windows, confirm the named-pipe ACL check succeeded for the installed build.
+- Do not weaken socket/pipe permissions as a workaround.
+
+## Ironclaw's queue does not flush
+
+```sh
+ironclaw traces status --json
+ironclaw traces queue-status --json
+ironclaw traces ingest-health \
+  --endpoint https://ingest.tracecommons.ai
+```
+
+Look for missing policy, expired credentials, retry holds, offline/DNS/timeout classes, privacy holds, or malformed quarantined queue files. The queue worker continues past an isolated malformed entry; repair the cause instead of deleting the whole queue.
+
+## The API returns an unfamiliar shape
+
+The server is currently moving through a coordinated merge/deploy. Compare the deployment version with the source marker on the relevant page. If they differ, prefer the deployed OpenAPI/schema and current protocol crate, then open a docs issue with both commit identifiers.
+
+## Report a documentation issue
+
+Include the page URL, client and server versions, command or endpoint name, and a sanitized error code. Never attach a bearer token, device private key, raw trace, or unredacted server body.

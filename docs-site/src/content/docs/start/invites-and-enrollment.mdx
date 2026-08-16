@@ -1,0 +1,115 @@
+---
+title: Invites and enrollment
+description: Understand what a Trace Commons invite authorizes, how a device redeems it, and what happens afterward.
+sidebar:
+  badge:
+    text: Pilot
+    variant: caution
+---
+
+Trace Commons uses invites during the pilot to control who may register a contributing device. An invite is an **enrollment capability**: it lets an approved client create a local device identity and register its public key with the issuer.
+
+:::note[Enrollment is not submission]
+Redeeming an invite does not discover, read, redact, queue, or upload a trace. It only connects a device to Trace Commons. Choosing what to contribute remains a separate action, and you should preview or dry-run the first submission.
+:::
+
+## What an invite looks like
+
+An operator sends a full link through a private channel:
+
+```text
+https://issuer.tracecommons.ai/onboard#VQWWPGYSG8Y4LTP6
+```
+
+The part after `#` is the invite code. Browsers do not send URL fragments to the server, so opening the link only displays instructions and consumes nothing. A client spends an invite use only when it submits a successful onboarding request.
+
+Treat the complete link as a temporary credential. Do not put it in an issue, shared chat, screenshot, log, or checked-in command file. If it is exposed, ask the operator to revoke it and issue another.
+
+## What happens when you redeem it
+
+1. **You confirm enrollment.** The client should explain that locally redacted coding-agent records may be contributed and ask for an explicit yes.
+2. **The client creates a device key.** An Ed25519 keypair is generated locally. The private key stays on the device.
+3. **The client sends the invite code and public key.** The issuer receives the raw 32-byte public key in base64 form, plus safe client name and version fields.
+4. **The issuer checks the invite.** It verifies that the invite is known, active, unexpired, and still has an available use. The registry stores a one-way hash of the code rather than the raw code.
+5. **Policy limits are applied.** The invite selects or derives the tenant and sets the maximum consent scopes and uses the device may request. You can choose a narrower scope; the invite cannot force a broader consent choice.
+6. **The client saves enrollment.** The response contains the tenant, issuer and ingest URLs, audience, public device-key identifier, and community links. Losing this configuration can make the registration unusable; it does not restore the invite use.
+
+After enrollment, the device signs upload-claim requests with its private key. The issuer returns a short-lived, scope-bound upload claim for ingest. The invite code is not sent with every trace.
+
+```text
+private invite → register public device key → short-lived upload claims → ingest
+```
+
+## What the invite does not grant
+
+An invite does not:
+
+- upload existing or future sessions;
+- give Trace Commons access to your repositories or filesystem;
+- send the device private key to the operator or server;
+- bypass local redaction, preview, consent, or server-side validation;
+- make your community profile public;
+- withdraw traces that were already submitted.
+
+Invite expiry or revocation blocks future redemptions. It is separate from revoking an enrolled device and from [withdrawing a submitted trace](/api/status-and-revocation/).
+
+## Redeem with the contributor CLI
+
+Use the complete link, including its fragment:
+
+```sh
+trace-commons-contributor login \
+  --invite '<full invite link>' \
+  --allowed-hosts issuer.tracecommons.ai,ingest.tracecommons.ai
+
+trace-commons-contributor whoami
+```
+
+The CLI refuses to redeem another invite when the device is already enrolled. Reuse the saved enrollment instead. Run `logout` only when you deliberately intend to remove the local identity; logout does not restore a consumed invite or withdraw prior contributions.
+
+## Redeem with Ironclaw
+
+An Ironclaw administrator can enroll an instance:
+
+```sh
+ironclaw traces enroll-instance \
+  --invite '<full invite link>'
+
+ironclaw traces status --json
+```
+
+This is instance-wide for users without a more specific enrollment or opt-out. Review [Ironclaw enrollment](/ironclaw/quickstart/) before enabling optional message text or tool payloads.
+
+## Build an enrollment client
+
+Custom clients redeem the code with `POST /v1/onboard` on the issuer origin:
+
+```json
+{
+  "schema_version": "trace_commons.onboard_request.v1",
+  "invite_code": "<code from the invite URL>",
+  "device_public_key": "<base64 raw 32-byte Ed25519 public key>",
+  "client_info": {
+    "agent": "<client name>",
+    "version": "<client version>"
+  }
+}
+```
+
+Persist the successful response immediately and avoid blind retries. A device-key identifier such as `sha256:…`, a PEM document, or a key fingerprint is not a valid `device_public_key` value.
+
+## Common invite errors
+
+| Error | Meaning | What to do |
+| --- | --- | --- |
+| `InviteMalformed` | The link or code has the wrong format. | Copy the complete link again; do not guess or edit the code. |
+| `InviteNotValid` | The invite is unknown, expired, or revoked. These cases intentionally share one response. | Ask the operator to check it or issue a new invite. |
+| `InviteAlreadyConsumed` | The invite has no remaining uses for a new device. | Reuse an enrollment already saved on this device, or request a new invite. |
+| `DeviceKeyMalformed` | The public key is not base64-encoded raw Ed25519 key bytes. | Fix the client encoding; never send the private key. |
+| `InviteRegistryNotConfigured` or `InviteRegistryStale` | The issuer cannot safely verify invites. | Stop retrying and contact the operator; this is a service-side problem. |
+
+## Continue to submission
+
+Once the device is enrolled, [choose the client workflow that fits your traces](/start/choose-a-path/) and review [how submission works](/start/how-it-works/). Enrollment alone has not selected or uploaded anything.
+
+<p class="source-note">Verified against the database-authoritative invite registry, <code>POST /v1/onboard</code>, and the merged contributor and Ironclaw enrollment clients listed in <a href="/reference/versions/">Verified source versions</a>.</p>

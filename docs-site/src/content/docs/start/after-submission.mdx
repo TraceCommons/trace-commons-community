@@ -1,0 +1,159 @@
+---
+title: What happens after submission
+description: Follow a submitted trace from its first receipt through privacy checks, acceptance, credits, community snapshots, and withdrawal.
+---
+
+Submission starts a server-side lifecycle. A successful delivery gives you a stable `submission_id` and a receipt, but it does not necessarily mean the trace is already in the commons, publicly visible, credited, or distributed.
+
+:::note[Delivery outcome and trace status are different]
+The contributor CLI can report an outcome such as `submitted` or `already-submitted`. That tells you whether this run delivered new bytes. The receipt's `status`—such as `accepted`, `awaiting_pii_backstop`, or `quarantined`—tells you what the server may do with the trace.
+:::
+
+## The timeline
+
+| When | What happens | What you should do |
+| --- | --- | --- |
+| Immediately | Ingest authenticates the caller, validates the envelope, re-scrubs it, recomputes privacy risk and server-authored value fields, stores the redacted record, and returns a receipt. | Save the `submission_id` and receipt. |
+| After automated checks | The trace is accepted, held for the automated PII backstop, quarantined for review, or rejected. | Refresh status; do not blindly resubmit. |
+| After review or remediation | A quarantined trace may be accepted, rejected, or superseded by a corrected envelope using the same ID. | Follow the safe explanation and preserve the original ID. |
+| After credit processing | Pending credit may settle into final credit; later utility events may add a separate ledger adjustment. | Treat server values as authoritative. |
+| After a community snapshot | Aggregate corpus metrics update. An opted-in contributor profile may appear on the leaderboard. | Expect snapshot lag; public attribution remains optional. |
+| If you withdraw | Trace Commons deletes its stored content and excludes the trace from future use. Already-distributed copies cannot be recalled. | Read the returned distribution tier carefully. |
+
+## 1. The server validates and re-scrubs
+
+Ingest does not trust the client-side envelope. It:
+
+1. checks the upload claim, tenant access, consent scopes, and allowed uses;
+2. validates the versioned envelope and bounded sizes;
+3. binds ownership to the authenticated principal rather than trusting attribution fields in the body;
+4. applies deterministic server-side redaction again;
+5. recomputes the redaction hash, residual privacy risk, and server-authored value fields;
+6. writes the redacted artifact, submission record, derived metadata, and a hash-safe audit event.
+
+The server may raise the client-reported privacy risk. A client cannot lower the server's result by claiming a safer envelope.
+
+## 2. You receive a stable receipt
+
+A receipt includes a status and credit fields:
+
+```json
+{
+  "status": "accepted",
+  "credit_points_pending": 5.2,
+  "credit_points_final": null,
+  "explanation": ["Accepted into the private redacted corpus."]
+}
+```
+
+The envelope's `submission_id` is the durable join key for retries, status, remediation, revocation, and withdrawal. Keep it until every action you may want is complete.
+
+`already-submitted` is not a server rejection. It means a prior run already delivered that stable submission. Use the known ID and current server status rather than minting a new ID for the same trace.
+
+:::caution[Do not discard local receipts]
+Logging out removes local receipt history, but it does not remove server-side traces. Preserve or refresh receipts before logout if you may later need to withdraw a contribution.
+:::
+
+## 3. The trace enters one of the server lanes
+
+The server combines three decisions: privacy risk, novelty, and substance. The novelty gate asks whether the trace adds evidence that is meaningfully different from the existing register. The substance gate asks whether it records real agent work rather than template-shaped filler. Both gates must pass for normal acceptance, and privacy controls can still hold an otherwise useful trace for an additional automated check or manual review.
+
+### Accepted
+
+An `accepted` trace has cleared the required ingest and gating lane and is filed in the private redacted corpus. Acceptance does **not** mean the raw local transcript became public.
+
+An accepted trace is eligible for a downstream use only when every remaining control also matches:
+
+- its residual privacy risk is eligible for that surface;
+- the contributor's consent allows the requested use;
+- the consumer is authorized for the same use;
+- retention and revocation state still permit access.
+
+Consumers receive a filtered projection through controlled export paths, not your raw local session file.
+
+### Awaiting the PII backstop
+
+`awaiting_pii_backstop` is a temporary automated hold. It can apply when an otherwise acceptable trace includes message text and the deployment requires an additional privacy pass. The trace is not consumer-, export-, or credit-eligible while held.
+
+Refresh status later. This lane is not the manual-review queue and does not call for a new submission ID.
+
+### Quarantined
+
+A `quarantined` trace was received and stored but is not available to consumers. Credit is held at `0.0` pending review. Quarantine is a privacy posture, not the same as a failed network request.
+
+There are two ways forward:
+
+- A reviewer can approve or reject the stored trace.
+- You can correct the cause and use the client's quarantine-remediation command. Remediation reuses the **same** `submission_id`, supersedes the stored envelope, and reruns current server rules.
+
+With the contributor CLI:
+
+```sh
+trace-commons-contributor submit --remediate-quarantined
+```
+
+Do not create a fresh ID to escape quarantine. That would create a second record that competes with the original for duplicate and novelty checks.
+
+### Rejected or terminal
+
+`rejected` means a gate, policy, or review decision refused the trace. `revoked`, `expired`, and `purged` are terminal availability states. These records must not appear in future consumer exports.
+
+## 4. Credits can change over time
+
+The server, not the client estimate, is authoritative for value and credit:
+
+- `credit_points_pending` is the current pre-settlement amount.
+- `credit_points_final` appears after settlement is confirmed.
+- `credit_points_ledger` and `credit_points_total` may reflect later utility, evaluation, benchmark, ranking, or correction events on status reads.
+
+A quarantined or automated-held trace is not eligible for normal credit processing while it remains held. Withdrawal is a contributor right, not a penalty: credit already recorded stays, although the withdrawn trace is excluded from future use and future eligibility.
+
+## 5. Public visibility is a separate opt-in
+
+Trace content is not posted on the community site. Public corpus analytics are generated from guarded snapshots of eligible accepted activity. Contributor leaderboard visibility requires a separate public-attribution profile with a pseudonymous handle.
+
+If you opt in, later snapshots can show your handle and aggregate activity. Creating, changing, or withdrawing that profile does not widen the consent attached to any trace. Snapshot recomputation is asynchronous, so community pages can lag the latest receipt or profile change.
+
+## 6. Track the current state
+
+Contributor CLI:
+
+```sh
+trace-commons-contributor status
+trace-commons-contributor daemon history --refresh
+```
+
+Ironclaw:
+
+```sh
+ironclaw traces list-submissions --summary
+ironclaw traces credit
+```
+
+Direct API clients should call the contributor-scoped status endpoint with IDs they already know. Unknown or unauthorized IDs are omitted rather than distinguished:
+
+```http
+POST /v1/contributors/me/submission-status
+```
+
+Status reads can return up to 500 requested IDs at a time and include current status, pending and final credit, delayed-credit totals, safe explanations, and consent scopes.
+
+## 7. Withdrawal depends on distribution reach
+
+Withdrawal deletes Trace Commons' stored content, invalidates derived availability, and excludes the trace from future exports. The server reports one of three reach tiers:
+
+| Tier | Meaning |
+| --- | --- |
+| `not_distributed` | The trace never entered the commons. Nothing was distributed. |
+| `commons_not_distributed` | It entered the commons but has not appeared in a published export or benchmark. |
+| `commons_distributed` | It already appeared in a published artifact. Trace Commons deletes its copy and excludes it going forward, but existing distributed copies cannot be recalled. |
+
+Stopping automatic contribution, logging out, revoking a device, withdrawing a public profile, and withdrawing a trace are separate operations. Use [Status and withdrawal](/api/status-and-revocation/) for the supported commands and API routes.
+
+## Related guides
+
+- [Statuses and outcomes](/reference/statuses/) is the compact state reference.
+- [Status and withdrawal](/api/status-and-revocation/) contains the supported tracking, revocation, and withdrawal commands.
+- [Consent and redaction](/start/consent-and-redaction/) explains which downstream uses a trace can permit.
+
+<p class="source-note">Verified against the merged submission handler, contributor status read-back, privacy backstop, quarantine remediation, credit fields, community snapshots, and tiered withdrawal contract listed in <a href="/reference/versions/">Verified source versions</a>.</p>
