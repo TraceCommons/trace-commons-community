@@ -31,7 +31,13 @@ const path = Astro.url.pathname;
 const isCurrent = (href: string) =>
   href === "/" ? path === "/" : path.startsWith(href);
 
+/* Install leads. It is the only link here that is an action rather than a
+   place to look at, and it was missing entirely -- the sole route to it was one
+   in-prose link most of the way down the landing page, which meant a
+   contributor arriving with an invite had nowhere obvious to go from any other
+   page. */
 const appLinks = [
+  { href: "/install", label: "Install" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/analytics", label: "Analytics" },
   { href: "/profile", label: "Profile" },
