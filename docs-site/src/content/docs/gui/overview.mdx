@@ -10,8 +10,37 @@ sidebar:
 The contributor desktop interfaces use the same source discovery, redaction, consent, receipt, and upload implementation as the CLI.
 
 :::note[Current platform implementations]
-The merged source contains a SwiftUI menu-bar app for macOS and a GTK 4/libadwaita window for Linux. The Linux window connects to the systemd-managed contributor daemon; the macOS app hosts the daemon in-process. Published installer availability can lag the source, so use only a Trace Commons release artifact. There is no released Windows desktop app documented yet.
+A SwiftUI menu-bar app for macOS and a GTK 4/libadwaita window for Linux. The Linux window connects to the systemd-managed contributor daemon; the macOS app hosts the daemon in-process. There is no Windows desktop app — on Windows, use the [CLI](/cli/quickstart/).
 :::
+
+## Installing it
+
+On macOS:
+
+```sh
+brew tap TraceCommons/tap
+brew trust tracecommons/tap
+brew install --cask trace-commons
+```
+
+`brew trust` is required — Homebrew refuses to load a formula or cask from a third-party tap without it.
+
+Or take the DMG from the [latest app release](https://github.com/TraceCommons/trace-commons-server/releases/latest). It is a universal build, so it runs on both Apple silicon and Intel, and it is notarized and stapled — it opens without a Gatekeeper prompt even with no network.
+
+On Linux, as a flatpak:
+
+```sh
+flatpak install --from \
+  https://storage.googleapis.com/tracecommons-flatpak/ai.tracecommons.Contributor.flatpakref
+```
+
+The OSTree repo behind that is GPG-signed and flatpak verifies it during install. The app is confined and asks for read-only access to `~/.claude/projects` and `~/.codex/sessions` and nothing wider — check for yourself with:
+
+```sh
+flatpak info --show-permissions ai.tracecommons.Contributor
+```
+
+If you point the daemon at a session directory outside those two, the confined app cannot read it; that is a real limitation of the flatpak rather than an oversight, and the CLI has no such restriction.
 
 ## What the app can do
 
