@@ -40,6 +40,17 @@ jobs:
           node-version: "22.12.0"
           cache: npm
           cache-dependency-path: docs-site/package-lock.json
+      # The ROOT deps are needed even though this job only checks docs-site.
+      # docs-site/tsconfig.json extends astro/tsconfigs/strict, and the
+      # resolver walks up and also finds the repo-root tsconfig.json, whose own
+      # `extends` resolves against the ROOT node_modules. Without them,
+      # `astro check` fails with "Tsconfig not found astro/tsconfigs/strict" --
+      # a message that names docs-site's own extends and sends you looking in
+      # the wrong file entirely. Adding include/exclude to docs-site's tsconfig
+      # does NOT stop the upward walk; this was verified both ways from a clean
+      # clone.
+      - run: npm ci
+        working-directory: .
       - run: npm ci
       - run: npm run verify
       - name: Upload docs site
