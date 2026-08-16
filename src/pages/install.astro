@@ -32,6 +32,8 @@ const DL = `${REPO}/releases/download/${CLI_TAG}`;
 const DL_APP = `${REPO}/releases/download/${APP_TAG}`;
 const INSTALL_SH =
   "https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.sh";
+const INSTALL_PS1 =
+  "https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.ps1";
 ---
 
 <Base
@@ -77,7 +79,20 @@ brew install trace-commons-contributor</code></pre>
   </p>
 
   <p>On Windows, in PowerShell:</p>
-  <pre><code>{`$exe  = "trace-commons-contributor-x86_64-pc-windows-msvc.exe"
+  <pre><code>{`irm ${INSTALL_PS1} -OutFile install.ps1
+.\\install.ps1`}</code></pre>
+  <p class="muted">
+    Same policy as the unix installer: it verifies the published checksum and
+    requires the Authenticode signature to be valid <em>and</em> name us, with no
+    flag to skip either, and installs to
+    <code>%LOCALAPPDATA%\Programs\TraceCommons</code> without needing
+    administrator rights. Reopen your terminal afterwards so the updated
+    <code>PATH</code> applies.
+  </p>
+
+  <details>
+    <summary>Or do it by hand on Windows</summary>
+    <pre><code>{`$exe  = "trace-commons-contributor-x86_64-pc-windows-msvc.exe"
 $base = "${DL}"
 
 Invoke-WebRequest "$base/$exe" -OutFile $exe
@@ -101,14 +116,14 @@ New-Item -ItemType Directory -Force $dir | Out-Null
 Move-Item -Force $exe "$dir\\trace-commons-contributor.exe"
 [Environment]::SetEnvironmentVariable(
   "Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$dir", "User")`}</code></pre>
-  <p class="muted">
-    Reopen your terminal after the last line so the new
-    <code>PATH</code> takes effect. <code>Get-AuthenticodeSignature</code> is
-    built into Windows PowerShell — unlike <code>signtool</code>, it needs no
-    Visual Studio or SDK install. Checking the subject and not merely
-    <code>Status -eq "Valid"</code> is the part that matters: a validly signed
-    binary from somebody else would pass the status check on its own.
-  </p>
+    <p class="muted">
+      <code>Get-AuthenticodeSignature</code> is built into Windows PowerShell —
+      unlike <code>signtool</code>, it needs no Visual Studio or SDK install.
+      Checking the subject and not merely <code>Status -eq "Valid"</code> is the
+      part that matters: a validly signed binary from somebody else would pass
+      the status check on its own.
+    </p>
+  </details>
 
   <p>
     Or take a binary straight from

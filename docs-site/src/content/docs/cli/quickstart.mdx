@@ -34,7 +34,16 @@ brew install trace-commons-contributor
 
 `brew trust` is required — Homebrew refuses to load a formula from a third-party tap without it, stopping at *"Refusing to load formula … from untrusted tap"*.
 
-On Windows, in PowerShell — there is no one-command installer for Windows yet, so this is the supported path:
+On Windows, in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.ps1 -OutFile install.ps1
+.\install.ps1
+```
+
+Same policy as the unix installer: the published checksum must match, the Authenticode signature must be valid **and** name us, and there is no flag to skip either. It installs to `%LOCALAPPDATA%\Programs\TraceCommons` without administrator rights. Reopen the terminal afterwards so the updated `PATH` applies. Useful flags: `-Dir <path>` and `-Version 0.1.0`.
+
+Or do the same by hand:
 
 ```powershell
 $exe  = "trace-commons-contributor-x86_64-pc-windows-msvc.exe"
