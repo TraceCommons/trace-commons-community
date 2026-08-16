@@ -11,12 +11,12 @@
     </div>
 
     <div class="hero-actions">
-      <a
-        class="btn btn-primary"
-        href="https://github.com/TraceCommons"
-        target="_blank"
-        rel="noopener noreferrer">Start mining credits</a
-      >
+      {/* The primary call to action goes to the install page, not to the
+          GitHub org it used to open in a new tab. "Start mining credits" that
+          lands you on a repository listing is a dead end: nothing there tells
+          you what to run. Internal, so no target or rel -- sending someone to
+          another page of the same site in a new tab is not a courtesy. */}
+      <a class="btn btn-primary" href="/install">Start mining credits</a>
       <a
         class="btn btn-secondary"
         href="https://github.com/TraceCommons"
