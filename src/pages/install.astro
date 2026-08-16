@@ -13,8 +13,25 @@ import Base from "../layouts/Base.astro";
    the release, do not assume. */
 
 const REPO = "https://github.com/TraceCommons/trace-commons-server";
-const RELEASES = `${REPO}/releases/latest`;
-const DL = `${REPO}/releases/latest/download`;
+
+/* Tags are pinned, not "latest", and that is deliberate. The repository
+   publishes two independent tag streams -- contributor-v* for the CLI and
+   app-v* for the desktop app -- so GitHub's "latest release" is whichever was
+   cut most recently, regardless of which artifact you wanted. Every
+   /releases/latest/download link to a CLI asset on this page returned 404 for
+   exactly that reason: app-v0.1.0 was newer and holds no CLI binaries.
+
+   So: bump these two constants when you cut a release. A stale version number
+   is a visible, obvious wrong; a link that silently 404s for half the
+   downloads is not. */
+const CLI_TAG = "contributor-v0.1.0";
+const APP_TAG = "app-v0.1.0";
+const CLI_VERSION = "0.1.0";
+const RELEASES = `${REPO}/releases/tag/${CLI_TAG}`;
+const DL = `${REPO}/releases/download/${CLI_TAG}`;
+const DL_APP = `${REPO}/releases/download/${APP_TAG}`;
+const INSTALL_SH =
+  "https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.sh";
 ---
 
 <Base
@@ -32,7 +49,24 @@ const DL = `${REPO}/releases/latest/download`;
 
   <h2>1. Install it</h2>
 
-  <p>On macOS, from our Homebrew tap:</p>
+  <p>On macOS or Linux, one command:</p>
+  <pre><code>{`curl -fsSL ${INSTALL_SH} -o install.sh
+sh install.sh`}</code></pre>
+  <p class="muted">
+    It works out which build you need, checks it, and puts it in
+    <code>~/.local/bin</code>. No <code>sudo</code>, and nothing outside your
+    home directory. The download-then-run form is written out rather than piped
+    into <code>sh</code> so you can read the script first, which we would rather
+    you did — it is under 200 lines.
+  </p>
+  <p class="muted">
+    The script refuses to install anything it cannot verify: the published
+    checksum has to match, and on macOS the signature has to be valid
+    <em>and</em> name our identity. There is no flag to skip that. If a check
+    fails it tells you which one and installs nothing.
+  </p>
+
+  <p>Or on macOS, from our Homebrew tap:</p>
   <pre><code>brew tap TraceCommons/tap
 brew trust tracecommons/tap
 brew install trace-commons-contributor</code></pre>
@@ -43,8 +77,8 @@ brew install trace-commons-contributor</code></pre>
   </p>
 
   <p>
-    Or take a binary straight from the
-    <a href={RELEASES}>latest release</a>:
+    Or take a binary straight from
+    <a href={RELEASES}>{CLI_TAG}</a>, the current CLI release:
   </p>
 
   <table>
@@ -116,7 +150,7 @@ signtool verify /pa trace-commons-contributor-x86_64-pc-windows-msvc.exe`}</code
 brew trust tracecommons/tap
 brew install --cask trace-commons</code></pre>
     <p class="muted">
-      Or take <a href={`${DL}/TraceCommons-0.1.0.dmg`}><code>TraceCommons-0.1.0.dmg</code></a>
+      Or take <a href={`${DL_APP}/TraceCommons-${CLI_VERSION}.dmg`}><code>TraceCommons-{CLI_VERSION}.dmg</code></a>
       directly. It is a universal build, so it runs on both Apple silicon and
       Intel, and it is notarized and stapled — it opens without a Gatekeeper
       prompt even offline.

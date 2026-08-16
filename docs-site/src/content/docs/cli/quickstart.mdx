@@ -11,7 +11,20 @@ The standalone `trace-commons-contributor` client discovers local Claude Code an
 
 ## 1. Install the client
 
-On macOS, from the Homebrew tap:
+On macOS or Linux, one command:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.sh -o install.sh
+sh install.sh
+```
+
+It picks the right build for your platform, verifies it, and installs to `~/.local/bin` — no `sudo`, nothing outside your home directory. It is written as download-then-run rather than piped into `sh` so you can read it first, which we would rather you did.
+
+The script will not install a binary it cannot verify: the published checksum must match, and on macOS the signature must be valid **and** name `Developer ID Application: Iqlusion Inc (KXSWJN7WY8)`. Checking *who* signed it matters more than checking that a signature exists — a valid signature from someone else is exactly what a looser check would accept. There is no flag to skip verification; on failure it reports which check failed and installs nothing.
+
+Useful flags: `--dir <path>` to install elsewhere, `--version 0.1.0` to pin a release instead of taking the newest.
+
+On macOS you can use the Homebrew tap instead:
 
 ```sh
 brew tap TraceCommons/tap
@@ -21,7 +34,7 @@ brew install trace-commons-contributor
 
 `brew trust` is required — Homebrew refuses to load a formula from a third-party tap without it, stopping at *"Refusing to load formula … from untrusted tap"*.
 
-Otherwise download a binary from the [latest release](https://github.com/TraceCommons/trace-commons-server/releases/latest):
+Or download a binary by hand from [contributor-v0.1.0](https://github.com/TraceCommons/trace-commons-server/releases/tag/contributor-v0.1.0), the current CLI release. Note the tag: this repository publishes CLI releases as `contributor-v*` and desktop-app releases as `app-v*`, so GitHub's "latest release" is whichever was cut most recently and may hold no CLI binaries at all.
 
 | Platform | File | Signed by |
 | --- | --- | --- |
