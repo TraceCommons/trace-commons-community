@@ -13,6 +13,9 @@
     "fetch-snapshot": "node scripts/fetch-snapshot.mjs"
   },
   "dependencies": {
+    "@near-wallet-selector/core": "^10.1.4",
+    "@near-wallet-selector/modal-ui": "^10.1.4",
+    "@near-wallet-selector/my-near-wallet": "^10.1.4",
     "astro": "^5.0.0"
   },
   "devDependencies": {

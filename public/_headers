@@ -8,15 +8,35 @@
 # caching is stated per path. Adding a route means adding it here too; the
 # fallback is Pages' own default, not the policy above.
 
+# COOP is `same-origin-allow-popups`, not `same-origin`, because /legion signs
+# through a wallet popup. Under `same-origin` the browser puts a cross-origin
+# popup in a different browsing context group and severs `window.opener`, so
+# MyNearWallet's popup can never `postMessage` its signature back. The claim
+# would then settle only through wallet-selector's `childWindow.closed` poll,
+# rejecting "User closed the window" — the button would look inert while
+# working perfectly in local dev, where these headers are not served.
+#
+# Per-route COOP is not an option: the rules above MERGE, so a /legion override
+# would emit `same-origin, same-origin-allow-popups`, which is not a valid
+# header value. It is this or nothing.
+#
+# What this gives up: popups this site opens keep a handle back to it. Nothing
+# here relies on cross-origin isolation, and the popup is the wallet the user
+# deliberately opened, so that is the intended relationship rather than a leak.
 /*
   Content-Security-Policy: default-src 'self'; connect-src 'self' https://ingest.tracecommons.ai https://issuer.tracecommons.ai; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
-  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
 
 # Handle and bio management, and short-lived upload claims. Never stored.
 /profile*
+  Cache-Control: no-store
+
+# Wallet signing ceremony. Never cached: the page reads live pool counts, and a
+# cached copy would advertise allotments that are already gone.
+/legion
   Cache-Control: no-store
 
 # Snapshot-backed pages. 15 min matches the snapshot worker interval.
