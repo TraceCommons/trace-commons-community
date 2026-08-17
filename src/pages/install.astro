@@ -6,11 +6,13 @@ import Base from "../layouts/Base.astro";
    Slack DM, which is most of the distance between having an invite and making
    a first submission.
 
-   Downloads lead now that contributor-v0.1.0 is published, and building from
+   Downloads lead now that signed binaries are published, and building from
    source has moved to the bottom as the fallback it became. Every command and
    filename here was run or fetched against the real release rather than
    written from the workflow that produces it -- if you change a filename, check
-   the release, do not assume. */
+   the release, do not assume. That is not a stylistic preference: app-v0.2.0
+   published a Windows asset whose name promised the desktop app and whose
+   contents were the CLI, and only unzipping the published file caught it. */
 
 const REPO = "https://github.com/TraceCommons/trace-commons-server";
 
@@ -21,12 +23,20 @@ const REPO = "https://github.com/TraceCommons/trace-commons-server";
    /releases/latest/download link to a CLI asset on this page returned 404 for
    exactly that reason: app-v0.1.0 was newer and holds no CLI binaries.
 
-   So: bump these two constants when you cut a release. A stale version number
+   So: bump these constants when you cut a release. A stale version number
    is a visible, obvious wrong; a link that silently 404s for half the
    downloads is not. */
-const CLI_TAG = "contributor-v0.1.0";
-const APP_TAG = "app-v0.1.0";
-const CLI_VERSION = "0.1.0";
+const CLI_TAG = "contributor-v0.2.0";
+const APP_TAG = "app-v0.2.1";
+const CLI_VERSION = "0.2.0";
+/* The app carries its own version now, and it is NOT the CLI's. app-v0.2.0
+   shipped a Windows asset containing the CLI rather than the desktop app, and
+   app-v0.2.1 is the correction, so the two streams sit a patch apart. The DMG
+   filename below used to interpolate CLI_VERSION, which was harmless only
+   while the two numbers happened to be equal -- and would have become exactly
+   the silent 404 the note above warns about the moment they diverged, which
+   they now have. */
+const APP_VERSION = "0.2.1";
 const RELEASES = `${REPO}/releases/tag/${CLI_TAG}`;
 const DL = `${REPO}/releases/download/${CLI_TAG}`;
 const DL_APP = `${REPO}/releases/download/${APP_TAG}`;
@@ -210,10 +220,22 @@ $sig.SignerCertificate.Subject     # CN=Iqlusion Inc, O=Iqlusion Inc, L=Santa Cl
 brew trust tracecommons/tap
 brew install --cask trace-commons</code></pre>
     <p class="muted">
-      Or take <a href={`${DL_APP}/TraceCommons-${CLI_VERSION}.dmg`}><code>TraceCommons-{CLI_VERSION}.dmg</code></a>
+      Or take <a href={`${DL_APP}/TraceCommons-${APP_VERSION}.dmg`}><code>TraceCommons-{APP_VERSION}.dmg</code></a>
       directly. It is a universal build, so it runs on both Apple silicon and
       Intel, and it is notarized and stapled — it opens without a Gatekeeper
       prompt even offline.
+    </p>
+    <p>On Windows:</p>
+    <pre><code>{`Expand-Archive trace-commons-app-windows-x86_64-${APP_VERSION}.zip -DestinationPath .
+.\\TraceCommons-${APP_VERSION}\\TraceCommons.exe`}</code></pre>
+    <p class="muted">
+      Take <a href={`${DL_APP}/trace-commons-app-windows-x86_64-${APP_VERSION}.zip`}><code>trace-commons-app-windows-x86_64-{APP_VERSION}.zip</code></a>
+      and unzip it anywhere. There is nothing to install first: the .NET runtime
+      and the Windows App SDK are bundled inside, so it is a folder you keep
+      rather than something that writes into the system. <code>TraceCommons.exe</code>
+      is Authenticode-signed by Iqlusion Inc and timestamped, and the same
+      <code>Get-AuthenticodeSignature</code> check shown above works on it —
+      check the <em>subject</em>, not just that a signature exists.
     </p>
     <p>On Linux, as a flatpak:</p>
     <pre><code>flatpak install --from \
