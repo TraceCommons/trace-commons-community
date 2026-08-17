@@ -172,6 +172,10 @@ const ERROR_COPY: Record<string, string> = {
     "We could not reach NEAR to check the account right now. This is on our side — please try again shortly.",
   ClaimBackendUnavailable:
     "The invite service is unavailable right now. Please try again shortly.",
+  WalletPopupBlocked:
+    "Your browser blocked the wallet popup. Allow popups for this site and click “Sign and claim” again.",
+  ClaimResponseMalformed:
+    "The invite service returned a response we could not read. Nothing was claimed — please try again shortly.",
 };
 
 const GENERIC_ERROR =
@@ -195,6 +199,11 @@ function readConfig(): ClaimConfig {
 function hexToBytes(hex: string): Uint8Array {
   const clean = hex.trim();
   if (clean.length % 2 !== 0) throw new Error("Malformed nonce");
+  // Without this, `Number.parseInt("zz", 16)` is NaN, which a Uint8Array
+  // stores as 0. A non-hex nonce would then pass the 32-byte length check,
+  // get signed, and come back as SignatureInvalid — whose copy tells the user
+  // to go check their wallet for what is entirely our fault.
+  if (!/^[0-9a-fA-F]*$/.test(clean)) throw new Error("Malformed nonce");
   const out = new Uint8Array(clean.length / 2);
   for (let i = 0; i < out.length; i += 1) {
     out[i] = Number.parseInt(clean.slice(i * 2, i * 2 + 2), 16);
@@ -237,7 +246,19 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   const text = await response.text();
-  const parsed = text ? JSON.parse(text) : {};
+  // An edge 502/503 answers with an HTML body, not JSON. An unguarded parse
+  // would throw a SyntaxError whose message becomes the error label, matching
+  // no ERROR_COPY key and rendering the generic message instead of the
+  // "service unavailable" copy this case already has.
+  let parsed: Record<string, unknown> = {};
+  if (text) {
+    try {
+      parsed = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      if (!response.ok) throw new Error("ClaimBackendUnavailable");
+      throw new Error("ClaimResponseMalformed");
+    }
+  }
   if (!response.ok) {
     throw new Error(
       typeof parsed.error === "string"
@@ -363,6 +384,21 @@ class LegionClaimApp {
       // validation throws exactly like this. Anything that is not plausibly a
       // user action is surfaced as an error and logged.
       const message = error instanceof Error ? error.message : String(error);
+
+      // The wallet throws this by name when the browser refuses the popup. It
+      // is neither a cancellation nor our bug, and it is the one failure here
+      // the user can actually fix — so it must not fall through to the silent
+      // reset below, which would leave the button looking inert.
+      if (/popup window blocked/i.test(message)) {
+        this.state = {
+          ...this.state,
+          stage: "error",
+          errorLabel: "WalletPopupBlocked",
+        };
+        this.render();
+        return;
+      }
+
       const looksLikeIntegrationFault =
         /invalid (nonce|message|recipient)/i.test(message) ||
         error instanceof TypeError;
