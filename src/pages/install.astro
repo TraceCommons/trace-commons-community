@@ -48,10 +48,10 @@ const INSTALL_PS1 =
 
 <Base
   title="Install"
-  description="Install the Trace Commons contributor CLI and make your first submission."
+  description="Install the Trace Commons desktop app or contributor CLI and make your first submission."
 >
   <div class="stack">
-    <h2>Install the contributor CLI</h2>
+    <h2>Install Trace Commons</h2>
     <p>
       Everything here runs on your own machine. Nothing is sent anywhere until
       you run <code>submit</code>, and <code>submit --dry-run</code> shows you
@@ -60,6 +60,59 @@ const INSTALL_PS1 =
   </div>
 
   <h2>1. Install it</h2>
+
+  <p>
+    Two ways in, and the app is the shorter one. It does the same work in a
+    window: it watches for new sessions, shows you what each would send, and
+    waits for you to approve it. The CLI does the same from a terminal and
+    remains the complete story if you would rather not run a background
+    application at all.
+  </p>
+
+  <div class="stack">
+    <h3>The desktop app</h3>
+    <p>On macOS:</p>
+    <pre><code>brew tap TraceCommons/tap
+brew trust tracecommons/tap
+brew install --cask trace-commons</code></pre>
+    <p class="muted">
+      Or take <a href={`${DL_APP}/TraceCommons-${APP_VERSION}.dmg`}><code>TraceCommons-{APP_VERSION}.dmg</code></a>
+      directly. It is a universal build, so it runs on both Apple silicon and
+      Intel, and it is notarized and stapled — it opens without a Gatekeeper
+      prompt even offline.
+    </p>
+    <p>On Windows:</p>
+    <pre><code>{`Expand-Archive trace-commons-app-windows-x86_64-${APP_VERSION}.zip -DestinationPath .
+.\\TraceCommons-${APP_VERSION}\\TraceCommons.exe`}</code></pre>
+    <p class="muted">
+      Take <a href={`${DL_APP}/trace-commons-app-windows-x86_64-${APP_VERSION}.zip`}><code>trace-commons-app-windows-x86_64-{APP_VERSION}.zip</code></a>
+      and unzip it anywhere. There is nothing to install first: the .NET runtime
+      and the Windows App SDK are bundled inside, so it is a folder you keep
+      rather than something that writes into the system. <code>TraceCommons.exe</code>
+      is Authenticode-signed by Iqlusion Inc and timestamped, and the same
+      <code>Get-AuthenticodeSignature</code> check shown below works on it —
+      check the <em>subject</em>, not just that a signature exists.
+    </p>
+    <p>On Linux, as a flatpak:</p>
+    <pre><code>flatpak install --from \
+  https://storage.googleapis.com/tracecommons-flatpak/ai.tracecommons.Contributor.flatpakref</code></pre>
+    <p class="muted">
+      The OSTree repo behind that is GPG-signed and flatpak verifies it as part
+      of the install. The app is confined: it asks for read-only access to
+      <code>~/.claude/projects</code> and <code>~/.codex/sessions</code> and
+      nothing wider, which you can check with
+      <code>flatpak info --show-permissions ai.tracecommons.Contributor</code>.
+    </p>
+    <p class="muted">
+      One caveat before you pick. Only the macOS app can enrol you on its own —
+      it takes an invite by paste or by clicking the link. The Windows and Linux
+      apps have no invite screen yet, so on those platforms install the CLI
+      below as well and run step 2 there once. After that the app is connected
+      and you need not return to the terminal.
+    </p>
+  </div>
+
+  <h3>Or the contributor CLI</h3>
 
   <p>On macOS or Linux, one command:</p>
   <pre><code>{`curl -fsSL ${INSTALL_SH} -o install.sh
@@ -207,49 +260,13 @@ $sig.SignerCertificate.Subject     # CN=Iqlusion Inc, O=Iqlusion Inc, L=Santa Cl
     </p>
   </details>
 
-  <div class="stack">
-    <h2>Or install the desktop app</h2>
-    <p>
-      The app does the same work with a window instead of a terminal: it watches
-      for new sessions, shows you what each one would send, and waits for you to
-      approve it. The CLI remains the whole story if you would rather not run a
-      background application at all.
-    </p>
-    <p>On macOS:</p>
-    <pre><code>brew tap TraceCommons/tap
-brew trust tracecommons/tap
-brew install --cask trace-commons</code></pre>
-    <p class="muted">
-      Or take <a href={`${DL_APP}/TraceCommons-${APP_VERSION}.dmg`}><code>TraceCommons-{APP_VERSION}.dmg</code></a>
-      directly. It is a universal build, so it runs on both Apple silicon and
-      Intel, and it is notarized and stapled — it opens without a Gatekeeper
-      prompt even offline.
-    </p>
-    <p>On Windows:</p>
-    <pre><code>{`Expand-Archive trace-commons-app-windows-x86_64-${APP_VERSION}.zip -DestinationPath .
-.\\TraceCommons-${APP_VERSION}\\TraceCommons.exe`}</code></pre>
-    <p class="muted">
-      Take <a href={`${DL_APP}/trace-commons-app-windows-x86_64-${APP_VERSION}.zip`}><code>trace-commons-app-windows-x86_64-{APP_VERSION}.zip</code></a>
-      and unzip it anywhere. There is nothing to install first: the .NET runtime
-      and the Windows App SDK are bundled inside, so it is a folder you keep
-      rather than something that writes into the system. <code>TraceCommons.exe</code>
-      is Authenticode-signed by Iqlusion Inc and timestamped, and the same
-      <code>Get-AuthenticodeSignature</code> check shown above works on it —
-      check the <em>subject</em>, not just that a signature exists.
-    </p>
-    <p>On Linux, as a flatpak:</p>
-    <pre><code>flatpak install --from \
-  https://storage.googleapis.com/tracecommons-flatpak/ai.tracecommons.Contributor.flatpakref</code></pre>
-    <p class="muted">
-      The OSTree repo behind that is GPG-signed and flatpak verifies it as part
-      of the install. The app is confined: it asks for read-only access to
-      <code>~/.claude/projects</code> and <code>~/.codex/sessions</code> and
-      nothing wider, which you can check with
-      <code>flatpak info --show-permissions ai.tracecommons.Contributor</code>.
-    </p>
-  </div>
-
   <h2>2. Enrol</h2>
+  <p class="muted">
+    In the macOS app this step is the second onboarding screen: paste the invite
+    there, or click the link and it opens the app. Steps 3 to 5 below have their
+    equivalents in the app's own windows too. What follows is the CLI form of
+    the same sequence — and on Windows and Linux, the way to enrol at all.
+  </p>
   <p>
     The pilot is invite-only. With an invite link from the operator:
   </p>
