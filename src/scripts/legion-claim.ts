@@ -100,18 +100,31 @@ interface ChallengeResponse {
   recipient: string;
 }
 
+/** Wire names of the ranks that can claim, highest first. */
+type Rank = "vanguard" | "ascendant";
+
+const RANK_LABEL: Record<Rank, string> = {
+  vanguard: "Vanguard",
+  ascendant: "Ascendant",
+};
+
 interface ClaimResponse {
   inviteCode: string;
+  /** Rank the server resolved this account to. Decides the grant size. */
+  rank: Rank;
   maxUses: number;
   expiresAt: string | null;
 }
 
-interface StatusResponse {
+interface RankStatus {
   claimed: number;
   cap: number;
   remaining: number;
   maxUses: number;
 }
+
+/** Per-rank pools. Each rank carries its own cap and grant size. */
+type StatusResponse = Record<Rank, RankStatus>;
 
 type Stage =
   | "idle"
@@ -146,7 +159,9 @@ const ERROR_COPY: Record<string, string> = {
   PublicKeyNotFullAccess:
     "The key that signed is not a full-access key on that account. Sign with the wallet that actually owns it, not a limited app key.",
   AccountHoldsNoLegionToken:
-    "That account does not hold a NEAR Legion token. If you hold one in a different account, connect that one instead.",
+    "That account does not hold a NEAR Legion credential. If you hold one in a different account, connect that one instead.",
+  AccountRankNotEligible:
+    "That account holds a NEAR Legion credential, but not at a rank that can claim right now. Invites are open to Vanguard and Ascendant only.",
   AccountNotEligible:
     "That account is not eligible to claim. Treasury and contract accounts are excluded.",
   InviteCredentialAlreadyBound:
@@ -444,13 +459,31 @@ class LegionClaimApp {
       });
   }
 
+  /**
+   * One line per rank pool.
+   *
+   * The pools are independent, so an aggregate would be actively misleading: a
+   * full Vanguard pool says nothing about whether an Ascendant can still claim.
+   */
   private statusLine(): string {
     const s = this.state.status;
     if (!s) return "";
-    if (s.remaining === 0) {
-      return `<p class="muted">All ${s.cap} allotments have been claimed. This round is full.</p>`;
-    }
-    return `<p class="muted">${s.remaining} of ${s.cap} allotments remaining, ${s.maxUses} invites each.</p>`;
+
+    const ranks: Rank[] = ["vanguard", "ascendant"];
+    const parts = ranks
+      .map((rank) => {
+        const pool = s[rank];
+        if (!pool) return "";
+        const name = RANK_LABEL[rank];
+        if (pool.remaining === 0) {
+          return `${name}: all ${pool.cap} allotments claimed.`;
+        }
+        return `${name}: ${pool.remaining} of ${pool.cap} remaining, ${pool.maxUses} invites each.`;
+      })
+      .filter(Boolean);
+
+    if (parts.length === 0) return "";
+    return `<p class="muted">${parts.map(escapeHtml).join(" ")}</p>`;
   }
 
   private view(): string {
@@ -475,7 +508,8 @@ class LegionClaimApp {
             it, it is gone.
           </p>
           <p>
-            Redeemable <strong>${code.maxUses} times</strong>${
+            ${escapeHtml(RANK_LABEL[code.rank] ?? "Legion")} rank — redeemable
+            <strong>${code.maxUses} times</strong>${
               expiry ? `, until ${escapeHtml(expiry)}` : ""
             }. Give it to people whose agent work you would want in the register.
           </p>

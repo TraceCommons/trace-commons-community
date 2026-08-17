@@ -9,7 +9,7 @@ const nearNetwork = import.meta.env.TC_NEAR_NETWORK ?? "mainnet";
 
 <Base
   title="NEAR Legion invites"
-  description="NEAR Legion token holders can claim invite codes to the Trace Commons pilot."
+  description="NEAR Legion Vanguard and Ascendant rank holders can claim invite codes to the Trace Commons pilot."
 >
   <Fragment slot="head">
     <meta name="tc-issuer-base" content={issuerBase} />
@@ -21,9 +21,15 @@ const nearNetwork = import.meta.env.TC_NEAR_NETWORK ?? "mainnet";
   <p>
     The pilot is invite-only while the register is being built, and every invite
     so far has been handed out by the operator. This is the first self-serve
-    path in: connect a NEAR account that holds a
-    <a href="https://nearlegion.com">NEAR Legion</a> token, prove you control it,
-    and get invite codes to hand out.
+    path in: connect a NEAR account holding a
+    <a href="https://nearlegion.com">NEAR Legion</a> Vanguard or Ascendant rank,
+    prove you control it, and get invite codes to hand out.
+  </p>
+
+  <p>
+    Rank decides the size of the allotment: <strong>Vanguard gets five</strong>
+    redemptions, <strong>Ascendant gets three</strong>. Initiate rank and the
+    tradeable NEAR Legion collection cannot claim in this round.
   </p>
 
   <p>
@@ -60,16 +66,23 @@ const nearNetwork = import.meta.env.TC_NEAR_NETWORK ?? "mainnet";
 
   <h2>Being straight about the gate</h2>
   <p>
-    Holding a NEAR Legion token is a signal, not a qualification, and we would
-    rather say so than imply this is more selective than it is. The collection
-    is described as soulbound but is in fact transferable, and minting is open
-    to anyone who wants one. So the token does not prove much on its own.
+    Rank is a better signal than the tradeable collection, which is why the gate
+    moved. The base NEAR Legion collection is described as soulbound but is in
+    fact transferable, and minting is open, so holding one proves little. The
+    rank credentials are assigned rather than bought, and they do not appear to
+    move between accounts — which is what makes them worth gating on.
   </p>
   <p>
-    <strong>The cap is the real bound.</strong> A fixed number of allotments
-    exist; the counter above is live. When they are gone, this round is closed.
-    Treasury and contract accounts are excluded, because one treasury account
-    holds the large majority of the supply and could otherwise take the lot.
+    It is still a signal, not a qualification, and we would rather say so than
+    imply this is more selective than it is. Ranks are cumulative: everyone
+    holding Vanguard also holds the ranks beneath it, so you are always offered
+    the largest allotment your rank allows, never the smallest.
+  </p>
+  <p>
+    <strong>Each rank has its own cap.</strong> The counters above are live and
+    independent — a full Vanguard round does not close the Ascendant one.
+    Treasury and contract accounts are excluded, because the project account
+    holds rank credentials of its own and could otherwise claim alongside people.
   </p>
 
   <h2>What signing does and does not do</h2>
