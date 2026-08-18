@@ -22,7 +22,7 @@ It picks the right build for your platform, verifies it, and installs to `~/.loc
 
 The script will not install a binary it cannot verify: the published checksum must match, and on macOS the signature must be valid **and** name `Developer ID Application: Iqlusion Inc (KXSWJN7WY8)`. Checking *who* signed it matters more than checking that a signature exists — a valid signature from someone else is exactly what a looser check would accept. There is no flag to skip verification; on failure it reports which check failed and installs nothing.
 
-Useful flags: `--dir <path>` to install elsewhere, `--version 0.2.0` to pin a release instead of taking the newest.
+Useful flags: `--dir <path>` to install elsewhere, `--version 0.3.0` to pin a release instead of taking the newest.
 
 On macOS you can use the Homebrew tap instead:
 
@@ -41,13 +41,13 @@ irm https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scr
 .\install.ps1
 ```
 
-Same policy as the unix installer: the published checksum must match, the Authenticode signature must be valid **and** name us, and there is no flag to skip either. It installs to `%LOCALAPPDATA%\Programs\TraceCommons` without administrator rights. Reopen the terminal afterwards so the updated `PATH` applies. Useful flags: `-Dir <path>` and `-Version 0.2.0`.
+Same policy as the unix installer: the published checksum must match, the Authenticode signature must be valid **and** name us, and there is no flag to skip either. It installs to `%LOCALAPPDATA%\Programs\TraceCommons` without administrator rights. Reopen the terminal afterwards so the updated `PATH` applies. Useful flags: `-Dir <path>` and `-Version 0.3.0`.
 
 Or do the same by hand:
 
 ```powershell
 $exe  = "trace-commons-contributor-x86_64-pc-windows-msvc.exe"
-$base = "https://github.com/TraceCommons/trace-commons-server/releases/download/contributor-v0.2.0"
+$base = "https://github.com/TraceCommons/trace-commons-server/releases/download/contributor-v0.3.0"
 
 Invoke-WebRequest "$base/$exe" -OutFile $exe
 Invoke-WebRequest "$base/$exe.sha256" -OutFile "$exe.sha256"
@@ -76,7 +76,7 @@ Reopen the terminal afterwards so the new `PATH` applies. `Get-AuthenticodeSigna
 
 The Windows certificate is short-lived by design — the one that signed 0.1.0 was valid for three days — because Azure Trusted Signing issues a fresh certificate per signing job. The RFC3161 timestamp records that signing happened while it was live, so the signature keeps verifying afterwards. A past expiry date is expected here.
 
-Or download a binary by hand from [contributor-v0.2.0](https://github.com/TraceCommons/trace-commons-server/releases/tag/contributor-v0.2.0), the current CLI release. Note the tag: this repository publishes CLI releases as `contributor-v*` and desktop-app releases as `app-v*`, so GitHub's "latest release" is whichever was cut most recently and may hold no CLI binaries at all. That is not hypothetical — the most recent release right now is `app-v0.2.1`, and it contains no CLI at all.
+Or download a binary by hand from [contributor-v0.3.0](https://github.com/TraceCommons/trace-commons-server/releases/tag/contributor-v0.3.0), the current CLI release. Note the tag: this repository publishes CLI releases as `contributor-v*` and desktop-app releases as `app-v*`, so GitHub's "latest release" is whichever was cut most recently and is not reliably the one holding the CLI you came for. That is not hypothetical — `app-v0.2.1` held the "latest" label for a day with no CLI in it at all. The current newest, `app-v0.3.0`, is the subtler version of the same trap: it does carry a CLI zip, but only a Windows one, so on macOS or Linux the latest release still has nothing for you.
 
 | Platform | File | Signed by |
 | --- | --- | --- |
