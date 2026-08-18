@@ -3,14 +3,16 @@ title: Desktop app overview
 description: Use the native Trace Commons contributor interfaces without handing them raw credentials.
 sidebar:
   badge:
-    text: macOS + Linux
+    text: macOS + Linux + Windows
     variant: success
 ---
 
 The contributor desktop interfaces use the same source discovery, redaction, consent, receipt, and upload implementation as the CLI.
 
 :::note[Current platform implementations]
-A SwiftUI menu-bar app for macOS and a GTK 4/libadwaita window for Linux. The Linux window connects to the systemd-managed contributor daemon; the macOS app hosts the daemon in-process. There is no Windows desktop app — on Windows, use the [CLI](/cli/quickstart/).
+A SwiftUI menu-bar app for macOS, a GTK 4/libadwaita window for Linux, and a WinUI 3 window for Windows. The Linux window connects to the systemd-managed contributor daemon; the macOS and Windows apps host the daemon in-process.
+
+All three carry the full path — enrol, preview, approve, receipt — so everything below under *What the app can do* applies to each of them. The Windows app is the newest and is still missing pieces at the edges: bulk withdrawal (a refusal rather than a gap — `withdraw_bulk` returns only counts, and the withdrawal contract forbids reporting a generic "withdrawn", so withdraw per row instead), the watcher and connection sections of Settings, and most of the tray menu's vocabulary.
 :::
 
 ## Installing it
@@ -25,7 +27,15 @@ brew install --cask trace-commons
 
 `brew trust` is required — Homebrew refuses to load a formula or cask from a third-party tap without it.
 
-Or take the DMG from the [latest app release](https://github.com/TraceCommons/trace-commons-server/releases/latest). It is a universal build, so it runs on both Apple silicon and Intel, and it is notarized and stapled — it opens without a Gatekeeper prompt even with no network.
+Or take [`TraceCommons-0.3.0.dmg`](https://github.com/TraceCommons/trace-commons-server/releases/download/app-v0.3.0/TraceCommons-0.3.0.dmg) from the [`app-v0.3.0`](https://github.com/TraceCommons/trace-commons-server/releases/tag/app-v0.3.0) release. It is a universal build, so it runs on both Apple silicon and Intel, and it is notarized and stapled — it opens without a Gatekeeper prompt even with no network. Use the `app-v*` tag rather than `/releases/latest`: the newest release overall is often a `contributor-v*` CLI one with no app in it.
+
+On Windows:
+
+```powershell
+Add-AppxPackage -AppInstallerFile https://storage.googleapis.com/tracecommons-flatpak/windows/TraceCommons.appinstaller
+```
+
+That installs the Authenticode-signed MSIX and leaves Windows to keep it current — it re-checks that address on launch, at most once every eight hours. The publisher shown at install time is `CN=Iqlusion Inc`; read it rather than clicking past it. If you would rather not install a package at all, [`trace-commons-app-windows-x86_64-0.3.0.zip`](https://github.com/TraceCommons/trace-commons-server/releases/download/app-v0.3.0/trace-commons-app-windows-x86_64-0.3.0.zip) unzips to a self-contained `TraceCommons-0.3.0/TraceCommons.exe` with the .NET runtime and Windows App SDK bundled in, and no update mechanism attached.
 
 On Linux, as a flatpak:
 

@@ -26,20 +26,30 @@ const REPO = "https://github.com/TraceCommons/trace-commons-server";
    So: bump these constants when you cut a release. A stale version number
    is a visible, obvious wrong; a link that silently 404s for half the
    downloads is not. */
-const CLI_TAG = "contributor-v0.2.0";
-const APP_TAG = "app-v0.2.1";
-const CLI_VERSION = "0.2.0";
-/* The app carries its own version now, and it is NOT the CLI's. app-v0.2.0
-   shipped a Windows asset containing the CLI rather than the desktop app, and
-   app-v0.2.1 is the correction, so the two streams sit a patch apart. The DMG
-   filename below used to interpolate CLI_VERSION, which was harmless only
-   while the two numbers happened to be equal -- and would have become exactly
-   the silent 404 the note above warns about the moment they diverged, which
-   they now have. */
-const APP_VERSION = "0.2.1";
+const CLI_TAG = "contributor-v0.3.0";
+const APP_TAG = "app-v0.3.0";
+const CLI_VERSION = "0.3.0";
+/* The app carries its own version, and it is NOT the CLI's. They read the same
+   at 0.3.0 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
+   Windows asset containing the CLI rather than the desktop app and app-v0.2.1
+   was the correction. Equal today is a coincidence, not an invariant: the DMG
+   filename below used to interpolate CLI_VERSION and became exactly the silent
+   404 this note warns about the first time the two diverged. Keep them
+   separate constants even while the numbers match. */
+const APP_VERSION = "0.3.0";
+/* The MSIX ships a four-part Windows package version; the appinstaller and the
+   .msix filename both carry it, and it is the app version with a trailing .0
+   rather than a number of its own. */
+const APP_MSIX_VERSION = `${APP_VERSION}.0`;
 const RELEASES = `${REPO}/releases/tag/${CLI_TAG}`;
 const DL = `${REPO}/releases/download/${CLI_TAG}`;
 const DL_APP = `${REPO}/releases/download/${APP_TAG}`;
+/* Windows installs the MSIX from this address and then checks it for updates
+   on its own -- the release asset of the same name is a copy, not the address
+   to hand people, because an .appinstaller that updates from a GitHub release
+   URL is not what the workflow publishes. */
+const APPINSTALLER =
+  "https://storage.googleapis.com/tracecommons-flatpak/windows/TraceCommons.appinstaller";
 const INSTALL_SH =
   "https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.sh";
 const INSTALL_PS1 =
@@ -62,12 +72,11 @@ const INSTALL_PS1 =
   <h2>1. Install it</h2>
 
   <p>
-    Two ways in, and on macOS and Linux the app is the shorter one. It does the
-    same work in a window: it watches for new sessions, shows you what each
+    Two ways in, and on all three platforms the app is the shorter one. It does
+    the same work in a window: it watches for new sessions, shows you what each
     would send, and waits for you to approve it. The CLI does the same from a
     terminal and remains the complete story if you would rather not run a
-    background application at all — and on Windows, today, it is the only way to
-    send anything. That is set out with the app below.
+    background application at all.
   </p>
 
   <div class="stack">
@@ -83,6 +92,20 @@ brew install --cask trace-commons</code></pre>
       prompt even offline.
     </p>
     <p>On Windows:</p>
+    <pre><code>{`Add-AppxPackage -AppInstallerFile ${APPINSTALLER}`}</code></pre>
+    <p class="muted">
+      That installs the signed MSIX and, unlike the zip below, leaves Windows
+      responsible for keeping it current: the <code>.appinstaller</code> it was
+      installed from is checked on launch, at most once every eight hours, and a
+      newer version is fetched in the background. The package is
+      <code>Iqlusion.TraceCommons</code>, published as
+      <code>CN=Iqlusion Inc</code> — Windows will show you that publisher before
+      it installs anything, and it is worth reading rather than clicking past.
+    </p>
+    <p class="muted">
+      Or unzip it and keep a folder instead, which is the same application with
+      no update mechanism attached:
+    </p>
     <pre><code>{`Expand-Archive trace-commons-app-windows-x86_64-${APP_VERSION}.zip -DestinationPath .
 .\\TraceCommons-${APP_VERSION}\\TraceCommons.exe`}</code></pre>
     <p class="muted">
@@ -95,11 +118,25 @@ brew install --cask trace-commons</code></pre>
       check the <em>subject</em>, not just that a signature exists.
     </p>
     <p class="muted">
-      Know what it will not do before you unzip it: the Windows app cannot send
-      a session. It enrols you, watches, and queues what it finds, and there it
-      stops — it opens no preview and has no approve button, so nothing in it
-      submits. On Windows the CLI below is therefore not a second route you may
-      prefer, it is how a trace gets contributed at all.
+      Both assets sit on the release too, the MSIX as
+      <a href={`${DL_APP}/TraceCommons.App_${APP_MSIX_VERSION}_x64.msix`}><code>TraceCommons.App_{APP_MSIX_VERSION}_x64.msix</code></a>.
+      Installing that file directly works and gets you no updates: the update
+      address lives in the <code>.appinstaller</code>, so a bare MSIX is the zip
+      with extra steps. Note also that the release carries a second Windows zip,
+      <code>trace-commons-windows-x86_64-{APP_VERSION}.zip</code> — that one is
+      the command-line contributor, not this app, and the names differ by one
+      word.
+    </p>
+    <p class="muted">
+      As of 0.3.0 the Windows app submits. It enrols you, takes your scopes,
+      queues what it finds, opens the same preview the other two shells do, and
+      contributes when you approve — with an undo window until the watcher's
+      next sweep. Approving is deliberately awkward in one specific way: the
+      Contribute button is inert until the transcript has actually been on
+      screen and you have ticked the acknowledgement by hand, and there is no
+      approve control on a queue row, because approving from the row is
+      approving without looking. Nothing reachable from the tray icon or a
+      notification approves or sends anything either.
     </p>
     <p>On Linux, as a flatpak:</p>
     <pre><code>flatpak install --from \
@@ -112,15 +149,17 @@ brew install --cask trace-commons</code></pre>
       <code>flatpak info --show-permissions ai.tracecommons.Contributor</code>.
     </p>
     <p class="muted">
-      The three are not at the same point, so it is worth saying plainly where
-      each stands. The macOS and Linux apps are whole: each enrols you on its
-      own — an invite by paste or by clicking the link — lets you choose your
-      consent scopes, previews what a session would send, and submits it when
-      you approve. Neither needs the CLI at any step. The Windows app has the
-      first half of that and not the second: enrolment, scopes and the queue
-      work, previewing and approving do not exist in it yet. So on Windows the
-      steps below are not a one-off you leave behind — they are how you submit,
-      every time, until the app can do it.
+      All three now carry the whole path on their own: each enrols you — an
+      invite by paste or by clicking the link — lets you choose your consent
+      scopes, previews what a session would send, submits it when you approve,
+      and shows you the receipt. None of them needs the CLI at any step, so the
+      steps below are an alternative rather than a requirement on any platform.
+      Windows is the newest of the three and is still missing pieces around the
+      edges: bulk withdrawal is absent by design (a bulk call cannot report what
+      happened to each trace, and reporting a generic “withdrawn” is exactly
+      what the withdrawal contract forbids — withdraw per row instead), and the
+      watcher knobs, the connection section and most of the tray menu's
+      vocabulary are not drawn yet.
     </p>
   </div>
 
@@ -276,9 +315,9 @@ $sig.SignerCertificate.Subject     # CN=Iqlusion Inc, O=Iqlusion Inc, L=Santa Cl
   <p class="muted">
     In the macOS, Linux and Windows apps alike this step is the second
     onboarding screen: paste the invite there, or click the link and it opens
-    the app. Steps 3 to 5 below have their equivalents in the macOS and Linux
-    windows too; the Windows app stops after this one. What follows is the CLI
-    form of the same sequence — and on Windows, the way to submit at all.
+    the app. Steps 3 to 5 below have their equivalents in all three windows —
+    the preview is step 3, approving is step 4, and claiming a handle is on the
+    profile panel. What follows is the CLI form of the same sequence.
   </p>
   <p>
     The pilot is invite-only. With an invite link from the operator:
