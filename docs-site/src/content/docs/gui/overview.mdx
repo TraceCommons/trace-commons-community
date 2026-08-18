@@ -10,9 +10,9 @@ sidebar:
 The contributor desktop interfaces use the same source discovery, redaction, consent, receipt, and upload implementation as the CLI.
 
 :::note[Current platform implementations]
-A SwiftUI menu-bar app for macOS, a GTK 4/libadwaita window for Linux, and a WinUI 3 window for Windows. The Linux window connects to the systemd-managed contributor daemon; the macOS app hosts the daemon in-process.
+A SwiftUI menu-bar app for macOS, a GTK 4/libadwaita window for Linux, and a WinUI 3 window for Windows. The Linux window connects to the systemd-managed contributor daemon; the macOS and Windows apps host the daemon in-process.
 
-The Windows app is not yet at the same point as the other two. It enrols you, takes your consent scopes, watches, and queues what it finds — and stops there. It has no envelope preview and no approve action, so nothing in it submits. Everything below under *What the app can do* describes macOS and Linux; on Windows, submitting is done with the [CLI](/cli/quickstart/), every time, until the app can do it.
+All three carry the full path — enrol, preview, approve, receipt — so everything below under *What the app can do* applies to each of them. The Windows app is the newest and is still missing pieces at the edges: bulk withdrawal (a refusal rather than a gap — `withdraw_bulk` returns only counts, and the withdrawal contract forbids reporting a generic "withdrawn", so withdraw per row instead), the watcher and connection sections of Settings, and most of the tray menu's vocabulary.
 :::
 
 ## Installing it
