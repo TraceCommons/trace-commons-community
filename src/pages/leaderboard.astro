@@ -8,11 +8,11 @@ const computedAt = new Date(data.computed_at);
 ---
 <Base title="Leaderboard">
   <div class="banner">
-    <strong>Preview build.</strong> Dummy snapshot. Real data lands when the upstream
-    snapshot worker ships (server slice 2).
+    <strong>Preview build.</strong> The rankings below are sample data, not live
+    contributions.
   </div>
 
-  <h2>Leaderboard — 7 day window</h2>
+  <h2>Leaderboard: 7 day window</h2>
   <p class="muted">
     Ranked by <code>{data.metric}</code>. Snapshot <code>{data.snapshot_id.slice(0, 12)}…</code>
     computed at {computedAt.toUTCString()}. Min-cell guard: {data.min_cell_count}.

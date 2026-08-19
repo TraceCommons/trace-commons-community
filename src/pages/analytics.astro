@@ -11,12 +11,12 @@ const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
 ---
 <Base title="Analytics">
   <div class="banner">
-    <strong>Preview build.</strong> Dummy analytics. Real aggregates land when the
-    upstream snapshot worker ships (server slice 2), with the existing min-cell
-    and noise guards applied at compute time.
+    <strong>Preview build.</strong> The figures below are sample data, not live
+    aggregates. Min-cell and noise guards are applied whenever real aggregates
+    are computed.
   </div>
 
-  <h2>Corpus analytics — {a.window}</h2>
+  <h2>Corpus analytics: {a.window}</h2>
 
   <div class="stat-grid">
     <div class="stat">
@@ -38,7 +38,7 @@ const gateTotal = gateEntries.reduce((acc, [, n]) => acc + n, 0);
   </div>
 
   <h2>Novelty score distribution</h2>
-  <p class="muted">Bucketed in micros (0 – 1,000,000). Higher is more novel.</p>
+  <p class="muted">Bucketed in micros (0 to 1,000,000). Higher is more novel.</p>
   <table>
     <thead>
       <tr>
