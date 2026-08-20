@@ -25,5 +25,7 @@ src/_data/snapshots/*.json
 .env.*
 !.env.example
 
-# brainstorming visual companion
+# Local agent/tooling scratch, never part of the site
 .superpowers/
+.worktrees/
+.wrangler/

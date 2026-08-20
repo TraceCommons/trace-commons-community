@@ -14,4 +14,12 @@ export default defineConfig({
   build: {
     format: "directory",
   },
+  vite: {
+    build: {
+      // The production CSP in public/_headers sets script-src 'self' with no
+      // unsafe-inline. Astro inlines hoisted script bundles under the default
+      // 4KB limit, which that CSP blocks, so force every asset to a real file.
+      assetsInlineLimit: 0,
+    },
+  },
 });
