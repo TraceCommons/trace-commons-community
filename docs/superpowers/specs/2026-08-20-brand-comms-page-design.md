@@ -44,11 +44,9 @@ verified to match the upstream SVGs exactly in path data, colour, and stroke
 width. If the geometry changes upstream, change the constants to match — do not
 redraw.
 
-The wordmark is "Trace Commons" outlined from JetBrains Mono (SIL OFL 1.1) at
--0.055em tracking, in `inkPrimary`. The design system sets anything
-machine-produced in mono and the wordmark follows that rule; OFL makes
-redistributing the outlines clean, and outlining means the shipped files carry
-no font dependency.
+The wordmark is the name in the site's Helvetica, bold and uppercase at the
+headings' -0.035em tracking, carried as live `<text>` rather than outlines. See
+"Which brand system the page documents" below for why.
 
 Output: 10 SVGs (mark, glyph, template, wordmark, lockup, each light and dark),
 22 PNGs (512 and 1024px, plus 32px favicons), and `trace-commons-brand.zip`.
@@ -67,23 +65,37 @@ at tracecommons.ai sees, so that is what the colour and type sections document
 and what this page is styled with — it uses `brand.css`'s own tokens, spacing
 scale, `.btn`, `.label`, and table styles rather than introducing a parallel set.
 
-The **mark** is the desktop clients' artwork and keeps their palette: green
-`#178F70` and blue `#315FBA`, not teal. The same geometry is compiled into the
-macOS, Windows, and Linux clients, so giving the logo a second colourway to
-match the website would mean the product and its press kit no longer ship the
-same mark. The page states the mismatch in its own section instead of
-reconciling it, and gives the mark palette its own table.
+The **mark** is the desktop clients' artwork, and it now uses the site palette
+too: the opening bracket is the accent `#00d4aa` and everything else is ink.
+It used to be green `#178f70` and blue `#315fba`, borrowed from the status
+palette, which meant a green-and-blue logo sat above a teal-and-black page. The
+clients moved with it (trace-commons-server, "Converge the mark on the site
+palette"), so the logo on this page is the logo in the product rather than a
+second colourway of it.
 
-The wordmark has the same shape of problem and the same treatment. The site sets
-its name as Helvetica text, so the supplied wordmark and lockup are for contexts
-that need an image; the page says so and tells anyone who can set live text to
-use Helvetica and skip the file. JetBrains Mono is what the outlines are cut
-from, because the system already sets machine output in monospace and OFL 1.1
-permits redistributing outlines.
+The frame is load-bearing rather than decorative. The accent is low-contrast on
+white, so the ink frame and closing bracket carry the form — the same move the
+site makes putting a hairline around a teal button. That is why the usage rules
+tell people not to drop, thin or recolour it.
 
-**Open question for a human:** whether the mark's green/blue and the site's teal
-should converge, and in which direction. Nothing here should be read as settling
-it.
+The **wordmark** converged too, and is the name set in the site's own Helvetica,
+bold and uppercase at the headings' -0.035em tracking.
+
+It ships as live `<text>` rather than outlines. Outlining Helvetica would
+redistribute glyphs from a font there is a licence to use but not to ship, and
+it would freeze a second copy of a name the site renders live; naming the stack
+instead does neither. The files carry no font data, and fall back to Arial and
+then to the system, which is the site's own stack behaving correctly rather
+than a defect.
+
+The cost is that rasterising is machine-dependent — the PNGs are generated on a
+machine with Helvetica Neue and committed, rather than built in CI, and
+`gen-assets.py` reads the font only to measure the string for the viewBox.
+JetBrains Mono is gone from the brand entirely.
+
+**Settled 2026-08-20:** the mark converged onto the site accent and the desktop
+clients moved with it; the wordmark converged onto the site's Helvetica as live
+text. Nothing in the kit now contradicts what a reader sees on the page.
 
 ## Page
 

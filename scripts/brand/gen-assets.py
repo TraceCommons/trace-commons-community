@@ -11,11 +11,10 @@ the desktop clients draw live, transcribed from trace-commons-server:
 Those clients render the mark from shared geometry rather than loading a file,
 so it stays correct at 14px in a tray and at 84px onscreen. The files this
 script writes are the packaging-and-press export of the same numbers. If the
-geometry changes upstream, change MARK below to match — do not redraw it.
+geometry changes upstream, change the constants below to match — do not redraw.
 
-Wordmark glyphs are outlined from JetBrains Mono (SIL OFL 1.1). The design
-system sets anything machine-produced in mono, and the wordmark follows that
-rule; outlining means the shipped SVGs carry no font dependency.
+The wordmark is the name in the site's own Helvetica, carried as live text. See
+the note above FONT for why it is not outlined.
 
     python3 scripts/brand/gen-assets.py
 """
@@ -26,10 +25,7 @@ import subprocess
 import shutil
 from pathlib import Path
 
-from fontTools.ttLib import TTFont
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.pens.transformPen import TransformPen
-from fontTools.misc.transform import Transform
+from fontTools.ttLib import TTCollection
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "brand"
@@ -37,67 +33,95 @@ OUT = ROOT / "public" / "brand"
 # pulling @types/node into the build, and the sizes belong to whatever this
 # script last wrote anyway.
 MANIFEST = ROOT / "src" / "_data" / "brand-assets.json"
-FONT = Path.home() / "Library" / "Fonts" / "JetBrainsMonoNLNerdFont-Medium.ttf"
+# The wordmark is live <text>, not outlines. The site sets its own name as
+# Helvetica text and ships no wordmark image at all, so outlining anything here
+# would put a second, frozen spelling of the name next to the live one -- and
+# outlining Helvetica would redistribute glyphs from a font we only have a
+# licence to use, not to ship. Live text sidesteps both: the file carries no
+# font data and renders in whatever face the reader's system offers from the
+# site's own stack.
+#
+# The cost is that rasterising is machine-dependent, which is why the PNGs are
+# generated once here and committed rather than built in CI. This font is read
+# only to measure the string so the viewBox fits it; nothing from it is copied
+# into the output.
+FONT = Path("/System/Library/Fonts/HelveticaNeue.ttc")
+FONT_FACE_INDEX = 1  # Bold.
+FONT_STACK = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+FONT_WEIGHT = 700
 
-WORDMARK_TEXT = "Trace Commons"
-# Cap height of the outlined wordmark, in SVG user units.
+# Uppercase, because that is how the site sets it: `.page h2` and `.title` in
+# src/styles/brand.css are `text-transform: uppercase` at weight 700 with
+# -0.035em tracking. The name is still "Trace Commons" -- this is the
+# typographic treatment, not the spelling.
+WORDMARK_TEXT = "TRACE COMMONS"
+# Cap height of the wordmark, in SVG user units.
 CAP = 48.0
-# Tracking added between glyphs, as a fraction of the em.
-TRACKING = -0.055
+# Tracking, as a fraction of the em. Matches the site's headings.
+TRACKING = -0.035
 
 # Canonical geometry, on a 64-unit coordinate space. The frame is inset one
 # unit under a two-unit stroke so its outer edge lands exactly on the boundary.
 # The template variant thickens to 8 because it loses the frame that was holding
 # the brackets apart.
-BRACKET_GREEN = "M11 28V11h17"
-BRACKET_BLUE = "M53 36v17H36"
+BRACKET_OPEN = "M11 28V11h17"
+BRACKET_CLOSE = "M53 36v17H36"
 
-# Palette from DesignSystem.swift: surface, line, green, blue, inkPrimary.
+# Palette from the trace-commons-mark crate: the site's one accent on the
+# opening bracket, ink everywhere else.
 SCHEMES = {
     "light": {
         "surface": "#FFFFFF",
-        "line": "#D9DFDC",
-        "green": "#178F70",
-        "blue": "#315FBA",
-        "ink": "#20241F",
+        "line": "#000000",
+        "open": "#00D4AA",
+        "close": "#000000",
+        "ink": "#000000",
     },
     "dark": {
-        "surface": "#21241E",
-        "line": "#3B4038",
-        "green": "#3FBE9A",
-        "blue": "#7FA0EC",
-        "ink": "#E8EAE3",
+        "surface": "#000000",
+        "line": "#FFFFFF",
+        "open": "#00D4AA",
+        "close": "#FFFFFF",
+        "ink": "#FFFFFF",
     },
 }
 
 
-def wordmark_path() -> tuple[str, float, float]:
-    """Outline WORDMARK_TEXT, returning (path data, width, height).
+def wordmark_metrics() -> tuple[float, float, float]:
+    """Measure the wordmark, returning (width, font_size, letter_spacing).
 
-    The result sits on a baseline at y=CAP with its left sidebearing trimmed,
-    so the caller can place it directly.
+    Everything is in SVG user units, scaled so the caps stand exactly `CAP`
+    tall. Only advance widths are read; no outline ever leaves this function.
     """
-    font = TTFont(FONT)
+    font = TTCollection(FONT).fonts[FONT_FACE_INDEX]
     upem = font["head"].unitsPerEm
     cap_units = font["OS/2"].sCapHeight
-    scale = CAP / cap_units
+    font_size = CAP * upem / cap_units
+    scale = font_size / upem
+
     cmap = font.getBestCmap()
-    glyphs = font.getGlyphSet()
     hmtx = font["hmtx"]
-
-    pen_out = SVGPathPen(glyphs)
-    x = 0.0
+    glyph_order = font.getGlyphOrder()
+    advances = 0
     for ch in WORDMARK_TEXT:
-        name = cmap[ord(ch)]
-        # Flip the y axis (font space is y-up, SVG is y-down) and sit the
-        # baseline at y=CAP so the glyph box starts at the top of the caps.
-        t = Transform(scale, 0, 0, -scale, x * scale, CAP)
-        glyphs[name].draw(TransformPen(pen_out, t))
-        x += hmtx[name][0] + TRACKING * upem
+        name = cmap.get(ord(ch)) or glyph_order[0]
+        advances += hmtx[name][0]
 
-    width = (x - TRACKING * upem) * scale
-    height = CAP
-    return pen_out.getCommands(), width, height
+    letter_spacing = TRACKING * font_size
+    # Renderers add the tracking after every glyph including the last, so the
+    # box would be one gap too wide if that were not taken back off.
+    width = advances * scale + letter_spacing * (len(WORDMARK_TEXT) - 1)
+    return width, font_size, letter_spacing
+
+
+def wordmark_text(x: float, y: float, fill: str, font_size: float, letter_spacing: float) -> str:
+    """The wordmark as live text, with the baseline at `y`."""
+    return (
+        f'  <text x="{x:.2f}" y="{y:.2f}" fill="{fill}" '
+        f'font-family="{FONT_STACK}" font-weight="{FONT_WEIGHT}" '
+        f'font-size="{font_size:.2f}" letter-spacing="{letter_spacing:.3f}" '
+        f'xml:space="preserve">{WORDMARK_TEXT}</text>'
+    )
 
 
 def mark_svg_body(scheme: dict, *, framed: bool = True) -> str:
@@ -110,16 +134,16 @@ def mark_svg_body(scheme: dict, *, framed: bool = True) -> str:
     )
     return (
         f"{frame}"
-        f'  <path d="{BRACKET_GREEN}" fill="none" stroke="{scheme["green"]}" stroke-width="7" />\n'
-        f'  <path d="{BRACKET_BLUE}" fill="none" stroke="{scheme["blue"]}" stroke-width="7" />'
+        f'  <path d="{BRACKET_OPEN}" fill="none" stroke="{scheme["open"]}" stroke-width="7" />\n'
+        f'  <path d="{BRACKET_CLOSE}" fill="none" stroke="{scheme["close"]}" stroke-width="7" />'
     )
 
 
 def template_svg_body(ink: str) -> str:
     """The stencil: frameless, single ink, recoloured by the host."""
     return (
-        f'  <path d="{BRACKET_GREEN}" fill="none" stroke="{ink}" stroke-width="8" />\n'
-        f'  <path d="{BRACKET_BLUE}" fill="none" stroke="{ink}" stroke-width="8" />'
+        f'  <path d="{BRACKET_OPEN}" fill="none" stroke="{ink}" stroke-width="8" />\n'
+        f'  <path d="{BRACKET_CLOSE}" fill="none" stroke="{ink}" stroke-width="8" />'
     )
 
 
@@ -144,7 +168,7 @@ def main() -> None:
         raise SystemExit("missing rsvg-convert (brew install librsvg)")
 
     OUT.mkdir(parents=True, exist_ok=True)
-    word_d, word_w, word_h = wordmark_path()
+    word_w, font_size, letter_spacing = wordmark_metrics()
     pad = CAP * 0.25
 
     svgs: list[str] = []
@@ -174,14 +198,14 @@ def main() -> None:
             ).name
         )
 
-        # Wordmark: outlined text, padded by a quarter cap height all round.
+        # Wordmark: live text, padded by a quarter cap height all round.
         svgs.append(
             write(
                 f"trace-commons-wordmark-{variant}.svg",
                 svg(
                     round(word_w + pad * 2, 2),
-                    round(word_h + pad * 2, 2),
-                    f'  <path d="{word_d}" fill="{scheme["ink"]}" transform="translate({pad:g} {pad:g})" />',
+                    round(CAP + pad * 2, 2),
+                    wordmark_text(pad, pad + CAP, scheme["ink"], font_size, letter_spacing),
                 ),
             ).name
         )
@@ -191,12 +215,14 @@ def main() -> None:
         mark_size = CAP * 1.4
         lock_h = mark_size + pad * 2
         lock_w = mark_size + gap + word_w + pad * 2
-        word_y = pad + (mark_size - word_h) / 2
+        # Caps centred on the mark, so the two optical masses line up.
+        word_baseline = pad + (mark_size + CAP) / 2
         body = (
             f'  <g transform="translate({pad:g} {pad:g}) scale({mark_size / 64:.6f})">\n'
             f"{mark_svg_body(scheme)}\n  </g>\n"
-            f'  <path d="{word_d}" fill="{scheme["ink"]}" '
-            f'transform="translate({pad + mark_size + gap:.2f} {word_y:.2f})" />'
+            + wordmark_text(
+                pad + mark_size + gap, word_baseline, scheme["ink"], font_size, letter_spacing
+            )
         )
         svgs.append(
             write(

@@ -44,7 +44,9 @@ const groups: AssetGroup[] = [
   },
   {
     name: "Wordmark",
-    blurb: "The name alone, for places where the mark would be redundant or too small to read.",
+    blurb:
+      "The name alone, for places where the mark would be redundant or too small to read. " +
+      "Live text, so it renders in the reader's Helvetica rather than a frozen copy of ours.",
     preview: "/brand/trace-commons-wordmark-light.svg",
     assets: [
       { file: "trace-commons-wordmark-light.svg", format: "SVG", note: "for light backgrounds" },
@@ -124,15 +126,14 @@ const palette = [
   { name: "Yellow", hex: "#F5C91F", use: "The manifesto headline. Nothing else yet" },
 ];
 
-// The mark is the desktop clients' artwork and keeps their palette, which is
-// not the site's. See the colour section for why that is stated rather than
-// quietly reconciled.
+// The mark's palette, which is the site's: the accent on the opening bracket,
+// ink on everything else. Mirrors Scheme::bracket_open/bracket_close/surface in
+// the trace-commons-mark crate, which is where the artwork is generated from.
 const markPalette = [
-  { name: "Mark green", light: "#178F70", dark: "#3FBE9A", use: "The opening bracket" },
-  { name: "Mark blue", light: "#315FBA", dark: "#7FA0EC", use: "The closing bracket" },
-  { name: "Mark field", light: "#FFFFFF", dark: "#21241E", use: "Inside the frame" },
-  { name: "Mark frame", light: "#D9DFDC", dark: "#3B4038", use: "The hairline frame" },
-  { name: "Mark ink", light: "#20241F", dark: "#E8EAE3", use: "Wordmark, stencil" },
+  { name: "Opening bracket", light: "#00D4AA", dark: "#00D4AA", use: "The accent, both schemes" },
+  { name: "Closing bracket", light: "#000000", dark: "#FFFFFF", use: "Ink" },
+  { name: "Frame", light: "#000000", dark: "#FFFFFF", use: "The hairline, two units" },
+  { name: "Field", light: "#FFFFFF", dark: "#000000", use: "Inside the frame" },
 ];
 ---
 
@@ -262,7 +263,7 @@ const markPalette = [
 
   <h2>Using the logo</h2>
   <p>
-    The mark is two brackets — an opening bracket in green, a closing one in blue — held in a
+    The mark is two brackets — an opening bracket in the accent, a closing one in ink — held in a
     hairline frame. It is the same geometry the desktop clients draw, and it comes in two
     treatments that are not interchangeable. The <strong>mark</strong> is full colour and framed:
     app icons, Dock, Start menu, anywhere it stands on its own. The <strong>template stencil</strong>
@@ -347,17 +348,22 @@ const markPalette = [
     </tbody>
   </table>
 
-  <h3>The mark keeps its own colours</h3>
+  <h3>The mark uses the same palette</h3>
   <p>
-    The mark is the desktop clients' artwork, and it is green and blue rather than
-    teal. We are telling you that rather than quietly reconciling it: the same
-    geometry is compiled into the macOS, Windows, and Linux clients, and giving the
-    logo a second colourway to match the website would mean the product and its
-    press kit no longer ship the same mark. Reproduce it as supplied.
+    The mark is the desktop clients' artwork and it used to be green and blue, from the
+    palette those clients use for status. It is not any more: the opening bracket is the
+    accent above and everything else is ink, and the macOS, Windows and Linux clients
+    moved with it, so the logo on this page is the logo in the product.
+  </p>
+  <p>
+    The accent is the same value in both schemes. It is deliberately not the only thing
+    describing a shape — on white it is a low-contrast colour, so the ink frame and the
+    closing bracket carry the form. That is why the frame matters and why you should not
+    drop it, recolour it, or thin it.
   </p>
   <table>
     <thead>
-      <tr><th>Token</th><th>Light</th><th>Dark</th><th>Use</th></tr>
+      <tr><th>Element</th><th>Light</th><th>Dark</th><th>Notes</th></tr>
     </thead>
     <tbody>
       {markPalette.map((entry) => (
@@ -386,12 +392,25 @@ const markPalette = [
     so a reader can tell them apart without being told.
   </p>
   <p>
-    The site sets its own name as Helvetica text, so the supplied wordmark and lockup
-    files are for contexts that need an image rather than live text. They are outlined
-    from <a href="https://www.jetbrains.com/lp/mono/">JetBrains Mono</a> (SIL Open Font
-    Licence 1.1), which is the monospace face and a licence that permits redistributing
-    the outlines. Outlined means you do not need the font to use the files. If you can
-    set the name as text, set it in Helvetica and skip the image.
+    The wordmark is the name set in that same Helvetica, bold and uppercase, tracked to
+    match the headings. The supplied wordmark and lockup files carry it as <strong>live
+    text rather than outlines</strong> — the SVG names the font stack and contains no
+    glyph data of its own. Two consequences worth knowing before you use them.
+  </p>
+  <ul>
+    <li>
+      Opened somewhere without Helvetica, the SVGs fall back to Arial, then to whatever
+      the system offers. That is the site's own stack doing what it is meant to do, and
+      the result is correct rather than broken.
+    </li>
+    <li>
+      If you need pixels that cannot shift, use the supplied PNGs. They were rasterised
+      in Helvetica Neue and are fixed.
+    </li>
+  </ul>
+  <p>
+    If you can set live text, you do not need these files at all: set the name in
+    Helvetica bold uppercase and you have the wordmark.
   </p>
 
   <h2>Licence</h2>
