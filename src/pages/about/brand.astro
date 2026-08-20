@@ -1,0 +1,511 @@
+---
+import Base from "../../layouts/Base.astro";
+import assetSizes from "../../_data/brand-assets.json";
+
+// Written by scripts/brand/gen-assets.py alongside the files themselves, so the
+// table can never quote a size for something the generator did not just write.
+const sizes = assetSizes as Record<string, number>;
+
+function fileSize(name: string): string {
+  const bytes = sizes[name];
+  if (bytes === undefined) return "";
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+}
+
+type Asset = { file: string; format: string; note: string };
+type AssetGroup = { name: string; blurb: string; preview: string; assets: Asset[] };
+
+const groups: AssetGroup[] = [
+  {
+    name: "Lockup",
+    blurb: "Mark and wordmark together. Use this one unless you have a reason not to.",
+    preview: "/brand/trace-commons-lockup-light.svg",
+    assets: [
+      { file: "trace-commons-lockup-light.svg", format: "SVG", note: "for light backgrounds" },
+      { file: "trace-commons-lockup-dark.svg", format: "SVG", note: "for dark backgrounds" },
+      { file: "trace-commons-lockup-light-1024.png", format: "PNG", note: "1024px wide, light" },
+      { file: "trace-commons-lockup-dark-1024.png", format: "PNG", note: "1024px wide, dark" },
+    ],
+  },
+  {
+    name: "Mark",
+    blurb:
+      "The brackets in their frame — the app-icon treatment, and what ships on the Dock, " +
+      "the Start menu, and Linux software centres. Use it anywhere square.",
+    preview: "/brand/trace-commons-mark-light.svg",
+    assets: [
+      { file: "trace-commons-mark-light.svg", format: "SVG", note: "for light backgrounds" },
+      { file: "trace-commons-mark-dark.svg", format: "SVG", note: "for dark backgrounds" },
+      { file: "trace-commons-mark-light-512.png", format: "PNG", note: "512px, light" },
+      { file: "trace-commons-mark-dark-512.png", format: "PNG", note: "512px, dark" },
+    ],
+  },
+  {
+    name: "Wordmark",
+    blurb: "The name alone, for places where the mark would be redundant or too small to read.",
+    preview: "/brand/trace-commons-wordmark-light.svg",
+    assets: [
+      { file: "trace-commons-wordmark-light.svg", format: "SVG", note: "for light backgrounds" },
+      { file: "trace-commons-wordmark-dark.svg", format: "SVG", note: "for dark backgrounds" },
+      { file: "trace-commons-wordmark-light-1024.png", format: "PNG", note: "1024px wide, light" },
+      { file: "trace-commons-wordmark-dark-1024.png", format: "PNG", note: "1024px wide, dark" },
+    ],
+  },
+  {
+    name: "Glyph",
+    blurb:
+      "The brackets without their frame, for placing on a surface that already provides " +
+      "the field — a coloured tile, a card, an avatar crop.",
+    preview: "/brand/trace-commons-glyph-light.svg",
+    assets: [
+      { file: "trace-commons-glyph-light.svg", format: "SVG", note: "for light backgrounds" },
+      { file: "trace-commons-glyph-dark.svg", format: "SVG", note: "for dark backgrounds" },
+      { file: "trace-commons-glyph-light-512.png", format: "PNG", note: "512px, light" },
+      { file: "trace-commons-glyph-dark-512.png", format: "PNG", note: "512px, dark" },
+    ],
+  },
+  {
+    name: "Template stencil",
+    blurb:
+      "Single ink, no frame, thicker stroke. This is the menu-bar and tray treatment: the " +
+      "host recolours it. Use it only where something else is doing the colouring.",
+    preview: "/brand/trace-commons-template-light.svg",
+    assets: [
+      { file: "trace-commons-template-light.svg", format: "SVG", note: "dark ink" },
+      { file: "trace-commons-template-dark.svg", format: "SVG", note: "light ink" },
+      { file: "trace-commons-template-light-512.png", format: "PNG", note: "512px, dark ink" },
+      { file: "trace-commons-template-dark-512.png", format: "PNG", note: "512px, light ink" },
+    ],
+  },
+];
+
+const boilerplates = [
+  {
+    id: "one-line",
+    label: "One line",
+    text: "Trace Commons is a register of AI agent work, held under terms its contributors set.",
+  },
+  {
+    id: "short",
+    label: "Short (about 50 words)",
+    text:
+      "Trace Commons is a register of AI agent work, held under terms its contributors set. " +
+      "Contributors capture and scrub the records their own agents produce on their own machines. " +
+      "Only the scrubbed envelope leaves, carrying a revocable consent scope that decides what any " +
+      "future query is permitted to do with it.",
+  },
+  {
+    id: "long",
+    label: "Long (about 150 words)",
+    text:
+      "Trace Commons is a register of AI agent work, held under terms its contributors set. " +
+      "The record of how AI agents actually behave — the tool calls, the wrong turns, the specific " +
+      "failures — lands almost entirely in the logs of the companies that build them. Whoever can " +
+      "watch agents fail is the party best equipped to make them work better, audit them honestly, " +
+      "or build anything that competes.\n\n" +
+      "Contributors run Ironclaw locally to capture and scrub the records their own agents produce. " +
+      "Only the scrubbed envelope leaves the machine, carrying a consent scope that governs what any " +
+      "future query may do with it and that can be withdrawn. Two gates decide what is filed: whether " +
+      "a record is genuinely different from what the register already holds, and whether it is " +
+      "substantive work rather than template-shaped filler. A Trace Credit is the signed, on-chain " +
+      "record of an accepted submission. Credits are non-transferable.",
+  },
+];
+
+const palette = [
+  { name: "Ink", hex: "#000000", use: "Text, rules, the frame" },
+  { name: "Ground", hex: "#FFFFFF", use: "Page background" },
+  { name: "Accent", hex: "#00D4AA", use: "Links on hover, primary buttons" },
+  { name: "Accent bright", hex: "#00EF8B", use: "Primary button hover only" },
+  { name: "Tint", hex: "#EAFAF5", use: "Notices, quiet panels" },
+  { name: "Muted", hex: "#6B6B6B", use: "Secondary text, micro labels" },
+  { name: "Yellow", hex: "#F5C91F", use: "The manifesto headline. Nothing else yet" },
+];
+
+// The mark is the desktop clients' artwork and keeps their palette, which is
+// not the site's. See the colour section for why that is stated rather than
+// quietly reconciled.
+const markPalette = [
+  { name: "Mark green", light: "#178F70", dark: "#3FBE9A", use: "The opening bracket" },
+  { name: "Mark blue", light: "#315FBA", dark: "#7FA0EC", use: "The closing bracket" },
+  { name: "Mark field", light: "#FFFFFF", dark: "#21241E", use: "Inside the frame" },
+  { name: "Mark frame", light: "#D9DFDC", dark: "#3B4038", use: "The hairline frame" },
+  { name: "Mark ink", light: "#20241F", dark: "#E8EAE3", use: "Wordmark, stencil" },
+];
+---
+
+<Base
+  title="Brand and press"
+  description="Logos, boilerplate, and usage rules for writing about Trace Commons — plus what we do and do not claim while the register is still being built."
+>
+  <h2>Brand and press</h2>
+  <p>
+    Everything on this page is free to use when writing about Trace Commons. The assets
+    are released for editorial and reference use — describing, linking to, or reporting on
+    the project. They are not a licence to imply that Trace Commons endorses, partners with,
+    or has reviewed something it has not.
+  </p>
+  <p class="muted">
+    Press contact: <a href="mailto:zaki@manian.org">zaki@manian.org</a>
+  </p>
+
+  <h2>Where the project actually is</h2>
+  <p>
+    Read this before writing the piece. A register has to exist before it can be opened, and
+    right now a small invited cohort is building it. Open query access — the thing that makes
+    the project matter — is <strong>not yet something a reader can go and exercise.</strong>
+    Two surfaces are open to anyone today, with no invite or account:
+    <a href="/analytics">corpus analytics</a> and the <a href="/leaderboard">contributor
+    leaderboard</a>. Everything else is still a commitment rather than a capability.
+  </p>
+  <p>
+    We would rather you write that accurately than generously. A story describing Trace Commons
+    as an open dataset available today would be wrong, and we would have to correct it.
+  </p>
+
+  <h2>Boilerplate</h2>
+  <p>
+    Three lengths, all accurate as of this page's last update. Use them as written or edit
+    them — but if you edit, check the claims section below.
+  </p>
+  {boilerplates.map((item) => (
+    <div class="boiler">
+      <div class="boiler-head">
+        <span class="label">{item.label}</span>
+        <button type="button" class="btn btn-secondary copy" data-copy-target={item.id}>Copy</button>
+      </div>
+      <p class="boiler-text" id={item.id} set:text={item.text} />
+    </div>
+  ))}
+
+  <h2>What you can safely say</h2>
+  <ul>
+    <li>
+      Contributors set the terms of use for their own records, and those terms bind. A record's
+      <a href="/about/data-policy">consent scope</a> decides what any query may do with it, scopes
+      are revocable, and this is enforced in the pipeline today.
+    </li>
+    <li>
+      Corpus-level analytics stay open to everyone — no invite, no account, no payment.
+    </li>
+    <li>
+      A Trace Credit is a signed, on-chain record that a submission was accepted. Credits are
+      non-transferable.
+    </li>
+    <li>
+      When buyers pay to query the register, that flows to contributors. Trace Commons is not
+      a platform collecting rent on other people's work.
+    </li>
+    <li>
+      Submissions pass two gates — one for whether a record differs meaningfully from what is
+      already held, one for whether it is substantive rather than template-shaped.
+    </li>
+  </ul>
+
+  <h2>What we don't claim</h2>
+  <ul>
+    <li>
+      <strong>No corpus size or contributor counts from us.</strong> Those numbers move. Pull
+      them live from <a href="/analytics">analytics</a> and date them, rather than quoting a
+      figure we gave you in an email.
+    </li>
+    <li>
+      <strong>Not an open dataset.</strong> Contribution is invite-gated and query access is not
+      yet open. "Open" describes the commitment and the public analytics, not present-day access
+      to the records.
+    </li>
+    <li>
+      <strong>No partner, customer, or funder names</strong> unless that party has said so themselves.
+    </li>
+    <li>
+      <strong>No claims about individual contributors.</strong> The leaderboard shows only people who
+      explicitly opted into public attribution; absence from it is not information about anyone.
+    </li>
+    <li>
+      <strong>No safety or accuracy claims about the agents whose work is recorded.</strong> The
+      register documents what agents did. It does not certify that any of it was correct.
+    </li>
+  </ul>
+
+  <h2>Assets</h2>
+  <p class="muted">
+    The desktop clients don't load these files — they draw the mark from shared geometry so it
+    stays exact at every size and follows the system appearance live. What is below is that same
+    geometry exported for packaging and press.
+  </p>
+  <p>
+    <a href="/brand/trace-commons-brand.zip" download>
+      Download everything ({fileSize("trace-commons-brand.zip")})
+    </a>
+    — every logo below in SVG and PNG, light and dark.
+  </p>
+
+  {groups.map((group) => (
+    <section class="asset-group">
+      <h3>{group.name}</h3>
+      <p class="muted">{group.blurb}</p>
+      <div class="preview">
+        <img src={group.preview} alt={`Trace Commons ${group.name.toLowerCase()}`} />
+      </div>
+      <ul class="downloads">
+        {group.assets.map((asset) => (
+          <li>
+            <a href={`/brand/${asset.file}`} download>{asset.format}</a>
+            <span class="muted">{asset.note} · {fileSize(asset.file)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+
+  <h2>Using the logo</h2>
+  <p>
+    The mark is two brackets — an opening bracket in green, a closing one in blue — held in a
+    hairline frame. It is the same geometry the desktop clients draw, and it comes in two
+    treatments that are not interchangeable. The <strong>mark</strong> is full colour and framed:
+    app icons, Dock, Start menu, anywhere it stands on its own. The <strong>template stencil</strong>
+    is frameless and single-ink, for menu bars and system trays where the host recolours it.
+    Please don't use the stencil as a logo, and don't add a frame back onto the glyph.
+  </p>
+  <ul>
+    <li>
+      <strong>Clear space.</strong> Leave at least a quarter of the mark's height clear on every
+      side. The lockup and wordmark files already carry that padding, so placing them flush is
+      fine; the mark, glyph, and stencil files are trimmed to their own edges, so add it yourself.
+    </li>
+    <li>
+      <strong>Minimum size.</strong> Mark: 16px — it is designed to hold at tray sizes. Wordmark:
+      100px wide. Lockup: 140px wide. Below that, set the name as plain text instead.
+    </li>
+    <li>
+      <strong>Pick the right variant.</strong> Light files are for light backgrounds, dark files for
+      dark ones. Both have transparent backgrounds.
+    </li>
+  </ul>
+
+  <div class="rules">
+    <figure class="rule ok">
+      <div class="rule-art"><img src="/brand/trace-commons-lockup-light.svg" alt="" /></div>
+      <figcaption><span class="tag ok-tag">Do</span> Original proportions, adequate clear space.</figcaption>
+    </figure>
+    <figure class="rule">
+      <div class="rule-art"><img src="/brand/trace-commons-lockup-light.svg" alt="" class="stretched" /></div>
+      <figcaption><span class="tag no-tag">Don't</span> Stretch, squash, or rotate it.</figcaption>
+    </figure>
+    <figure class="rule">
+      <div class="rule-art"><img src="/brand/trace-commons-lockup-light.svg" alt="" class="recolored" /></div>
+      <figcaption><span class="tag no-tag">Don't</span> Recolour it or add effects.</figcaption>
+    </figure>
+    <figure class="rule">
+      <div class="rule-art busy"><img src="/brand/trace-commons-lockup-light.svg" alt="" /></div>
+      <figcaption><span class="tag no-tag">Don't</span> Place it on a busy or low-contrast field.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Using the name</h2>
+  <ul>
+    <li>
+      Two words, both capitalised: <strong>Trace Commons</strong>. Not TraceCommons, not
+      tracecommons. This site sets its headings in uppercase as a typographic treatment,
+      which is why you will see TRACE COMMONS on the page — that is styling, not the name.
+      In running text it is always Trace Commons.
+    </li>
+    <li>No article — "Trace Commons published", not "the Trace Commons published".</li>
+    <li>
+      <strong>Trace Credit</strong> is capitalised as a defined term. Lowercase "credits" is fine on
+      second reference.
+    </li>
+    <li>
+      <a href="https://github.com/iqlusioninc/ironclaw">Ironclaw</a> is the local capture tool.
+      One word, capital I. It is a separate project that Trace Commons depends on.
+    </li>
+  </ul>
+
+  <h2>Colour</h2>
+  <p>
+    Black on white, one teal accent, and almost nothing else. The accent earns its
+    place by being rare — it marks the thing you are meant to act on, so spreading it
+    across a layout is the one way to get this palette wrong.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Token</th><th>Value</th><th>Use</th></tr>
+    </thead>
+    <tbody>
+      {palette.map((entry) => (
+        <tr>
+          <td>{entry.name}</td>
+          <td>
+            <span class="swatch" style={`background:${entry.hex}`}></span>
+            <code>{entry.hex}</code>
+          </td>
+          <td class="muted">{entry.use}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h3>The mark keeps its own colours</h3>
+  <p>
+    The mark is the desktop clients' artwork, and it is green and blue rather than
+    teal. We are telling you that rather than quietly reconciling it: the same
+    geometry is compiled into the macOS, Windows, and Linux clients, and giving the
+    logo a second colourway to match the website would mean the product and its
+    press kit no longer ship the same mark. Reproduce it as supplied.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Token</th><th>Light</th><th>Dark</th><th>Use</th></tr>
+    </thead>
+    <tbody>
+      {markPalette.map((entry) => (
+        <tr>
+          <td>{entry.name}</td>
+          <td>
+            <span class="swatch" style={`background:${entry.light}`}></span>
+            <code>{entry.light}</code>
+          </td>
+          <td>
+            <span class="swatch" style={`background:${entry.dark}`}></span>
+            <code>{entry.dark}</code>
+          </td>
+          <td class="muted">{entry.use}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Type</h2>
+  <p>
+    The site is set in Helvetica Neue, falling back to Helvetica and Arial — headings
+    in bold uppercase, tightly tracked. Anything a machine produced — trace IDs,
+    hashes, ledger rows, counts — is set in monospace instead. That split is the rule
+    rather than a decoration: machine output is always monospaced and prose never is,
+    so a reader can tell them apart without being told.
+  </p>
+  <p>
+    The site sets its own name as Helvetica text, so the supplied wordmark and lockup
+    files are for contexts that need an image rather than live text. They are outlined
+    from <a href="https://www.jetbrains.com/lp/mono/">JetBrains Mono</a> (SIL Open Font
+    Licence 1.1), which is the monospace face and a licence that permits redistributing
+    the outlines. Outlined means you do not need the font to use the files. If you can
+    set the name as text, set it in Helvetica and skip the image.
+  </p>
+
+  <h2>Licence</h2>
+  <p>
+    The logo files are the identity of the project: use them to refer to Trace Commons, not as
+    part of your own logo, product name, or domain. The text on this page — boilerplate included —
+    you may reproduce and edit freely. If you want to use the marks some other way, ask:
+    <a href="mailto:zaki@manian.org">zaki@manian.org</a>.
+  </p>
+
+  <script>
+    import "../../scripts/brand-copy";
+  </script>
+
+  <style>
+    /* Everything here leans on the tokens in src/styles/brand.css: 2px
+       hairlines, square corners, the spacing scale. No radii and no
+       dark-mode block, because the site system has neither. */
+    .boiler {
+      border: var(--hairline);
+      background: var(--bg-color);
+      padding: var(--space-3) var(--space-4) var(--space-4);
+    }
+    .boiler + .boiler { margin-top: var(--space-3); }
+    .boiler-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+    .boiler-text {
+      margin: 0;
+      white-space: pre-line;
+    }
+    button.copy { font-size: 13px; padding: var(--space-1) var(--space-3); }
+
+    .asset-group + .asset-group { margin-top: var(--space-5); }
+    .asset-group h3 { margin-bottom: var(--space-1); }
+    .preview {
+      border: var(--hairline);
+      background: var(--bg-color);
+      padding: var(--space-5);
+      display: flex;
+      justify-content: center;
+      margin: var(--space-3) 0;
+    }
+    .preview img { max-width: 100%; height: auto; max-height: 88px; }
+    /* The square marks are only 64px natural, so they need an explicit lift to
+       sit at the same optical weight as the wordmark and lockup previews. */
+    .preview img[src="/brand/trace-commons-mark-light.svg"],
+    .preview img[src="/brand/trace-commons-glyph-light.svg"],
+    .preview img[src="/brand/trace-commons-template-light.svg"] { width: 88px; max-height: none; }
+
+    .downloads { list-style: none; padding: 0; margin: 0; }
+    .downloads li {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding: var(--space-1) 0;
+      border-bottom: var(--rule);
+      font-size: 15px;
+    }
+    .downloads li + li { margin-top: 0; }
+    .downloads a { font-weight: 700; min-width: 3rem; }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: var(--space-3);
+      margin: var(--space-4) 0;
+    }
+    .rule { margin: 0; }
+    .rule-art {
+      border: var(--hairline);
+      background: var(--bg-color);
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3);
+      overflow: hidden;
+    }
+    .rule-art img { max-width: 100%; height: auto; }
+    .rule-art.busy {
+      background: repeating-linear-gradient(45deg, #9aa 0 10px, #cdd 10px 20px);
+    }
+    .rule img.stretched { transform: scaleX(0.55) scaleY(1.5); }
+    .rule img.recolored { filter: sepia(1) saturate(6) hue-rotate(300deg) drop-shadow(2px 3px 0 #0af); }
+    .rule figcaption {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: var(--space-1);
+    }
+    .tag {
+      display: inline-block;
+      font-family: var(--mono-font);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      padding: 1px var(--space-1);
+      margin-right: var(--space-1);
+    }
+    .ok-tag { background: var(--accent); color: var(--on-accent); }
+    .no-tag { background: var(--ink-color); color: var(--bg-color); }
+
+    .swatch {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: var(--rule);
+      vertical-align: -2px;
+      margin-right: var(--space-1);
+    }
+  </style>
+</Base>
