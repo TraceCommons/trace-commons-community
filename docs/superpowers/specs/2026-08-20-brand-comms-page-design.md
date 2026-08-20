@@ -44,11 +44,9 @@ verified to match the upstream SVGs exactly in path data, colour, and stroke
 width. If the geometry changes upstream, change the constants to match — do not
 redraw.
 
-The wordmark is "Trace Commons" outlined from JetBrains Mono (SIL OFL 1.1) at
--0.055em tracking, in `inkPrimary`. The design system sets anything
-machine-produced in mono and the wordmark follows that rule; OFL makes
-redistributing the outlines clean, and outlining means the shipped files carry
-no font dependency.
+The wordmark is the name in the site's Helvetica, bold and uppercase at the
+headings' -0.035em tracking, carried as live `<text>` rather than outlines. See
+"Which brand system the page documents" below for why.
 
 Output: 10 SVGs (mark, glyph, template, wordmark, lockup, each light and dark),
 22 PNGs (512 and 1024px, plus 32px favicons), and `trace-commons-brand.zip`.
@@ -80,16 +78,24 @@ white, so the ink frame and closing bracket carry the form — the same move the
 site makes putting a hairline around a teal button. That is why the usage rules
 tell people not to drop, thin or recolour it.
 
-The wordmark is the one thing that did not converge. The site sets
-its name as Helvetica text, so the supplied wordmark and lockup are for contexts
-that need an image; the page says so and tells anyone who can set live text to
-use Helvetica and skip the file. JetBrains Mono is what the outlines are cut
-from, because the system already sets machine output in monospace and OFL 1.1
-permits redistributing outlines.
+The **wordmark** converged too, and is the name set in the site's own Helvetica,
+bold and uppercase at the headings' -0.035em tracking.
 
-**Settled 2026-08-20:** the mark converged onto the site accent, and the
-desktop clients moved with it. What remains open is the wordmark, which is cut
-from JetBrains Mono while the site sets its name in Helvetica.
+It ships as live `<text>` rather than outlines. Outlining Helvetica would
+redistribute glyphs from a font there is a licence to use but not to ship, and
+it would freeze a second copy of a name the site renders live; naming the stack
+instead does neither. The files carry no font data, and fall back to Arial and
+then to the system, which is the site's own stack behaving correctly rather
+than a defect.
+
+The cost is that rasterising is machine-dependent — the PNGs are generated on a
+machine with Helvetica Neue and committed, rather than built in CI, and
+`gen-assets.py` reads the font only to measure the string for the viewBox.
+JetBrains Mono is gone from the brand entirely.
+
+**Settled 2026-08-20:** the mark converged onto the site accent and the desktop
+clients moved with it; the wordmark converged onto the site's Helvetica as live
+text. Nothing in the kit now contradicts what a reader sees on the page.
 
 ## Page
 

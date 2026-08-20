@@ -44,7 +44,9 @@ const groups: AssetGroup[] = [
   },
   {
     name: "Wordmark",
-    blurb: "The name alone, for places where the mark would be redundant or too small to read.",
+    blurb:
+      "The name alone, for places where the mark would be redundant or too small to read. " +
+      "Live text, so it renders in the reader's Helvetica rather than a frozen copy of ours.",
     preview: "/brand/trace-commons-wordmark-light.svg",
     assets: [
       { file: "trace-commons-wordmark-light.svg", format: "SVG", note: "for light backgrounds" },
@@ -390,12 +392,25 @@ const markPalette = [
     so a reader can tell them apart without being told.
   </p>
   <p>
-    The site sets its own name as Helvetica text, so the supplied wordmark and lockup
-    files are for contexts that need an image rather than live text. They are outlined
-    from <a href="https://www.jetbrains.com/lp/mono/">JetBrains Mono</a> (SIL Open Font
-    Licence 1.1), which is the monospace face and a licence that permits redistributing
-    the outlines. Outlined means you do not need the font to use the files. If you can
-    set the name as text, set it in Helvetica and skip the image.
+    The wordmark is the name set in that same Helvetica, bold and uppercase, tracked to
+    match the headings. The supplied wordmark and lockup files carry it as <strong>live
+    text rather than outlines</strong> — the SVG names the font stack and contains no
+    glyph data of its own. Two consequences worth knowing before you use them.
+  </p>
+  <ul>
+    <li>
+      Opened somewhere without Helvetica, the SVGs fall back to Arial, then to whatever
+      the system offers. That is the site's own stack doing what it is meant to do, and
+      the result is correct rather than broken.
+    </li>
+    <li>
+      If you need pixels that cannot shift, use the supplied PNGs. They were rasterised
+      in Helvetica Neue and are fixed.
+    </li>
+  </ul>
+  <p>
+    If you can set live text, you do not need these files at all: set the name in
+    Helvetica bold uppercase and you have the wordmark.
   </p>
 
   <h2>Licence</h2>
