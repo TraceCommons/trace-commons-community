@@ -124,15 +124,14 @@ const palette = [
   { name: "Yellow", hex: "#F5C91F", use: "The manifesto headline. Nothing else yet" },
 ];
 
-// The mark is the desktop clients' artwork and keeps their palette, which is
-// not the site's. See the colour section for why that is stated rather than
-// quietly reconciled.
+// The mark's palette, which is the site's: the accent on the opening bracket,
+// ink on everything else. Mirrors Scheme::bracket_open/bracket_close/surface in
+// the trace-commons-mark crate, which is where the artwork is generated from.
 const markPalette = [
-  { name: "Mark green", light: "#178F70", dark: "#3FBE9A", use: "The opening bracket" },
-  { name: "Mark blue", light: "#315FBA", dark: "#7FA0EC", use: "The closing bracket" },
-  { name: "Mark field", light: "#FFFFFF", dark: "#21241E", use: "Inside the frame" },
-  { name: "Mark frame", light: "#D9DFDC", dark: "#3B4038", use: "The hairline frame" },
-  { name: "Mark ink", light: "#20241F", dark: "#E8EAE3", use: "Wordmark, stencil" },
+  { name: "Opening bracket", light: "#00D4AA", dark: "#00D4AA", use: "The accent, both schemes" },
+  { name: "Closing bracket", light: "#000000", dark: "#FFFFFF", use: "Ink" },
+  { name: "Frame", light: "#000000", dark: "#FFFFFF", use: "The hairline, two units" },
+  { name: "Field", light: "#FFFFFF", dark: "#000000", use: "Inside the frame" },
 ];
 ---
 
@@ -262,7 +261,7 @@ const markPalette = [
 
   <h2>Using the logo</h2>
   <p>
-    The mark is two brackets — an opening bracket in green, a closing one in blue — held in a
+    The mark is two brackets — an opening bracket in the accent, a closing one in ink — held in a
     hairline frame. It is the same geometry the desktop clients draw, and it comes in two
     treatments that are not interchangeable. The <strong>mark</strong> is full colour and framed:
     app icons, Dock, Start menu, anywhere it stands on its own. The <strong>template stencil</strong>
@@ -347,17 +346,22 @@ const markPalette = [
     </tbody>
   </table>
 
-  <h3>The mark keeps its own colours</h3>
+  <h3>The mark uses the same palette</h3>
   <p>
-    The mark is the desktop clients' artwork, and it is green and blue rather than
-    teal. We are telling you that rather than quietly reconciling it: the same
-    geometry is compiled into the macOS, Windows, and Linux clients, and giving the
-    logo a second colourway to match the website would mean the product and its
-    press kit no longer ship the same mark. Reproduce it as supplied.
+    The mark is the desktop clients' artwork and it used to be green and blue, from the
+    palette those clients use for status. It is not any more: the opening bracket is the
+    accent above and everything else is ink, and the macOS, Windows and Linux clients
+    moved with it, so the logo on this page is the logo in the product.
+  </p>
+  <p>
+    The accent is the same value in both schemes. It is deliberately not the only thing
+    describing a shape — on white it is a low-contrast colour, so the ink frame and the
+    closing bracket carry the form. That is why the frame matters and why you should not
+    drop it, recolour it, or thin it.
   </p>
   <table>
     <thead>
-      <tr><th>Token</th><th>Light</th><th>Dark</th><th>Use</th></tr>
+      <tr><th>Element</th><th>Light</th><th>Dark</th><th>Notes</th></tr>
     </thead>
     <tbody>
       {markPalette.map((entry) => (

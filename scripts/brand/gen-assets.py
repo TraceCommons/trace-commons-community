@@ -49,24 +49,25 @@ TRACKING = -0.055
 # unit under a two-unit stroke so its outer edge lands exactly on the boundary.
 # The template variant thickens to 8 because it loses the frame that was holding
 # the brackets apart.
-BRACKET_GREEN = "M11 28V11h17"
-BRACKET_BLUE = "M53 36v17H36"
+BRACKET_OPEN = "M11 28V11h17"
+BRACKET_CLOSE = "M53 36v17H36"
 
-# Palette from DesignSystem.swift: surface, line, green, blue, inkPrimary.
+# Palette from the trace-commons-mark crate: the site's one accent on the
+# opening bracket, ink everywhere else.
 SCHEMES = {
     "light": {
         "surface": "#FFFFFF",
-        "line": "#D9DFDC",
-        "green": "#178F70",
-        "blue": "#315FBA",
-        "ink": "#20241F",
+        "line": "#000000",
+        "open": "#00D4AA",
+        "close": "#000000",
+        "ink": "#000000",
     },
     "dark": {
-        "surface": "#21241E",
-        "line": "#3B4038",
-        "green": "#3FBE9A",
-        "blue": "#7FA0EC",
-        "ink": "#E8EAE3",
+        "surface": "#000000",
+        "line": "#FFFFFF",
+        "open": "#00D4AA",
+        "close": "#FFFFFF",
+        "ink": "#FFFFFF",
     },
 }
 
@@ -110,16 +111,16 @@ def mark_svg_body(scheme: dict, *, framed: bool = True) -> str:
     )
     return (
         f"{frame}"
-        f'  <path d="{BRACKET_GREEN}" fill="none" stroke="{scheme["green"]}" stroke-width="7" />\n'
-        f'  <path d="{BRACKET_BLUE}" fill="none" stroke="{scheme["blue"]}" stroke-width="7" />'
+        f'  <path d="{BRACKET_OPEN}" fill="none" stroke="{scheme["open"]}" stroke-width="7" />\n'
+        f'  <path d="{BRACKET_CLOSE}" fill="none" stroke="{scheme["close"]}" stroke-width="7" />'
     )
 
 
 def template_svg_body(ink: str) -> str:
     """The stencil: frameless, single ink, recoloured by the host."""
     return (
-        f'  <path d="{BRACKET_GREEN}" fill="none" stroke="{ink}" stroke-width="8" />\n'
-        f'  <path d="{BRACKET_BLUE}" fill="none" stroke="{ink}" stroke-width="8" />'
+        f'  <path d="{BRACKET_OPEN}" fill="none" stroke="{ink}" stroke-width="8" />\n'
+        f'  <path d="{BRACKET_CLOSE}" fill="none" stroke="{ink}" stroke-width="8" />'
     )
 
 

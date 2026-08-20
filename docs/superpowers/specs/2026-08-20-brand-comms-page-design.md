@@ -67,23 +67,29 @@ at tracecommons.ai sees, so that is what the colour and type sections document
 and what this page is styled with — it uses `brand.css`'s own tokens, spacing
 scale, `.btn`, `.label`, and table styles rather than introducing a parallel set.
 
-The **mark** is the desktop clients' artwork and keeps their palette: green
-`#178F70` and blue `#315FBA`, not teal. The same geometry is compiled into the
-macOS, Windows, and Linux clients, so giving the logo a second colourway to
-match the website would mean the product and its press kit no longer ship the
-same mark. The page states the mismatch in its own section instead of
-reconciling it, and gives the mark palette its own table.
+The **mark** is the desktop clients' artwork, and it now uses the site palette
+too: the opening bracket is the accent `#00d4aa` and everything else is ink.
+It used to be green `#178f70` and blue `#315fba`, borrowed from the status
+palette, which meant a green-and-blue logo sat above a teal-and-black page. The
+clients moved with it (trace-commons-server, "Converge the mark on the site
+palette"), so the logo on this page is the logo in the product rather than a
+second colourway of it.
 
-The wordmark has the same shape of problem and the same treatment. The site sets
+The frame is load-bearing rather than decorative. The accent is low-contrast on
+white, so the ink frame and closing bracket carry the form — the same move the
+site makes putting a hairline around a teal button. That is why the usage rules
+tell people not to drop, thin or recolour it.
+
+The wordmark is the one thing that did not converge. The site sets
 its name as Helvetica text, so the supplied wordmark and lockup are for contexts
 that need an image; the page says so and tells anyone who can set live text to
 use Helvetica and skip the file. JetBrains Mono is what the outlines are cut
 from, because the system already sets machine output in monospace and OFL 1.1
 permits redistributing outlines.
 
-**Open question for a human:** whether the mark's green/blue and the site's teal
-should converge, and in which direction. Nothing here should be read as settling
-it.
+**Settled 2026-08-20:** the mark converged onto the site accent, and the
+desktop clients moved with it. What remains open is the wordmark, which is cut
+from JetBrains Mono while the site sets its name in Helvetica.
 
 ## Page
 
