@@ -26,17 +26,17 @@ const REPO = "https://github.com/TraceCommons/trace-commons-server";
    So: bump these constants when you cut a release. A stale version number
    is a visible, obvious wrong; a link that silently 404s for half the
    downloads is not. */
-const CLI_TAG = "contributor-v0.4.4";
-const APP_TAG = "app-v0.4.4";
-const CLI_VERSION = "0.4.4";
+const CLI_TAG = "contributor-v0.4.6";
+const APP_TAG = "app-v0.4.6";
+const CLI_VERSION = "0.4.6";
 /* The app carries its own version, and it is NOT the CLI's. They read the same
-   at 0.4.4 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
+   at 0.4.6 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
    Windows asset containing the CLI rather than the desktop app and app-v0.2.1
    was the correction. Equal today is a coincidence, not an invariant: the DMG
    filename below used to interpolate CLI_VERSION and became exactly the silent
    404 this note warns about the first time the two diverged. Keep them
    separate constants even while the numbers match. */
-const APP_VERSION = "0.4.4";
+const APP_VERSION = "0.4.6";
 /* The MSIX ships a four-part Windows package version; the appinstaller and the
    .msix filename both carry it, and it is the app version with a trailing .0
    rather than a number of its own. */
