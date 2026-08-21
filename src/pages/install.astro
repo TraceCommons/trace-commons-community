@@ -26,17 +26,17 @@ const REPO = "https://github.com/TraceCommons/trace-commons-server";
    So: bump these constants when you cut a release. A stale version number
    is a visible, obvious wrong; a link that silently 404s for half the
    downloads is not. */
-const CLI_TAG = "contributor-v0.3.0";
-const APP_TAG = "app-v0.3.0";
-const CLI_VERSION = "0.3.0";
+const CLI_TAG = "contributor-v0.4.4";
+const APP_TAG = "app-v0.4.4";
+const CLI_VERSION = "0.4.4";
 /* The app carries its own version, and it is NOT the CLI's. They read the same
-   at 0.3.0 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
+   at 0.4.4 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
    Windows asset containing the CLI rather than the desktop app and app-v0.2.1
    was the correction. Equal today is a coincidence, not an invariant: the DMG
    filename below used to interpolate CLI_VERSION and became exactly the silent
    404 this note warns about the first time the two diverged. Keep them
    separate constants even while the numbers match. */
-const APP_VERSION = "0.3.0";
+const APP_VERSION = "0.4.4";
 /* The MSIX ships a four-part Windows package version; the appinstaller and the
    .msix filename both carry it, and it is the app version with a trailing .0
    rather than a number of its own. */
@@ -368,6 +368,105 @@ $sig.SignerCertificate.Subject     # CN=Iqlusion Inc, O=Iqlusion Inc, L=Santa Cl
 cd trace-commons-server
 cargo build --release --bin trace-commons-contributor
 ./target/release/trace-commons-contributor --help</code></pre>
+  </div>
+
+  <div class="stack">
+    <h2>Uninstalling</h2>
+    <p>
+      Two separate things come off: the <em>local state</em> — device key,
+      config, receipts, the daemon's queue and history — and the
+      <em>installed program</em>. Start with the state, because
+      <code>logout</code> also stops a running daemon before it wipes the
+      credentials that daemon uploads with:
+    </p>
+    <pre><code>trace-commons-contributor logout</code></pre>
+    <p class="muted">
+      Uninstalling is not withdrawal. Traces you have already submitted stay on
+      the server; <code>daemon withdraw &lt;submission-id&gt;</code>, or
+      <code>--all-quarantined</code>, is what removes them — and it needs the
+      account session, so do any withdrawing <em>before</em> you log out.
+    </p>
+    <p>
+      <code>logout</code> empties the state directory but leaves the directory
+      itself. Remove it to finish the job:
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>Platform</th><th>State directory</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Linux</td><td><code>~/.config/trace-commons</code></td></tr>
+        <tr><td>macOS</td><td><code>~/Library/Application Support/trace-commons</code></td></tr>
+        <tr><td>Windows</td><td><code>%LOCALAPPDATA%\trace-commons</code> (CLI and app share it)</td></tr>
+        <tr><td>Linux flatpak app</td><td><code>~/.var/app/ai.tracecommons.Contributor/config/trace-commons</code></td></tr>
+      </tbody>
+    </table>
+
+    <p class="muted">
+      If you set <code>TRACE_COMMONS_CONTRIBUTOR_DIR</code>, that path wins over
+      all of these.
+    </p>
+
+    <p>Then remove the program itself, by however you installed it:</p>
+    <pre><code>{`# CLI, install.sh
+rm ~/.local/bin/trace-commons-contributor    # or $TC_INSTALL_DIR, or --dir
+
+# CLI, Homebrew
+brew uninstall trace-commons-contributor
+
+# Desktop app, Homebrew cask (macOS)
+brew uninstall --cask trace-commons
+
+# Desktop app, flatpak (Linux) -- --delete-data also removes ~/.var/app state
+flatpak uninstall --delete-data ai.tracecommons.Contributor
+
+# and, if you want the tap gone too
+brew untap TraceCommons/tap`}</code></pre>
+
+    <pre><code>{`# CLI, install.ps1
+Remove-Item -Recurse "$env:LOCALAPPDATA\\Programs\\TraceCommons"
+# install.ps1 appended that directory to your user PATH; take it back out
+$p = [Environment]::GetEnvironmentVariable('Path','User') -split ';' |
+  Where-Object { $_.TrimEnd('\\') -ine "$env:LOCALAPPDATA\\Programs\\TraceCommons" }
+[Environment]::SetEnvironmentVariable('Path', ($p -join ';'), 'User')
+
+# Desktop app, MSIX / .appinstaller -- also ends the update subscription
+Get-AppxPackage Iqlusion.TraceCommons | Remove-AppxPackage`}</code></pre>
+
+    <p>
+      Autostart registrations are the part an uninstall is easiest to leave
+      behind:
+    </p>
+    <ul>
+      <li>
+        <strong>Linux, CLI daemon.</strong>
+        <code>systemctl --user disable --now trace-commons-contributor.service</code>,
+        then <code>trace-commons-contributor daemon uninstall</code> to remove
+        the unit file.
+      </li>
+      <li>
+        <strong>macOS app.</strong> Registered through
+        <code>SMAppService</code>. Turn off “Run at login” in Settings before
+        deleting the app, or clear the leftover entry in System Settings →
+        General → Login Items.
+      </li>
+      <li>
+        <strong>Windows, MSIX app.</strong> A packaged startup task;
+        <code>Remove-AppxPackage</code> takes it with the package.
+      </li>
+      <li>
+        <strong>Windows, portable app.</strong> The portable build uses the
+        per-user Run key instead, which deleting the folder does not touch:
+        <code>Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'Trace Commons'</code>.
+      </li>
+    </ul>
+    <p class="muted">
+      The macOS app itself is <code>TraceCommons.app</code> in
+      <code>/Applications</code> when it came from the DMG rather than the cask;
+      quit it, then move it to the Trash. The Windows portable build is just the
+      unzipped folder — delete it.
+    </p>
   </div>
 
   <div class="stack">
