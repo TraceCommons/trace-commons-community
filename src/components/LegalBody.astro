@@ -1,0 +1,89 @@
+---
+/* Shell around the canonical document.
+   The document itself is Markdown in src/legal/<version>.md and is the source
+   of truth -- legal review happens on that file, the site renders it, and there
+   is deliberately no second copy of the text anywhere. That is the whole point
+   of this page: the terms, the data policy and the consent scopes used to be
+   three surfaces saying overlapping things, restated by hand in six more.
+
+   This component owns only what surrounds the text: the review banner, the
+   version line, and the styling that makes a bare blockquote read as the
+   binding clause beneath its plain-language summary. */
+
+interface Props {
+  version: string;
+  status: string;
+  /* /legal/ is the current document; /legal/<version>/ is a permalink to one
+     version, which an envelope's policy_version resolves to. */
+  permalink?: boolean;
+}
+const { version, status, permalink = false } = Astro.props;
+
+const SOURCE = `https://github.com/TraceCommons/trace-commons-community/blob/main/src/legal/${version}.md`;
+---
+
+<div class="legal">
+  {status !== "in-force" && (
+    <div class="review-banner" role="note">
+      <strong>Draft — not yet in force.</strong> This document has not been
+      reviewed by counsel and is published for review only. It describes what
+      the software does today, accurately; it does not yet bind anyone.
+    </div>
+  )}
+
+  <div class="stack">
+    <h2>Terms, data policy and consent</h2>
+    <p class="version-line">
+      Policy version <code>{version}</code>{permalink ? " — permalink to this version" : " — current"} ·
+      <a href={`/legal/${version}`}>permalink</a> ·
+      <a href={SOURCE}>Markdown source</a>
+    </p>
+  </div>
+
+  <div class="document">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .review-banner {
+    border: var(--hairline);
+    border-left-width: 4px;
+    padding: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .version-line {
+    font-family: var(--mono-font);
+    font-size: 14px;
+  }
+
+  .document :global(h2) {
+    margin-top: var(--space-5);
+  }
+
+  .document :global(h3) {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-2);
+  }
+
+  /* The binding clause. It sits under its plain-language summary and has to
+     read as the authoritative text rather than as an aside, which is the usual
+     meaning of a blockquote -- hence the border and the tighter type rather
+     than italics. */
+  .document :global(blockquote) {
+    border: var(--hairline);
+    border-left-width: 4px;
+    padding: var(--space-3);
+    margin: var(--space-2) 0 0 0;
+    font-size: 15px;
+  }
+
+  .document :global(blockquote p:first-child) {
+    margin-top: 0;
+  }
+
+  .document :global(blockquote p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

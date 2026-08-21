@@ -1,0 +1,21 @@
+---
+/* The URL to hand people: /legal/. Renders the current policy version, which
+   is the one src/policy.ts names and every new envelope records. */
+import Base from "../../layouts/Base.astro";
+import LegalBody from "../../components/LegalBody.astro";
+import { Content, frontmatter } from "../../legal/2026-04-24.md";
+import { POLICY_VERSION } from "../../policy";
+
+if (frontmatter.version !== POLICY_VERSION) {
+  throw new Error(
+    `/legal/ renders ${frontmatter.version} but POLICY_VERSION is ${POLICY_VERSION}. ` +
+      "Point this import at the current document, or fix src/policy.ts.",
+  );
+}
+---
+
+<Base title={frontmatter.title} description={frontmatter.description}>
+  <LegalBody version={frontmatter.version} status={frontmatter.status}>
+    <Content />
+  </LegalBody>
+</Base>

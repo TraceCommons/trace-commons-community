@@ -14,6 +14,16 @@ export default defineConfig({
   build: {
     format: "directory",
   },
+  /* The terms, data policy and consent scopes were three places saying
+     overlapping things. They are now one page, and these two URLs stay alive
+     because they are already in the wild -- in the site footer of every page
+     published so far, and in whatever anyone has bookmarked or pasted. A dead
+     link to a privacy policy reads as a company that took its privacy policy
+     down. */
+  redirects: {
+    "/about/privacy": "/legal",
+    "/about/data-policy": "/legal",
+  },
   vite: {
     build: {
       // The production CSP in public/_headers sets script-src 'self' with no
