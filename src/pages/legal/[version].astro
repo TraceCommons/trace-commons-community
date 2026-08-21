@@ -1,0 +1,33 @@
+---
+/* Permalink to one version: /legal/2026-04-24/.
+   Every envelope records the policy_version its contributor consented under, so
+   a submission resolves to the exact text that governed it. Adding a version
+   means adding a Markdown file; superseded files are never edited afterwards,
+   because editing one rewrites what somebody already agreed to. */
+import Base from "../../layouts/Base.astro";
+import LegalBody from "../../components/LegalBody.astro";
+
+export async function getStaticPaths() {
+  const docs = await Astro.glob("../../legal/*.md");
+  return docs.map((doc) => ({
+    params: { version: doc.frontmatter.version },
+    props: { doc },
+  }));
+}
+
+const { doc } = Astro.props;
+const { Content, frontmatter } = doc;
+---
+
+<Base
+  title={`${frontmatter.title} (${frontmatter.version})`}
+  description={frontmatter.description}
+>
+  <LegalBody
+    version={frontmatter.version}
+    status={frontmatter.status}
+    permalink={true}
+  >
+    <Content />
+  </LegalBody>
+</Base>
