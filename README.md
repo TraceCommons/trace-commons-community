@@ -68,6 +68,8 @@ src/
     about/
       privacy.astro
       data-policy.astro
+      brand.astro
+      tnc.astro
   types.ts            TypeScript shape of the snapshot payload
 ```
 
@@ -79,9 +81,10 @@ This site renders only:
 - Aggregate counts (no per-trace data, no raw envelope content).
 - Self-declared bios (≤280 bytes, plaintext, no HTML).
 
-See [`/about/privacy`](./src/pages/about/privacy.astro) and
-[`/about/data-policy`](./src/pages/about/data-policy.astro) for the public
-versions of this posture.
+See [`/about/privacy`](./src/pages/about/privacy.astro),
+[`/about/data-policy`](./src/pages/about/data-policy.astro), and
+[`/about/tnc`](./src/pages/about/tnc.astro) for the public versions of this
+posture.
 
 ## License
 

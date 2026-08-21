@@ -1,0 +1,441 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base
+  title="Terms and conditions"
+  description="Terms for using Trace Commons and contributing agent traces. Consent is opt-in, scopes bind, and credits are non-transferable."
+>
+  <Fragment slot="head">
+    <style is:inline>
+      .page .toc {
+        border: var(--hairline);
+        padding: var(--space-3) var(--space-4);
+        max-width: 68ch;
+      }
+      .page .toc ol {
+        columns: 2;
+        column-gap: 2.5rem;
+        margin: 0;
+      }
+      .page .toc li { break-inside: avoid; }
+      .page h2, .page h3 { scroll-margin-top: var(--space-4); }
+      @media (max-width: 560px) {
+        .page .toc ol { columns: 1; }
+      }
+    </style>
+  </Fragment>
+
+  <h2>Terms and conditions</h2>
+  <p>
+    These terms govern use of Trace Commons: the websites, documentation,
+    contributor software, ingest and issuer services, and community
+    surfaces.
+  </p>
+  <p class="muted">
+    Effective 22 August 2026. Using the services, enrolling a device, or
+    submitting a trace means you accept these terms. If you cannot accept
+    them, do not contribute.
+  </p>
+
+  <div class="banner">
+    Trace Commons is a register of AI agent work, held under terms its
+    contributors set. Contribution is invite-gated. Open query access is
+    not yet something a reader can go and exercise. Corpus analytics and
+    the contributor leaderboard are public; the records themselves are not
+    an open dataset.
+  </div>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="label">Contents</p>
+    <ol>
+      <li><a href="#who">Who these terms bind</a></li>
+      <li><a href="#what">What this is, and is not</a></li>
+      <li><a href="#sites">Websites and documentation</a></li>
+      <li><a href="#contribute">Contributing traces</a></li>
+      <li><a href="#consent">Consent, redaction, withdrawal</a></li>
+      <li><a href="#credits">Trace Credits</a></li>
+      <li><a href="#query">Query access</a></li>
+      <li><a href="#use">Acceptable use</a></li>
+      <li><a href="#brand">Name, marks, and press</a></li>
+      <li><a href="#software">Software and third parties</a></li>
+      <li><a href="#disclaimer">Disclaimers</a></li>
+      <li><a href="#liability">Limitation of liability</a></li>
+      <li><a href="#changes">Changes</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="who">Who these terms bind</h2>
+  <p>
+    They bind anyone who visits the sites, installs a client, redeems an
+    invite, submits a trace, or opts into public attribution.
+  </p>
+  <p>
+    If you act for an organisation or a lab, you confirm you have
+    authority to bind that group to the parts that apply to it.
+  </p>
+  <p>
+    You must have legal capacity to agree. If you contribute traces, you
+    must have the right to share what you submit.
+  </p>
+
+  <h2 id="what">What this is, and is not</h2>
+  <p>
+    Trace Commons keeps the record of what AI agents did under terms the
+    contributor set. Contributors capture and scrub those records on their
+    own machines. Only the scrubbed envelope leaves, carrying a revocable
+    consent scope that decides what any future query is permitted to do
+    with it.
+  </p>
+  <p>You can rely on these statements:</p>
+  <ul>
+    <li>
+      Contributors set the terms of use for their own records, and those
+      terms bind. A record's consent scope decides what any query may do
+      with it. Scopes are revocable.
+    </li>
+    <li>
+      Corpus-level analytics stay open to everyone — no invite, no
+      account, no payment.
+    </li>
+    <li>
+      A Trace Credit is a signed, on-chain record that a submission was
+      accepted. Credits are non-transferable.
+    </li>
+    <li>
+      When buyers pay to query the register, that flows to contributors.
+      Trace Commons is not a platform collecting rent on other people's
+      work. That payment path is a commitment. It is not yet a capability
+      a reader can exercise.
+    </li>
+    <li>
+      Submissions pass two gates: whether a record differs meaningfully
+      from what is already held, and whether it is substantive rather than
+      template-shaped.
+    </li>
+  </ul>
+  <p>We do not claim:</p>
+  <ul>
+    <li>
+      A corpus size or contributor count on this page. Those numbers move.
+      Pull them live from <a href="/analytics">analytics</a> and date them.
+    </li>
+    <li>
+      That Trace Commons is an open dataset. Contribution is invite-gated
+      and query access is not yet open. "Open" describes the commitment
+      and the public analytics, not present-day access to the records.
+    </li>
+    <li>
+      Partner, customer, or funder names unless that party has said so
+      themselves.
+    </li>
+    <li>
+      Anything about individual contributors. The
+      <a href="/leaderboard">leaderboard</a> shows only people who
+      explicitly opted into public attribution. Absence from it is not
+      information about anyone.
+    </li>
+    <li>
+      Safety or accuracy claims about the agents whose work is recorded.
+      The register documents what agents did. It does not certify that any
+      of it was correct.
+    </li>
+  </ul>
+
+  <h2 id="sites">Websites and documentation</h2>
+  <p>
+    The public sites include this site,
+    <a href="https://docs.tracecommons.ai/">docs.tracecommons.ai</a>,
+    and pages published from the
+    <a href="https://github.com/TraceCommons/trace-commons-landing">landing</a>
+    and
+    <a href="https://github.com/TraceCommons/trace-commons-community">community</a>
+    repositories. They are provided as-is, for the purposes described on
+    each page.
+  </p>
+  <p>
+    Two surfaces are open without an invite or account: corpus analytics
+    and the contributor leaderboard. Profile management, contribution, and
+    query of records are not.
+  </p>
+  <p>
+    Do not scrape, overload, or probe the sites or APIs beyond ordinary
+    use of published pages and documented routes. Do not attempt to
+    deanonymise contributors, recover suppressed cells, or treat aggregate
+    figures as a statement about any named person. See the
+    <a href="/about/privacy">privacy notes</a> and the
+    <a href="/about/data-policy">data policy</a>
+    for what published aggregates do and do not protect.
+  </p>
+  <p>
+    Site content is not licensed for training or fine-tuning AI models.
+    The site's content signals reserve that use.
+  </p>
+
+  <h2 id="contribute">Contributing traces</h2>
+  <p>
+    The pilot is invite-only. An invite lets an approved client create a
+    local device identity and register its public key. Redeeming an invite
+    does not discover, read, redact, queue, or upload a trace. Choosing
+    what to contribute is a separate action.
+  </p>
+  <p>
+    Treat a complete invite link as a temporary credential. Do not put it
+    in an issue, shared chat, screenshot, log, or checked-in file. If it
+    is exposed, ask the operator to revoke it.
+  </p>
+  <p>The rule that applies on every path:</p>
+  <ul>
+    <li>Raw session files stay on the contributor's machine.</li>
+    <li>
+      A client parses and redacts locally, applies the contributor's
+      consent scope, and submits a versioned envelope.
+    </li>
+    <li>
+      Recording and sharing are off until you turn them on. You can turn
+      them off again.
+    </li>
+    <li>
+      Preview or dry-run before the first upload. Approve only what you
+      intend to send.
+    </li>
+    <li>
+      The server treats the client as untrusted. It validates and
+      re-scrubs every envelope before accepting it into the register or
+      holding it for review.
+    </li>
+  </ul>
+  <p>
+    You are responsible for what you submit: that you have the right to
+    share it, that you have reviewed the redacted preview, and that the
+    consent scopes match the uses you want to allow. Do not submit another
+    person's work, private data, or secrets as a way of getting them off
+    your machine. Local redaction is a control, not a licence to be
+    careless.
+  </p>
+  <p>
+    A successful upload returns a receipt with a stable
+    <code>submission_id</code>. Keep it. Delivery is not the same as
+    acceptance, credit, public visibility, or distribution. Statuses such
+    as <code>accepted</code>, <code>quarantined</code>, and
+    <code>awaiting_pii_backstop</code> are described in the
+    <a href="https://docs.tracecommons.ai/start/after-submission/">docs</a>.
+  </p>
+
+  <h2 id="consent">Consent, redaction, withdrawal</h2>
+  <p>
+    Consent travels with every trace. A deployment can impose a narrower
+    ceiling. A client cannot use that ceiling to grant more than you
+    selected. The set returned during enrollment is authoritative for that
+    contributor and deployment.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Scope</th>
+          <th>What it permits</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>debugging_evaluation</code></td>
+          <td>Debugging, evaluation, and permitted aggregate analysis. Default on many paths.</td>
+        </tr>
+        <tr>
+          <td><code>benchmark_only</code></td>
+          <td>Evaluation, bounded benchmark generation, aggregate analytics.</td>
+        </tr>
+        <tr>
+          <td><code>ranking_training</code></td>
+          <td>The above, plus ranker training.</td>
+        </tr>
+        <tr>
+          <td><code>model_training</code></td>
+          <td>The above, plus training-data inclusion.</td>
+        </tr>
+        <tr>
+          <td><code>public_attribution</code></td>
+          <td>A separate profile permission. It links a pseudonym to a public handle. It does not grant any trace-content use on its own.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Known secret shapes are replaced locally before upload. A fail-closed
+    guard then scans the finished envelope. If secret-shaped content still
+    survives, that session is refused rather than partially uploaded.
+    Reasoning records can quote files and repeat values the model saw;
+    they are redacted, but they remain the least predictable part of a
+    transcript. Exclude them if you do not want them in the envelope.
+  </p>
+  <p>
+    Public attribution is off by default. A handle appears on the
+    community site only if you opted in. Withdrawing public attribution
+    takes effect in the register immediately and excludes the handle from
+    later snapshots. A handle already in the published snapshot is removed
+    when that snapshot is next recomputed.
+  </p>
+  <p>
+    Withdrawing a trace deletes Trace Commons' stored content and excludes
+    it from future use. Copies already distributed cannot be recalled. The
+    server reports one of three reach tiers:
+    <code>not_distributed</code>,
+    <code>commons_not_distributed</code>, or
+    <code>commons_distributed</code>.
+    Credit already recorded stays. Logging out, disarming a project,
+    uninstalling a client, or revoking a device is not withdrawal.
+    Uninstalling is not withdrawal. Do any withdrawing before you log out.
+  </p>
+  <p>
+    The <a href="/about/privacy">privacy notes</a> and
+    <a href="/about/data-policy">data policy</a> are part of these terms for
+    contribution and public surfaces. If they conflict with marketing copy
+    elsewhere, they win on what is stored, shown, and guaranteed.
+  </p>
+
+  <h2 id="credits">Trace Credits</h2>
+  <p>
+    A Trace Credit is a receipt for work that cleared the gates — a
+    signed, on-chain record of an accepted submission. It is tied to a
+    particular record. Sending records, on its own, earns nothing.
+    Credits cannot be bought, sold, or handed on. Nobody else can take
+    them off you.
+  </p>
+  <p>
+    The server, not a client estimate, is authoritative for value and
+    credit. Pending amounts can settle later; later utility events may
+    add a separate ledger adjustment. A quarantined or privacy-held trace
+    is not eligible for normal credit processing while it remains held.
+  </p>
+  <p>
+    Credits are not wages, equity, a security, or a promise of future
+    payment. They do not create an employment, partnership, or agency
+    relationship.
+  </p>
+
+  <h2 id="query">Query access</h2>
+  <p>
+    Open query access is not yet available. When it is, a record's
+    consent scope will still decide what a query may do with it, and
+    those scopes will still be withdrawable. Do not assume that
+    contributing today grants you, or anyone else, a right to download
+    the corpus.
+  </p>
+
+  <h2 id="use">Acceptable use</h2>
+  <p>Do not:</p>
+  <ul>
+    <li>Bypass or disable local redaction, preview, or consent.</li>
+    <li>
+      Submit traces you do not have the right to share, including other
+      people's private sessions, employer secrets, or exam material you
+      are not allowed to disclose.
+    </li>
+    <li>
+      Try to game novelty or substance gates with template-shaped filler,
+      duplicated sessions, or synthetic junk.
+    </li>
+    <li>
+      Probe, scrape, or attack the issuer, ingest, scoring, or community
+      surfaces beyond documented use.
+    </li>
+    <li>
+      Impersonate Trace Commons, imply an endorsement, or present
+      unpublished partner or funder relationships as fact.
+    </li>
+    <li>
+      Use the sites, APIs, or corpus in a way that breaks applicable law.
+    </li>
+  </ul>
+  <p>
+    We may refuse, quarantine, or withdraw access, or revoke invites, if
+    these terms, the data policy, or a published code of conduct is
+    broken.
+  </p>
+
+  <h2 id="brand">Name, marks, and press</h2>
+  <p>
+    The name is two words, both capitalised: Trace Commons. Not
+    TraceCommons, not tracecommons. No article. Trace Credit is a defined
+    term. Ironclaw is a separate project, one word, capital I.
+  </p>
+  <p>
+    Logo files are for referring to Trace Commons. They are not a licence
+    to use them as part of your own logo, product name, or domain, or to
+    imply that Trace Commons endorses, partners with, or has reviewed
+    something it has not. Clear space, minimum sizes, and which file to
+    use are on the
+    <a href="/about/brand/">brand and press</a>
+    page. Boilerplate on that page may be reproduced and edited; if you
+    edit it, stay inside
+    <a href="/about/brand/">what you can safely say</a>.
+  </p>
+
+  <h2 id="software">Software and third parties</h2>
+  <p>
+    Contributor clients and related packages may be signed and published
+    by Iqlusion Inc. Check the publisher shown at install time rather than
+    clicking past it. Ironclaw is a separate local capture tool that Trace
+    Commons depends on; its own terms apply to that software.
+  </p>
+  <p>
+    Trace Credits are recorded on NEAR. NEAR, agent vendors, and model
+    providers are not Trace Commons, and product names used to describe
+    which tool produced a session are those parties' marks.
+  </p>
+  <p>
+    Optional extra privacy filtering may send already-locally-redacted
+    message text to a configured TEE-hosted filter. Structured tool
+    payloads do not use that path. If the filter is unavailable, the
+    batch is refused rather than uploaded unfiltered.
+  </p>
+
+  <h2 id="disclaimer">Disclaimers</h2>
+  <p>
+    The services are a pilot. They are provided as is, without warranties
+    of any kind, including merchantability, fitness for a particular
+    purpose, non-infringement, uninterrupted availability, or that
+    redaction will catch every secret. Residual risk remains with the
+    contributor who chose to submit.
+  </p>
+  <p>
+    Acceptance into the register is not a judgement that the recorded
+    agent work was correct, safe, original, or useful to you. Credits,
+    scores, and gate outcomes are not advice.
+  </p>
+
+  <h2 id="liability">Limitation of liability</h2>
+  <p>
+    To the fullest extent permitted by law, Trace Commons, Iqlusion Inc.,
+    and their officers, employees, and contractors are not liable for
+    indirect, incidental, special, consequential, or punitive damages, or
+    for lost profits, data, or goodwill, arising from the services.
+  </p>
+  <p>
+    Nothing in these terms limits liability that cannot be limited:
+    fraud, or death or personal injury caused by negligence, where that
+    limit would be unlawful.
+  </p>
+
+  <h2 id="changes">Changes</h2>
+  <p>
+    We may update these terms. The date at the top is the effective date
+    of the published version. Continued contribution after a change is
+    acceptance of the new terms for traces submitted after the change.
+    Consent scopes already attached to a submitted trace continue to bind
+    that trace until withdrawn.
+  </p>
+
+  <h2 id="contact">Contact</h2>
+  <p>
+    Brand and press:
+    <a href="mailto:zaki@manian.org">zaki@manian.org</a>.
+  </p>
+  <p>
+    Privacy notes: <a href="/about/privacy">/about/privacy</a>.
+    Data policy: <a href="/about/data-policy">/about/data-policy</a>.
+    Brand: <a href="/about/brand/">/about/brand</a>.
+    Contributor docs: <a href="https://docs.tracecommons.ai/">docs.tracecommons.ai</a>.
+  </p>
+</Base>
