@@ -1,0 +1,57 @@
+---
+import Base from "../../layouts/Base.astro";
+
+/* Newest first. A release gets an entry here and a page beside this file.
+   Kept as a literal rather than a content collection: there are few of
+   these, they are written by hand, and a collection would add a build
+   dependency for no editorial gain. */
+const releases = [
+  {
+    href: "/announcements/v0-11-0",
+    version: "0.11.0",
+    date: "2026-09-07",
+    title: "Private inference in the tools you already use",
+    summary:
+      "Send calls from Claude Code and Codex to NEAR AI's private inference, from a screen that shows you whether it is actually happening.",
+  },
+];
+---
+<Base
+  title="Announcements"
+  description="Release announcements for Trace Commons: what shipped, what it does, and what it does not do yet."
+>
+  <h2>Announcements</h2>
+  <p>
+    What each release actually changed. These say what shipped and what did
+    not — a feature named here is one you can use today, and anything still
+    ahead is called out as such.
+  </p>
+
+  <ul class="release-list">
+    {releases.map((r) => (
+      <li>
+        <h3><a href={r.href}>{r.version} — {r.title}</a></h3>
+        <p class="release-date"><time datetime={r.date}>{r.date}</time></p>
+        <p>{r.summary}</p>
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .release-list {
+    list-style: none;
+    padding: 0;
+  }
+  .release-list li + li {
+    margin-top: 2rem;
+  }
+  .release-list h3 {
+    margin-bottom: 0.25rem;
+  }
+  .release-date {
+    margin: 0 0 0.5rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+</style>
