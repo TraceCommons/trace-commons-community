@@ -89,3 +89,9 @@ posture.
 ## License
 
 Dual MIT / Apache-2.0, matching the rest of the Trace Commons stack.
+
+## Release announcements
+
+Follow the [announcement style guide](docs/announcement-style-guide.md) when
+writing or updating release posts. Update both the release page and its title
+and summary in `src/pages/announcements/index.astro`.
