@@ -217,10 +217,18 @@ import Base from "../../layouts/Base.astro";
     and it commits to the exact request and response bytes. What it does not
     carry is a model. The gateway signs for whatever it served, and one key
     stands behind every model behind it, so the only thing saying which
-    model answered is the request you sent. Routing Claude Code through
-    Private AI does not by itself produce a contributable session. Which
-    model answered decides that, and for a frontier model the evidence
-    cannot say.
+    model answered is the request you sent.
+  </p>
+  <p>
+    Such a session can still be contributed. This commons accepts both kinds
+    of receipt, and a gateway receipt is real evidence of the thing it
+    actually attests: this exchange happened inside a NEAR AI enclave whose
+    image we pinned, and these are the exact bytes it produced. What it is
+    not is evidence of which model answered. For a call to Claude, GPT or
+    Gemini, the model name on the trace is the one you asked for, not one
+    anything signed. We would rather admit the work and be precise about
+    what the proof covers than refuse it and imply a rigour the frontier
+    path cannot have.
   </p>
   <p>
     The obvious way to build this is the wrong one: let you pick a session,
@@ -389,9 +397,18 @@ import Base from "../../layouts/Base.astro";
     <strong>Only the models NEAR AI runs itself can be named by their
     evidence.</strong> Claude, GPT and Gemini are brokered from their
     makers. A call to one can still return a gateway receipt, signed by an
-    attested key and binding the bytes, but it names no model, so it cannot
-    establish what produced the trace. No setting on our side changes that.
-    The invite free path covers NEAR AI's own open weight models.
+    attested key and binding the bytes, but it names no model. Nothing on
+    our side can change that: the name is not in the signed text, so no
+    configuration recovers it.
+  </p>
+  <p>
+    <strong>We accept those receipts anyway, and you should know what that
+    means.</strong> A trace admitted on a gateway receipt is proven to have
+    happened inside a pinned NEAR AI enclave, over exactly the bytes
+    contributed. Its model label is asserted by the request rather than
+    attested. Both kinds are admitted here; only one of them can tell you
+    what answered. An operator running their own commons chooses this, and
+    the default is to refuse.
   </p>
   <p>
     <strong>Forgetting a credential does not revoke it.</strong> Revocation
