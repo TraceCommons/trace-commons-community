@@ -1,0 +1,437 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base
+  title="0.12.0 — A credential of your own"
+  description="Trace Commons 0.12.0: log in to NEAR AI instead of pasting a key, and contribute without an invite on evidence the trace carries itself."
+>
+  <p class="release-date"><time datetime="2026-09-09">9 September 2026</time></p>
+  <h2>0.12.0 — A credential of your own</h2>
+
+  <p>
+    v0.11 put private inference on a screen and let you route Claude Code
+    and Codex through it. To actually pay for the answers, you had to supply
+    a NEAR AI API key yourself: find it, copy it, and put it somewhere the
+    routing component would read.
+  </p>
+  <p>
+    <strong>In v0.12 you log in to NEAR AI instead.</strong> The rest of the
+    release lines up behind that: a tool can only be connected once there is
+    a key to answer it, a key obtained mid-session is picked up without a
+    restart, and the screen tells you when calls are being answered by an
+    account that is not yours.
+  </p>
+  <p>
+    v0.11 promised two more things for v0.12. <strong>Contributing without
+    an invite is built and switched on</strong>, the whole path, and a
+    better model than invites. The attestation it rests on is deployed
+    rather than fixtured: real signer keys, pinned, checked on our side.
+    opencode split in two: contributing its sessions works, routing its
+    calls is refused, and we owe you a correction on that. Both get their
+    own section.
+  </p>
+  <p>
+    One thing in this release is visible to everyone straight away, invite
+    or no invite: <strong>every session in your queue now says whether it
+    carries a checkable copy of the model call that produced it.</strong>
+    That is a fact about the recording rather than a permission, so it does
+    not wait on anything being switched on.
+  </p>
+
+  <h2>Log in instead of pasting a key</h2>
+  <p>
+    On the Private AI screen, on macOS, Windows and Linux, there is now a
+    sign-in. It opens your browser at NEAR AI, you log in with GitHub or
+    Google, and that is the end of your part. An inference API key is
+    created on your account and stored on your computer, and the local
+    routing component starts answering with it. If it was already running,
+    it switches to the new key without a restart.
+  </p>
+  <p>
+    <strong>Logging in with a NEAR wallet is not supported yet.</strong>
+    NEAR AI's own site offers it, but it works by having the page itself ask
+    your wallet to sign a message addressed to that page's domain, which an
+    app on your computer cannot honestly claim to be. GitHub and Google are
+    the two providers that work as a plain browser redirect, so those are
+    the two the app offers. Wallet sign-in needs a change on NEAR AI's side
+    before we can do it without pretending to be their website.
+  </p>
+  <p>
+    Some boundaries we held while building it, because a sign-in that mints
+    a key is exactly where scope creep does damage:
+  </p>
+  <ul class="notes">
+    <li>
+      <strong>It creates an inference key and nothing else.</strong>
+      Signing in to buy inference does not enroll you as a contributor,
+      does not create a device identity, and does not touch your
+      contribution settings. You can hold an inference credential without
+      ever contributing, or contribute without ever holding one. The two
+      remain separate decisions.
+    </li>
+    <li>
+      <strong>Forgetting is local, and the app says so.</strong> Removing
+      the credential from your computer stops this machine from using it.
+      The key itself stays valid at NEAR AI until you revoke it there, and
+      the app tells you that rather than implying a revocation it did not
+      perform.
+    </li>
+    <li>
+      <strong>Connecting now requires a credential.</strong> In v0.11 you
+      could connect a coding tool to a routing component with nothing
+      behind it, which rewrote the tool's configuration to point at a port
+      that could not answer: a working tool traded for a broken one.
+      Connecting is now gated on actually holding a credential.
+    </li>
+    <li>
+      <strong>The screen says whose account is answering.</strong> If your
+      calls are being answered by a credential the app does not hold (an
+      ambient API key in your environment, for instance), the screen says
+      so, instead of letting a working call imply it is running on your
+      sign-in.
+    </li>
+  </ul>
+  <p>
+    You can also stop a sign-in you have started, from any window, including
+    one you opened after closing the app mid-way through. That sounds small.
+    It was not: the part of the app that knows a sign-in is in flight and
+    the part that can stop one disagreed about whether they were allowed to
+    talk, so every version of this screen drew a Stop button that did
+    nothing, or one greyed out with nothing to explain it. Three of them,
+    written separately, each arrived at a different wrong answer. The fix
+    was to stop requiring a window to prove which sign-in it meant when
+    there is only one.
+  </p>
+  <p>
+    The sign-in lives in the desktop apps. The CLI daemon does the work, but
+    there is no CLI command that starts it yet.
+  </p>
+  <p>
+    The balance is on the same card. What is left to spend, the ceiling if
+    your account has one, what the account has spent, and when this computer
+    last asked. A figure and a sentence are alternatives rather than
+    companions: an account nobody has capped has no remaining figure to
+    show, and says so instead of reporting zero. Nothing colours the number.
+    A low balance is not painted as a warning, because the app does not know
+    what your ceiling means to you, and an account with no ceiling has none
+    to be low against.
+  </p>
+
+  <h2>Contributing without an invite</h2>
+  <p>
+    An invite is a person vouching for you. It works, and it does not scale,
+    and it means we decide who contributes.
+  </p>
+  <p>
+    v0.12 replaces that with something we think is better: <strong>the
+    contribution vouches for itself.</strong> You join with the NEAR AI
+    login you already have, and an upload is admitted on evidence carried by
+    the trace: a receipt from an attested inference call, certified by a
+    witness, bound to the exact bytes being contributed. Not "we know this
+    person." Instead: this work happened inside an attested enclave, and
+    these are the bytes it produced. Which model served it is NEAR AI's
+    statement rather than the hardware's, and the section below says why
+    that distinction is not ours to close.
+  </p>
+  <p>
+    That is a stronger claim than an invite ever made. An invite says
+    someone trusted you once. Evidence says the trace is what it says it is,
+    every time, and it does not care who you are.
+  </p>
+  <p>
+    The identity half is deliberately thin. Signing up stores a random
+    tenant id and a keyed blind index for your account, not a digest anyone
+    could test account names against offline. Your account name is sealed
+    under a KMS-held key. Identity alone buys nothing: it establishes who a
+    contribution belongs to and grants no authority to contribute.
+  </p>
+  <p>
+    The whole path runs end to end, from challenge through witness
+    certification, admission and terminal retry, against a real PostgreSQL
+    with real signature checking, and refuses every way we could find to
+    fake it: a missing receipt, a receipt over other bytes, an expired one,
+    a valid receipt carrying unrelated history alongside it.
+  </p>
+  <p>
+    <strong>It ships switched on.</strong> An earlier draft of this section
+    said it did not, and listed three things that had to become true first.
+    All three are now true, and it is worth saying what they were rather
+    than quietly deleting the list.
+  </p>
+  <p>
+    The first was the pinning. The witness shipped with no receipt signing
+    keys pinned at all, and with none pinned it did not ask who signed. It
+    now pins the ed25519 signers for the models we accept and, separately,
+    the gateway signer. Separately, because those two keys attest different
+    things, and pinning one kind is not agreement to accept a different kind
+    from any signer.
+  </p>
+  <p>
+    The second was that the check happened on the wrong side. A contributor
+    inspecting its own evidence is useful and is not a bound. A submitter
+    who checked nothing looked identical. That check now runs on our side,
+    where a refusal actually refuses.
+  </p>
+  <p>
+    The third was what the check rested on. We used to parse the binding out
+    of the hardware quote without verifying the quote itself, so the trust
+    was really in the connection to NEAR AI rather than in the silicon. The
+    quote is now verified against pinned enclave measurements.
+  </p>
+  <p>
+    What is still not ours: the model's name is a JSON field beside the
+    signature rather than something the hardware attests. One correction to
+    an earlier draft, since we got it wrong in our favour's opposite
+    direction: the enclaves are not identically measured. <code>rtmr3</code>
+    does differ per model. Re-pinning for a different model moved that
+    register and left <code>mrtd</code> and <code>rtmr0</code> through
+    <code>rtmr2</code> byte-identical. So the quote does distinguish
+    enclaves; what it does not do is say which model's name belongs to which
+    measurement. Binding a model identifier into the attested data is still
+    a change on NEAR AI's side.
+  </p>
+  <p>
+    So the honest claim is "signed inside a NEAR AI enclave whose image we
+    pinned", with the model taken on NEAR AI's word for the receipts that
+    name one at all. There is a second kind that names none, and the section
+    below is about it.
+  </p>
+
+  <h2>Which of your sessions can actually be contributed</h2>
+  <p>
+    Evidence-bearing contribution has a consequence that only shows up when
+    you look at a real machine: <strong>most of what is already on your disk
+    cannot be contributed that way.</strong> A trace carries evidence only
+    if it was recorded while your calls were being answered here. Everything
+    from before that, which for someone arriving today is nearly all of it,
+    has none, and never will.
+  </p>
+  <p>
+    There is a second boundary, and it is the one more likely to catch you.
+    Evidence comes from the model, and only the models NEAR AI runs on its
+    own hardware produce any. Those are the open weight ones. Claude, GPT
+    and Gemini reach you through NEAR AI by being bought from Anthropic,
+    OpenAI and Google, who are the ones running them, so there is nothing
+    for NEAR AI's hardware to attest. You may still get a receipt for such a
+    call. It is signed by NEAR AI's gateway, whose key is itself attested,
+    and it commits to the exact request and response bytes. What it does not
+    carry is a model. The gateway signs for whatever it served, and one key
+    stands behind every model behind it, so the only thing saying which
+    model answered is the request you sent. Routing Claude Code through
+    Private AI does not by itself produce a contributable session. Which
+    model answered decides that, and for a frontier model the evidence
+    cannot say.
+  </p>
+  <p>
+    The obvious way to build this is the wrong one: let you pick a session,
+    send it, and let the server say no. That makes the list a menu that
+    isn't one, and you find out one session at a time.
+  </p>
+  <p>
+    So the app works it out first. Each session in the queue says whether it
+    can be contributed, and if not, why. The ones that can't simply aren't
+    offered. They are still listed. Hiding your own work would be its own
+    kind of dishonesty, and it would make the app look like it hadn't
+    noticed files you know it can see.
+  </p>
+  <p>
+    The reasons distinguish two things that feel the same and aren't. Some
+    are permanent: this session recorded no model call, or the call didn't
+    finish cleanly, and nothing you do will change that, so the app says so
+    plainly rather than leaving you to retry. One is a setting, and only
+    that one names a setting, because it's the only case where changing
+    something helps the sessions you record next.
+  </p>
+  <p>
+    "Submit all" on a folder sends what can be sent and says how many it
+    left behind. Not "all", which would either fail partway or send exactly
+    what the screen just said couldn't go.
+  </p>
+  <p>
+    <strong>Where it shows up depends on how you got in.</strong> If you
+    hold an invite, every session you have is contributable and the app says
+    nothing extra, which is the correct answer rather than a stub, and it is
+    the same code path answering it. The marks are for the permission
+    question, and an invite already answers that one.
+  </p>
+  <p>
+    We built it now because the alternative was shipping the front door
+    before the room behind it, and finding out from the first person through
+    that their screen was full of things they couldn't use.
+  </p>
+  <p>
+    We would rather turn it on once than turn it on twice. Two defects in
+    this path were found and fixed before it ever ran anywhere: an earlier
+    revision of the identity scheme let account names be tested offline, and
+    a migration meant wallet sign-up could not write a row at all. We also
+    found, while writing this, that the end-to-end test had been broken for
+    weeks by a database change made while building this very feature. It
+    cannot run in CI, so nothing said so. It runs now, and it is what caught
+    the last of the defects below.
+  </p>
+
+  <h2>Whether a session carries proof of its own model call</h2>
+  <p>
+    The section above is about permission. This one is about the trace
+    itself, and it applies to everybody either way.
+  </p>
+  <p>
+    Every session in the queue now says whether it carries a checkable copy
+    of the model call that produced it. Not whether you may send it, but
+    whether the record is complete. Those are different questions, and the
+    second one has an answer for everybody, including contributors who
+    already have an invite and whose sessions send perfectly well. An
+    invited contributor's trace can arrive without a copy of its call just
+    as easily as anyone else's; there was previously no way to know which of
+    yours had one.
+  </p>
+  <p>
+    So the mark is on every row, for every contributor, whether or not the
+    permission question above applies to you. It describes the recording,
+    not your standing.
+  </p>
+  <p>
+    Where a session has no usable copy, the row says which fact is in the
+    way. Most of those are permanent: no model call was answered here while
+    the session ran, or what was written down cannot be checked against the
+    call. One is a setting, and it is the only one that names a setting,
+    because it is the only case where changing something helps the sessions
+    you record next.
+  </p>
+  <p>
+    One case is neither. If we could not reach the service that issues the
+    receipt, the session is not marked as lacking proof. It is marked
+    unknown, and the row says the receipt could not be fetched. That
+    distinction is the whole reason it exists: an unreachable service is not
+    evidence about your session, and a mark that treated it as one would be
+    telling you something false about your own work. It may well succeed
+    later.
+  </p>
+  <p>
+    There is nothing to press. The mark is a description, and the app does
+    not offer you a button that would imply otherwise. Whether a session can
+    be sent remains the question the section above answers.
+  </p>
+
+  <h2>opencode: traces yes, routing no</h2>
+  <p>
+    Two different things hide under "opencode support", and they came out
+    differently.
+  </p>
+  <p>
+    <strong>Contributing opencode sessions works.</strong> opencode has an
+    explicit export command, and the contributor daemon can now import those
+    exports as traces. You declare a folder; direct exports you place in it
+    are picked up. Nothing scans opencode's own storage, nothing imports
+    historical sessions implicitly, and nothing touches opencode's
+    configuration. The macOS app offers a folder picker for it; on Linux and
+    Windows the folder is declared in the daemon's settings.
+  </p>
+  <p>
+    <strong>Routing opencode through Private AI remains refused</strong>,
+    and v0.11's optimism here deserves a correction. We said the merged
+    upstream fix, writing a provider entry only where the file already shows
+    the tool using that provider, was the precondition, and using it would
+    be v0.12. We then qualified opencode properly, against a pinned release
+    in isolated profiles, and the counterexample stands: writing a provider
+    block into a fresh profile changes which model opencode selects by
+    default, before any request leaves the machine, and the guard we had is
+    not sufficient to rule that out. So opencode is not in the routing
+    catalog, and there is now a CI check that fails if anyone adds it
+    without a new qualification. A tool that quietly changes your model is
+    worse than a tool we do not support yet.
+  </p>
+
+  <h2>Where we're going</h2>
+  <p>
+    The v0.11 framing was paying for private inference by selectively
+    sharing data. v0.12 builds both halves of that sentence without joining
+    them. The credential is the paying half: inference you buy, on an
+    account the app can hold and read. The evidence-bearing contribution
+    path is the sharing half: a contribution admitted on proof rather than
+    on an invitation. What does not exist yet is the exchange between them.
+    Contributing does not earn inference, and nothing in this release
+    changes what anything costs. The plumbing now points at that; the pipe
+    is not connected.
+  </p>
+
+  <h2>The limits, plainly</h2>
+  <p>
+    <strong>Invite-free contribution is new in this release.</strong> The
+    path is built, switched on, and its attestation deployed rather than
+    fixtured. It is the newest thing here, and the part most worth telling
+    us about if it does not behave.
+  </p>
+  <p>
+    <strong>The per-session eligibility marks apply only where permission is
+    in question.</strong> An invited contributor sees nothing extra, because
+    every one of their sessions is contributable and that is the correct
+    answer rather than a stub. This is the permission question only. The
+    mark saying whether a session carries proof of its own model call is
+    visible to everyone.
+  </p>
+  <p>
+    <strong>Signing in to NEAR AI uses GitHub or Google, not a
+    wallet.</strong> That is about how you obtain an inference credential,
+    and it is a limit of the sign-in rather than of contributing. Joining as
+    a contributor does not need a wallet either: the login you already hold
+    is the identity.
+  </p>
+  <p>
+    <strong>Signing in is desktop-only.</strong> No CLI command does it yet.
+  </p>
+  <p>
+    <strong>opencode routing is refused, deliberately.</strong> Contributing
+    exported opencode sessions works; routing its model calls does not, for
+    the reason above.
+  </p>
+  <p>
+    <strong>Only the models NEAR AI runs itself can be named by their
+    evidence.</strong> Claude, GPT and Gemini are brokered from their
+    makers. A call to one can still return a gateway receipt, signed by an
+    attested key and binding the bytes, but it names no model, so it cannot
+    establish what produced the trace. No setting on our side changes that.
+    The invite free path covers NEAR AI's own open weight models.
+  </p>
+  <p>
+    <strong>Forgetting a credential does not revoke it.</strong> Revocation
+    happens at NEAR AI, by you.
+  </p>
+
+  <h2>Along the way</h2>
+  <p>
+    A few smaller things that make the above trustworthy. The admission
+    witness had its inputs isolated and its coverage narrowed so a valid
+    receipt cannot certify unrelated history. And the routing component's
+    pin advanced to pick up upstream support for host-owned credentials, the
+    piece that lets the app supply the key it minted, which this whole
+    release stands on. That same change is what lets a minted NEAR AI key
+    sit alongside a Claude or Codex login you already have, rather than
+    taking their place: the app supplies one credential without the
+    component giving up the ones it finds for itself.
+  </p>
+
+  <h2>Getting it</h2>
+  <p>
+    The desktop app updates itself. The CLI is on Homebrew.
+  </p>
+  <p>
+    If you connected Claude Code or Codex in v0.11 on an ambient key, the
+    screen will now tell you exactly that, and offer you a sign-in of your
+    own.
+  </p>
+</Base>
+
+<style>
+  .release-date {
+    margin: 0 0 0.5rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .notes {
+    padding-left: 1.2rem;
+  }
+  .notes li + li {
+    margin-top: 0.75rem;
+  }
+</style>
