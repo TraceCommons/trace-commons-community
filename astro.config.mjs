@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 
+import { appleAppSiteAssociation } from "./scripts/aasa.mjs";
+
 // Site is read-mostly + cacheable. No server runtime; pages are
 // pre-rendered against the snapshot JSON in src/_data/.
 //
@@ -11,6 +13,10 @@ export default defineConfig({
   site: "https://tracecommons.ai",
   trailingSlash: "ignore",
   compressHTML: true,
+  // Writes dist/.well-known/apple-app-site-association from TC_APPLE_TEAM_ID
+  // after the build (skipped with a warning when unset, fails the build when
+  // malformed, or unset with TC_AASA_REQUIRED=1). See scripts/aasa.mjs.
+  integrations: [appleAppSiteAssociation()],
   build: {
     format: "directory",
   },

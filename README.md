@@ -53,6 +53,28 @@ returns 404 (which means
 `TRACE_COMMONS_COMMUNITY_LEADERBOARD_ENABLED` is off — the site
 refuses to deploy against a closed surface).
 
+### apple-app-site-association
+
+The build writes `dist/.well-known/apple-app-site-association` (the
+`webcredentials` association that lets the macOS app use passkeys for
+tracecommons.ai) from `TC_APPLE_TEAM_ID`, via the integration in
+`astro.config.mjs` and [`scripts/aasa.mjs`](./scripts/aasa.mjs):
+
+```sh
+TC_APPLE_TEAM_ID=KXSWJN7WY8 npm run build    # renders the file
+npm run build                                # no file, a warning; the path 404s
+TC_APPLE_TEAM_ID=nope npm run build          # fails: malformed
+TC_AASA_REQUIRED=1 npm run build             # fails: unset
+TC_APPLE_TEAM_ID=KXSWJN7WY8 node scripts/aasa.mjs verify dist
+npm test                                     # renderer, deploy gate, worker route
+```
+
+`public/_worker.js` serves the path as a 200 `application/json`, never a
+redirect, and 404s anything that is not a `webcredentials` JSON body. The
+Team ID is not a secret and is set in `ci.yml` and `deploy.yml`; the deploy
+refuses to upload a `dist/` without the file. The operator runbook is in
+[trace-commons](https://github.com/TraceCommons/trace-commons/blob/main/docs/operator/tracecommons-ai-community-site.md).
+
 ## Layout
 
 ```

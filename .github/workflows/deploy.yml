@@ -67,10 +67,26 @@ jobs:
       # The fetcher refuses snapshots older than an hour, so a stale or
       # disabled upstream fails the deploy rather than quietly publishing
       # fabricated numbers.
+      #
+      # TC_APPLE_TEAM_ID renders /.well-known/apple-app-site-association into
+      # dist/ (webcredentials for the macOS app's native passkeys; see
+      # scripts/aasa.mjs). Not a secret: every signed binary carries it.
+      # TC_AASA_REQUIRED makes an unset or malformed value fail the build.
       - name: Build against the live snapshot
         env:
           TC_API_BASE: https://ingest.tracecommons.ai
+          TC_APPLE_TEAM_ID: KXSWJN7WY8
+          TC_AASA_REQUIRED: "1"
         run: npm run build
+
+      # Refuse to upload a dist/ that lacks the association file (or holds one
+      # rendered from a different Team ID). Uploading would replace the live
+      # deployment and take the file down with it.
+      - name: Association file is in the build output
+        env:
+          TC_APPLE_TEAM_ID: KXSWJN7WY8
+          TC_AASA_REQUIRED: "1"
+        run: node scripts/aasa.mjs verify dist
 
       # The build above runs on Node 20 to match what ci.yml validates, but
       # wrangler 4.x requires Node >= 22 and hard-exits on 20. Switch versions
@@ -100,6 +116,28 @@ jobs:
             sleep 10
           done
           echo "::error::tracecommons.ai did not serve HTTP 200 after the deploy"
+          exit 1
+
+      # Apple's fetcher needs 200, no redirect, application/json, and the
+      # webcredentials entry. The origin only; Apple's CDN caches, so
+      # TraceCommons/trace-commons scripts/check-aasa.sh checks that separately.
+      - name: Confirm the association file is served
+        env:
+          EXPECTED_APP: KXSWJN7WY8.ai.tracecommons.shell
+        run: |
+          url=https://tracecommons.ai/.well-known/apple-app-site-association
+          for attempt in 1 2 3 4 5 6; do
+            code="$(curl -sS --max-time 20 -o aasa.json -D aasa.headers -w '%{http_code}' "$url" || true)"
+            ctype="$(grep -i '^content-type:' aasa.headers | tail -n1 | tr -d '\r' | cut -d: -f2- | sed 's/^ *//; s/ *;.*$//' | tr 'A-Z' 'a-z')"
+            if [ "$code" = "200" ] && [ "$ctype" = "application/json" ] \
+              && jq -e --arg app "$EXPECTED_APP" '.webcredentials.apps == [$app]' aasa.json >/dev/null; then
+              echo "serving (HTTP $code, $ctype, $EXPECTED_APP)"
+              exit 0
+            fi
+            echo "attempt $attempt: HTTP $code, content-type '$ctype', retrying"
+            sleep 10
+          done
+          echo "::error::tracecommons.ai did not serve the apple-app-site-association file after the deploy"
           exit 1
 
   docs:
