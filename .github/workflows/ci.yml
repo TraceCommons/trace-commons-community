@@ -16,11 +16,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      # scripts/aasa.mjs and the AASA route in public/_worker.js. The tests
+      # write only to temp dirs, so their order relative to the build is free.
+      - run: npm test
       # CI builds against the checked-in dummy snapshot by default.
       # Deploy pipelines override TC_API_BASE to fetch live snapshots.
+      # The Team ID is the one deploy.yml ships (not a secret: every signed
+      # binary carries it), so CI builds the same association file; strict
+      # mode fails the build if it ever goes missing.
       - run: npm run build
         env:
           TC_USE_DUMMY: "1"
+          TC_APPLE_TEAM_ID: KXSWJN7WY8
+          TC_AASA_REQUIRED: "1"
+      - name: Association file is in the build output
+        env:
+          TC_APPLE_TEAM_ID: KXSWJN7WY8
+          TC_AASA_REQUIRED: "1"
+        run: node scripts/aasa.mjs verify dist
       - name: Upload built site
         uses: actions/upload-artifact@v4
         with:

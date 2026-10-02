@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "check": "node scripts/fetch-snapshot.mjs && astro check",
     "lint": "node scripts/fetch-snapshot.mjs && astro check",
-    "fetch-snapshot": "node scripts/fetch-snapshot.mjs"
+    "fetch-snapshot": "node scripts/fetch-snapshot.mjs",
+    "test": "node --test scripts/aasa.test.mjs"
   },
   "dependencies": {
     "@near-wallet-selector/core": "^10.1.4",
