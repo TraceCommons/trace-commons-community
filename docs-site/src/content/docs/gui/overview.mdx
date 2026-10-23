@@ -27,7 +27,7 @@ brew install --cask trace-commons
 
 `brew trust` is required — Homebrew refuses to load a formula or cask from a third-party tap without it.
 
-Or take [`TraceCommons-0.3.0.dmg`](https://github.com/TraceCommons/trace-commons-server/releases/download/app-v0.3.0/TraceCommons-0.3.0.dmg) from the [`app-v0.3.0`](https://github.com/TraceCommons/trace-commons-server/releases/tag/app-v0.3.0) release. It is a universal build, so it runs on both Apple silicon and Intel, and it is notarized and stapled — it opens without a Gatekeeper prompt even with no network. Use the `app-v*` tag rather than `/releases/latest`: the newest release overall is often a `contributor-v*` CLI one with no app in it.
+Or take [`Near.ai-0.20.6.dmg`](https://github.com/TraceCommons/trace-commons/releases/download/app-v0.20.6/Near.ai-0.20.6.dmg) from the [`app-v0.20.6`](https://github.com/TraceCommons/trace-commons/releases/tag/app-v0.20.6) release. It is a universal build, so it runs on both Apple silicon and Intel, and it is notarized and stapled — it opens without a Gatekeeper prompt even with no network. Use the `app-v*` tag rather than `/releases/latest`: the newest release overall is often a `contributor-v*` CLI one with no app in it.
 
 On Windows:
 
@@ -35,7 +35,7 @@ On Windows:
 Add-AppxPackage -AppInstallerFile https://storage.googleapis.com/tracecommons-flatpak/windows/TraceCommons.appinstaller
 ```
 
-That installs the Authenticode-signed MSIX and leaves Windows to keep it current — it re-checks that address on launch, at most once every eight hours. The publisher shown at install time is `CN=Iqlusion Inc`; read it rather than clicking past it. If you would rather not install a package at all, [`trace-commons-app-windows-x86_64-0.3.0.zip`](https://github.com/TraceCommons/trace-commons-server/releases/download/app-v0.3.0/trace-commons-app-windows-x86_64-0.3.0.zip) unzips to a self-contained `TraceCommons-0.3.0/TraceCommons.exe` with the .NET runtime and Windows App SDK bundled in, and no update mechanism attached.
+That installs the Authenticode-signed MSIX and leaves Windows to keep it current — it re-checks that address on launch, at most once every eight hours. The publisher shown at install time is `CN=Iqlusion Inc`; read it rather than clicking past it. If you would rather not install a package at all, [`trace-commons-app-windows-x86_64-0.20.6.zip`](https://github.com/TraceCommons/trace-commons/releases/download/app-v0.20.6/trace-commons-app-windows-x86_64-0.20.6.zip) unzips to a self-contained `TraceCommons-0.20.6/near-ai.exe` with the .NET runtime and Windows App SDK bundled in, and no update mechanism attached.
 
 On Linux, as a flatpak:
 
