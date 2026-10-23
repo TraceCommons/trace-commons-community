@@ -14,7 +14,7 @@ import Base from "../layouts/Base.astro";
    published a Windows asset whose name promised the desktop app and whose
    contents were the CLI, and only unzipping the published file caught it. */
 
-const REPO = "https://github.com/TraceCommons/trace-commons-server";
+const REPO = "https://github.com/TraceCommons/trace-commons";
 
 /* Tags are pinned, not "latest", and that is deliberate. The repository
    publishes two independent tag streams -- contributor-v* for the CLI and
@@ -26,17 +26,17 @@ const REPO = "https://github.com/TraceCommons/trace-commons-server";
    So: bump these constants when you cut a release. A stale version number
    is a visible, obvious wrong; a link that silently 404s for half the
    downloads is not. */
-const CLI_TAG = "contributor-v0.4.6";
-const APP_TAG = "app-v0.4.6";
-const CLI_VERSION = "0.4.6";
+const CLI_TAG = "contributor-v0.20.6";
+const APP_TAG = "app-v0.20.6";
+const CLI_VERSION = "0.20.6";
 /* The app carries its own version, and it is NOT the CLI's. They read the same
-   at 0.4.6 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
+   at 0.20.6 and read a patch apart at 0.2.x, because app-v0.2.0 shipped a
    Windows asset containing the CLI rather than the desktop app and app-v0.2.1
    was the correction. Equal today is a coincidence, not an invariant: the DMG
    filename below used to interpolate CLI_VERSION and became exactly the silent
    404 this note warns about the first time the two diverged. Keep them
    separate constants even while the numbers match. */
-const APP_VERSION = "0.4.6";
+const APP_VERSION = "0.20.6";
 /* The MSIX ships a four-part Windows package version; the appinstaller and the
    .msix filename both carry it, and it is the app version with a trailing .0
    rather than a number of its own. */
@@ -51,9 +51,9 @@ const DL_APP = `${REPO}/releases/download/${APP_TAG}`;
 const APPINSTALLER =
   "https://storage.googleapis.com/tracecommons-flatpak/windows/TraceCommons.appinstaller";
 const INSTALL_SH =
-  "https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.sh";
+  "https://raw.githubusercontent.com/TraceCommons/trace-commons/main/scripts/install.sh";
 const INSTALL_PS1 =
-  "https://raw.githubusercontent.com/TraceCommons/trace-commons-server/main/scripts/install.ps1";
+  "https://raw.githubusercontent.com/TraceCommons/trace-commons/main/scripts/install.ps1";
 ---
 
 <Base
@@ -86,7 +86,7 @@ const INSTALL_PS1 =
 brew trust tracecommons/tap
 brew install --cask trace-commons</code></pre>
     <p class="muted">
-      Or take <a href={`${DL_APP}/TraceCommons-${APP_VERSION}.dmg`}><code>TraceCommons-{APP_VERSION}.dmg</code></a>
+      Or take <a href={`${DL_APP}/Near.ai-${APP_VERSION}.dmg`}><code>Near.ai-{APP_VERSION}.dmg</code></a>
       directly. It is a universal build, so it runs on both Apple silicon and
       Intel, and it is notarized and stapled — it opens without a Gatekeeper
       prompt even offline.
@@ -107,12 +107,12 @@ brew install --cask trace-commons</code></pre>
       no update mechanism attached:
     </p>
     <pre><code>{`Expand-Archive trace-commons-app-windows-x86_64-${APP_VERSION}.zip -DestinationPath .
-.\\TraceCommons-${APP_VERSION}\\TraceCommons.exe`}</code></pre>
+.\\TraceCommons-${APP_VERSION}\\near-ai.exe`}</code></pre>
     <p class="muted">
       Take <a href={`${DL_APP}/trace-commons-app-windows-x86_64-${APP_VERSION}.zip`}><code>trace-commons-app-windows-x86_64-{APP_VERSION}.zip</code></a>
       and unzip it anywhere. There is nothing to install first: the .NET runtime
       and the Windows App SDK are bundled inside, so it is a folder you keep
-      rather than something that writes into the system. <code>TraceCommons.exe</code>
+      rather than something that writes into the system. <code>near-ai.exe</code>
       is Authenticode-signed by Iqlusion Inc and timestamped, and the same
       <code>Get-AuthenticodeSignature</code> check shown below works on it —
       check the <em>subject</em>, not just that a signature exists.
@@ -365,7 +365,7 @@ $sig.SignerCertificate.Subject     # CN=Iqlusion Inc, O=Iqlusion Inc, L=Santa Cl
       Linux on arm64, for instance. It needs a Rust toolchain.
     </p>
     <pre><code>git clone {REPO}
-cd trace-commons-server
+cd trace-commons
 cargo build --release --bin trace-commons-contributor
 ./target/release/trace-commons-contributor --help</code></pre>
   </div>
