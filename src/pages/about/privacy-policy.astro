@@ -1,0 +1,243 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base
+  title="Privacy policy"
+  description="What Trace Commons and the Near.ai app collect, how it is used and shared, how long it is kept, and the choices you have."
+>
+  <Fragment slot="head">
+    <style is:inline>
+      .page .toc {
+        border: var(--hairline);
+        padding: var(--space-3) var(--space-4);
+        max-width: 68ch;
+      }
+      .page .toc ol {
+        columns: 2;
+        column-gap: 2.5rem;
+        margin: 0;
+      }
+      .page .toc li { break-inside: avoid; }
+      .page h2, .page h3 { scroll-margin-top: var(--space-4); }
+      @media (max-width: 560px) {
+        .page .toc ol { columns: 1; }
+      }
+    </style>
+  </Fragment>
+
+  <h2>Privacy policy</h2>
+  <p>
+    This policy explains what personal information Iqlusion Inc. ("we",
+    "us") collects when you use Trace Commons: the Near.ai desktop app
+    (macOS, Windows and Linux), the contributor tools, the Trace Commons
+    servers, and the tracecommons.ai websites (together, the "services").
+  </p>
+  <p class="muted">
+    Effective [EFFECTIVE DATE]. By using the services you agree to this
+    policy and to the <a href="/about/tnc">terms</a>.
+  </p>
+
+  <div class="banner">
+    The short version: the app works on your computer first. Your code,
+    prompts and coding sessions stay on your computer unless you choose to
+    share a trace. Insights are computed on your computer. If you are in
+    the United States, the app sends anonymous weekly counts of which
+    screens you open, and you can turn that off in Settings. We do not sell
+    your personal information.
+  </div>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="label">Contents</p>
+    <ol>
+      <li><a href="#collect">Information we collect</a></li>
+      <li><a href="#local">What stays on your computer</a></li>
+      <li><a href="#use">How we use information</a></li>
+      <li><a href="#share">How we share information</a></li>
+      <li><a href="#retention">How long we keep it</a></li>
+      <li><a href="#choices">Your choices and rights</a></li>
+      <li><a href="#international">Where data is processed</a></li>
+      <li><a href="#children">Children</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#changes">Changes</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="collect">Information we collect</h2>
+
+  <h3>Account and sign-in</h3>
+  <p>
+    When you join, we create an account and record the sign-in you used: a
+    NEAR AI login, a NEAR account, or an invite. We store identifiers for
+    that sign-in in a form we can match on later (for example a hashed
+    login identifier), the devices you enroll, and the dates they were
+    added or removed. We do not receive your NEAR AI password.
+  </p>
+
+  <h3>Traces you choose to share</h3>
+  <p>
+    A trace is a record of a coding agent session. Traces are cleaned on
+    your computer before they are sent: secrets and personal details the
+    redaction finds are removed. A trace is sent only for projects you
+    allow, either after you approve it or automatically for folders you
+    set to Automatic. Each trace carries the consent options you chose,
+    which limit how it may be used. What each option permits is set out in
+    the <a href="/about/data-policy">data policy</a>. Redaction can miss
+    things, so do not share sessions that contain information you would
+    not want stored.
+  </p>
+  <p>
+    If you turn on the optional extra privacy filter, already-cleaned
+    message text is sent to a filter running in a protected enclave before
+    upload. Structured tool data does not take that path.
+  </p>
+
+  <h3>Credits and payouts</h3>
+  <p>
+    For accepted traces we record credit, payout links you set up (for
+    example the NEAR AI organization that receives credit), and the
+    payouts made. Trace Credits are recorded on NEAR.
+  </p>
+
+  <h3>Private AI</h3>
+  <p>
+    If you use Private AI, the app sends your coding tools' AI requests
+    through NEAR AI, which answers them. The app keeps a log of those
+    requests on your computer. We receive which tools and models you
+    connect and the credit used, not the content of your requests. NEAR
+    AI's own privacy policy covers what it processes.
+  </p>
+
+  <h3>App usage data (United States only)</h3>
+  <p>
+    If our server places your connection in the United States, the app
+    counts how many times a week you open each main tab and each Insights
+    view, use Insights' Refresh and Analyze, and finish setup. It sends
+    those weekly counts with a random identifier created for that install,
+    which lets us tell how many installs come back. The identifier is not
+    linked to your account, devices, email, name or files. No code, prompts,
+    file names, folder names or trace content are ever part of it.
+  </p>
+  <p>
+    It is on by default in the United States. Turn it off in Settings &gt;
+    General &gt; Share anonymous usage data; that deletes the unsent counts
+    and the identifier. Outside the United States, the app does not send
+    usage data.
+  </p>
+
+  <h3>Technical information</h3>
+  <p>
+    Like most online services, our servers record the IP address, time and
+    request path of connections, and the app version, to run the service,
+    limit abuse and fix problems. We use the IP address to tell whether a
+    connection is in the United States; we do not store the result with
+    the address. The app keeps error logs on your computer and does not
+    send them to us unless you choose to.
+  </p>
+
+  <h3>Website</h3>
+  <p>
+    The tracecommons.ai sites show public aggregates and the profiles of
+    contributors who chose public attribution. They do not use advertising
+    or cross-site tracking cookies.
+  </p>
+
+  <h3>When you contact us</h3>
+  <p>
+    If you email us, we keep the message and your address to reply.
+  </p>
+
+  <h2 id="local">What stays on your computer</h2>
+  <p>
+    The app reads your coding tools' session files on your computer. Until
+    you share a trace, that content stays there. Insights (your usage
+    charts, breakdowns and analyses) are computed and stored on your
+    computer and are not sent to us. Uninstalling the app does not remove
+    traces you already shared; see <a href="#choices">your choices</a>.
+  </p>
+
+  <h2 id="use">How we use information</h2>
+  <ul>
+    <li>To run the services: accounts, uploads, checks on shared traces, credits and payouts.</li>
+    <li>To use shared traces only as their consent options allow, as described in the <a href="/about/data-policy">data policy</a>.</li>
+    <li>To understand how the app is used and improve it, from anonymous usage counts.</li>
+    <li>To keep the services secure, prevent fraud and abuse, and enforce the <a href="/about/tnc">terms</a>.</li>
+    <li>To reply to you, and to tell you about changes to the services or this policy.</li>
+    <li>To meet legal obligations.</li>
+  </ul>
+
+  <h2 id="share">How we share information</h2>
+  <p>We do not sell your personal information or share it for advertising. We share it only:</p>
+  <ul>
+    <li><strong>With service providers</strong> who run the services for us, such as cloud hosting, storage and key management, under contracts that limit their use to our instructions.</li>
+    <li><strong>With NEAR AI</strong>, for sign-in, Private AI requests you send through it, and credit and payouts.</li>
+    <li><strong>As your consent options allow</strong>, for shared traces, including use by others where an option you chose permits it.</li>
+    <li><strong>Publicly</strong>, only your handle, bio and aggregate counts if you opt into public attribution.</li>
+    <li><strong>For legal reasons</strong>, when the law requires it or to protect rights, safety and the services.</li>
+    <li><strong>In a business transfer</strong>, such as a merger or acquisition, under this policy's protections.</li>
+  </ul>
+
+  <h2 id="retention">How long we keep it</h2>
+  <ul>
+    <li>Account records: while your account is active, and for [RETENTION PERIOD] after it is closed.</li>
+    <li>Shared traces: until you withdraw them. Withdrawing deletes our stored content and stops future use; copies already distributed under your consent options cannot be recalled.</li>
+    <li>Credit, payout and audit records: as long as needed to keep the ledger correct and meet legal obligations.</li>
+    <li>App usage counts: [RETENTION PERIOD].</li>
+    <li>Server connection logs: [RETENTION PERIOD].</li>
+  </ul>
+
+  <h2 id="choices">Your choices and rights</h2>
+  <ul>
+    <li>Choose per project whether traces are shared, and which consent options apply.</li>
+    <li>Withdraw shared traces from the app.</li>
+    <li>Turn usage data off in Settings.</li>
+    <li>Turn public attribution on or off on your <a href="/profile">profile</a>.</li>
+    <li>Ask us to access, correct or delete your personal information, or to close your account, by emailing <a href="mailto:[PRIVACY EMAIL]">[PRIVACY EMAIL]</a>.</li>
+  </ul>
+  <p>
+    Depending on where you live, including California, you may have rights
+    to know what we collect, to delete or correct it, and to opt out of its
+    sale or sharing. We do not sell or share personal information for
+    advertising. We will not treat you differently for using these rights.
+  </p>
+
+  <h2 id="international">Where data is processed</h2>
+  <p>
+    We are based in the United States and process data there. If you use
+    the services from elsewhere, your information is transferred to and
+    processed in the United States.
+  </p>
+
+  <h2 id="children">Children</h2>
+  <p>
+    The services are not for anyone under 18, and we do not knowingly
+    collect information from them. If you believe a child has given us
+    information, contact us and we will delete it.
+  </p>
+
+  <h2 id="security">Security</h2>
+  <p>
+    We encrypt stored traces and protect our systems with access controls
+    and key management. No service is completely secure, and redaction on
+    your computer can miss sensitive details.
+  </p>
+
+  <h2 id="changes">Changes</h2>
+  <p>
+    We may update this policy. The date at the top is when the published
+    version took effect. If a change is significant, we will tell you in
+    the app or by email before it applies.
+  </p>
+
+  <h2 id="contact">Contact</h2>
+  <p>
+    Privacy questions and requests:
+    <a href="mailto:[PRIVACY EMAIL]">[PRIVACY EMAIL]</a>.<br />
+    Iqlusion Inc., [POSTAL ADDRESS].
+  </p>
+  <p>
+    See also the <a href="/about/privacy">privacy notes</a> for the public
+    site, the <a href="/about/data-policy">data policy</a> and the
+    <a href="/about/tnc">terms</a>.
+  </p>
+</Base>
